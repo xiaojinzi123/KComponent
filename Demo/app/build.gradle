@@ -20,6 +20,22 @@ ksp {
 
 android {
     namespace 'com.xiaojinzi.component.demo'
+
+    signingConfigs {
+        debug {
+            storeFile file('./sign')
+            storePassword "xiaojinzi"
+            keyAlias "xiaojinzi"
+            keyPassword "xiaojinzi"
+        }
+        release {
+            storeFile file('./sign')
+            storePassword "xiaojinzi"
+            keyAlias "xiaojinzi"
+            keyPassword "xiaojinzi"
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled true
@@ -28,7 +44,7 @@ android {
         }
         debug {
             minifyEnabled = false
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }

@@ -1,0 +1,69 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'maven-publish'
+
+group = 'com.github.xiaojinzi123'
+archivesBaseName = "component-impl"
+
+android {
+    compileSdkVersion versions.android_compile_sdk
+    defaultConfig {
+        minSdkVersion versions.android_min_sdk
+        targetSdkVersion versions.android_target_sdk
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    namespace 'com.xiaojinzi.component.impl'
+
+}
+
+dependencies {
+    api libs.appcompat
+    api libs.lifecycle_runtime_ktx
+    api libs.kotlin_reflect
+    if (rootProject.ext.isDependMavenOnline) {
+        api libs.component_annotation
+    } else {
+        api project(':ComponentApi')
+    }
+}
+
+task androidSourcesJar(type: Jar) {
+    archiveClassifier = 'sources'
+    from android.sourceSets.main.java.srcDirs
+}
+
+artifacts {
+    archives androidSourcesJar
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            // Creates a Maven publication called "release".
+            release(MavenPublication) {
+                // Applies the component for the release build variant.
+                from components.release
+
+                // You can then customize attributes of the publication as shown below.
+                groupId = group
+                artifactId = archivesBaseName
+                version = version
+            }
+        }
+    }
+}

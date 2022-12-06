@@ -1,0 +1,41 @@
+/*apply plugin: 'com.android.application'
+apply plugin: 'com.xiaojinzi.component.plugin'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'*/
+
+plugins {
+    id 'com.android.application'
+    id 'com.xiaojinzi.component.plugin'
+    id 'kotlin-android'
+    id 'com.google.devtools.ksp'
+    id 'kotlin-parcelize'
+    id 'kotlin-kapt'
+}
+
+apply from: "../demo_module.gradle"
+
+ksp {
+    arg("ModuleName", "app")
+}
+
+android {
+    namespace 'com.xiaojinzi.component.demo'
+    buildTypes {
+        release {
+            minifyEnabled true
+            signingConfig signingConfigs.debug
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            minifyEnabled = false
+            signingConfig signingConfigs.debug
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    api project(':Demo:module-support')
+    api project(':Demo:module-user')
+    api project(':Demo:module-base')
+}

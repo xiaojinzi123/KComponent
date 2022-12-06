@@ -1,0 +1,52 @@
+
+kotlin {
+    sourceSets {
+        debug.kotlin.srcDirs += 'build/generated/ksp/debug/kotlin'
+        main.kotlin.srcDirs += 'build/generated/ksp/main/kotlin'
+    }
+}
+
+android {
+    compileSdkVersion versions.android_compile_sdk
+
+    defaultConfig {
+        minSdkVersion versions.android_min_sdk
+        targetSdkVersion versions.android_target_sdk
+        versionCode 1
+        versionName "1.0.0"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
+        freeCompilerArgs += [
+                "-Xjvm-default=all",
+        ]
+    }
+    viewBinding {
+        enabled true
+    }
+    packagingOptions {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
+    }
+}
+
+dependencies {
+
+    api libs.material
+    api libs.appcompat
+    api libs.gson
+
+}

@@ -1,0 +1,113 @@
+ext.versions = [
+        // 系统级别的版本号
+        android_compile_sdk                 : 33,
+        android_min_sdk                     : 21,
+        android_target_sdk                  : 33,
+        version_code                        : 1000,
+        version_name                        : "1.0",
+        // 第三方控件的版本号
+        rxjava                              : '2.2.21',
+        rxandroid                           : "2.1.1",
+        android_support_version             : "v1.0-beta146",
+        android_module_version              : "v1.0-beta19",
+        compose_version                     : "1.3.1",
+        accompanist_version                 : "0.27.1",
+        page3                               : "3.1.1",
+        coil                                : "2.2.2",
+        emoji2                              : "1.2.0",
+        // component_version                   : "2.0.0-beta12",
+        component_version                   : "1.0.0-alpha1",
+        component_plugin_upload_version     : "1.0.0-alpha1",
+]
+
+ext.libs = [
+        kotlin_reflect              : "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version",
+        kotlin_stdlib               : "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version",
+        kotlin_android              : "org.jetbrains.kotlin:kotlin-android-extensions-runtime:$kotlin_version",
+        kt_coroutines_core          : "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlin_coroutines_version",
+        kt_coroutines_rx2           : "org.jetbrains.kotlinx:kotlinx-coroutines-rx2:$kotlin_coroutines_version",
+        // Google 提供的
+        emoji2                      : "androidx.emoji2:emoji2:${versions.emoji2}",
+        emoji2_views                : "androidx.emoji2:emoji2-views:${versions.emoji2}",
+        emoji2_views_helper         : "androidx.emoji2:emoji2-views-helper:${versions.emoji2}",
+        appcompat                   : 'androidx.appcompat:appcompat:1.5.1',
+        core_ktx                    : 'androidx.core:core-ktx:1.8.0',
+        swiperefreshlayout          : "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0",
+        fragment_ktx                : "androidx.fragment:fragment-ktx:1.5.1",
+        material                    : 'com.google.android.material:material:1.6.1',
+        drawerlayout                : "androidx.drawerlayout:drawerlayout:1.1.1",
+        constraintlayout            : 'androidx.constraintlayout:constraintlayout:2.1.4',
+        lifecycle_viewmodel_ktx     : "androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1",
+        lifecycle_runtime_ktx       : "androidx.lifecycle:lifecycle-runtime-ktx:2.5.1",
+        gson                        : "com.google.code.gson:gson:2.9.1",
+        retrofit                    : "com.squareup.retrofit2:retrofit:2.9.0",
+        retrofit_converter_gson     : "com.squareup.retrofit2:converter-gson:2.10",
+        develop_serverLog           : "com.github.xiaojinzi123.AndroidDevelop:serverLogForAndroid:v1.0.0-beta14",
+        develop_serverLog_plugin    : 'com.github.xiaojinzi123.AndroidDevelop:serverLog-log-gradle-plugin:v1.0.0-beta14',
+
+        support_bean                : "com.github.xiaojinzi123.AndroidSupport:lib-bean:${versions.android_support_version}",
+        support_init                : "com.github.xiaojinzi123.AndroidSupport:lib-init:${versions.android_support_version}",
+        support_annotation          : "com.github.xiaojinzi123.AndroidSupport:lib-annotation:${versions.android_support_version}",
+        support_download            : "com.github.xiaojinzi123.AndroidSupport:lib-download:${versions.android_support_version}",
+        support_ktx                 : "com.github.xiaojinzi123.AndroidSupport:lib-ktx:${versions.android_support_version}",
+        support_ktx_retrofit        : "com.github.xiaojinzi123.AndroidSupport:lib-ktx-retrofit:${versions.android_support_version}",
+        support_logger              : "com.github.xiaojinzi123.AndroidSupport:lib-logger:${versions.android_support_version}",
+        support_architecture        : "com.github.xiaojinzi123.AndroidSupport:lib-architecture:${versions.android_support_version}",
+        support_compose             : "com.github.xiaojinzi123.AndroidSupport:lib-compose:${versions.android_support_version}",
+
+        lib_resource                : "com.github.xiaojinzi123.AndroidModule:lib-resource:${versions.android_module_version}",
+        module_ffmpeg               : "com.github.xiaojinzi123.AndroidModule:module-ffmpeg:${versions.android_module_version}",
+        module_wx_sdk               : "com.github.xiaojinzi123.AndroidModule:module-wx-sdk:${versions.android_module_version}",
+        module_ali_pay              : "com.github.xiaojinzi123.AndroidModule:module-ali-pay:${versions.android_module_version}",
+        module_tx_cos               : "com.github.xiaojinzi123.AndroidModule:module-tx-cos:${versions.android_module_version}",
+        module_bugly                : "com.github.xiaojinzi123.AndroidModule:module-bugly:${versions.android_module_version}",
+
+        rxjava                      : "io.reactivex.rxjava2:rxjava:2.2.21",
+        rxKotlin                    : "io.reactivex.rxjava2:rxkotlin:2.4.0",
+        leakcanary                  : 'com.squareup.leakcanary:leakcanary-android:2.9.1',
+        kotlin_flow_extensions      : "com.github.akarnokd:kotlin-flow-extensions:0.0.14",
+        exoplayer_core              : 'com.google.android.exoplayer:exoplayer-core:2.18.1',
+        exoplayer_ui                : 'com.google.android.exoplayer:exoplayer-ui:2.18.1',
+
+        // 第三方
+        svgPlayer                   : 'com.github.yyued:SVGAPlayer-Android:2.6.1',
+        baseAdapter                 : 'com.github.CymChad:BaseRecyclerViewAdapterHelper:3.0.4',
+        glide                       : 'com.github.bumptech.glide:glide:4.13.2',
+        glide_compiler              : 'com.github.bumptech.glide:compiler:4.13.1',
+        lottie_compose              : "com.airbnb.android:lottie-compose:5.2.0",
+        coil_svg                    : "io.coil-kt:coil-svg:${versions.coil}",
+        coil_gif                    : "io.coil-kt:coil-gif:${versions.coil}",
+        coil_video                  : "io.coil-kt:coil-video:${versions.coil}",
+        coil_compose                : "io.coil-kt:coil-compose:${versions.coil}",
+
+        // page 的依赖
+        page3                       : "androidx.paging:paging-runtime:${versions.page3}",
+        page3_compose               : "androidx.paging:paging-compose:1.0.0-alpha15",
+
+        // ------------------------ Room 的依赖------------------------
+        room                        : "androidx.room:room-runtime:2.4.3",
+        room_compiler               : "androidx.room:room-compiler:2.4.3",
+        room_ktx                    : "androidx.room:room-ktx:2.4.3",
+        room_rxjava                 : "androidx.room:room-rxjava2:2.4.3",
+
+        // ------------------------ Compose 的依赖  ------------------------
+
+        accompanist_pager           : "com.google.accompanist:accompanist-pager:${versions.accompanist_version}",
+        accompanist_swiperefresh    : "com.google.accompanist:accompanist-swiperefresh:${versions.accompanist_version}",
+        accompanist_insets          : "com.google.accompanist:accompanist-insets:${versions.accompanist_version}",
+        accompanist_sysuicontrol    : "com.google.accompanist:accompanist-systemuicontroller:${versions.accompanist_version}",
+        accompanist_flowlayout      : "com.google.accompanist:accompanist-flowlayout:${versions.accompanist_version}",
+        accompanist_placeholder     : "com.google.accompanist:accompanist-placeholder:${versions.accompanist_version}",
+        accompanist_permissions     : "com.google.accompanist:accompanist-permissions:${versions.accompanist_version}",
+        accompanist_webview         : "com.google.accompanist:accompanist-webview:${versions.accompanist_version}",
+
+        compose_viewmodel           : 'androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1',
+        activity_compose            : 'androidx.activity:activity-compose:1.5.1',
+        compose_ui                  : "androidx.compose.ui:ui:${versions.compose_version}",
+        compose_material            : "androidx.compose.material:material:${versions.compose_version}",
+        compose_ui_tooling          : "androidx.compose.ui:ui-tooling:${versions.compose_version}",
+        compose_ui_tooling_preview  : "androidx.compose.ui:ui-tooling-preview:${versions.compose_version}",
+        compose_ui_foundation       : 'androidx.ui:ui-foundation:0.1.0-dev14',
+        compose_constraintlayout    : "androidx.constraintlayout:constraintlayout-compose:1.0.1",
+
+]

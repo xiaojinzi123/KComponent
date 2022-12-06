@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+
+        <activity
+            android:name=".module.web.view.WebAct"
+            android:screenOrientation="fullSensor" />
+
+        <activity
+            android:name=".module.web_test.view.WebTestAct"
+            android:screenOrientation="fullSensor" />
+
+        <activity
+            android:name=".module.test_activity_result.view.TestActivityResultAct"
+            android:screenOrientation="fullSensor" />
+
+        <activity
+            android:name=".module.test_parameter_autowire.view.TestParameterAutowireAct"
+            android:screenOrientation="fullSensor" />
+
+        <activity
+            android:name=".module.permission_request.view.PermissionRequestAct"
+            android:screenOrientation="fullSensor"
+            android:theme="@style/Theme.AppTheme.Demo.Translucent" />
+
+    </application>
+
+</manifest>

@@ -1,0 +1,13 @@
+ksp {
+    def tempProject = project
+    def name = tempProject.getName()
+    while (tempProject.parent != null) {
+        tempProject = tempProject.parent
+        name = tempProject.getName() + "_" + name
+    }
+
+    arg("ModuleName", name)
+    arg("RouterDocFolder", project.property("component_router_doc_folder"))
+    arg("RouterDocEnable", String.valueOf(project.property("component_router_doc_enable")))
+
+}

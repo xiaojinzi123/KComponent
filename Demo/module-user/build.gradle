@@ -1,0 +1,16 @@
+plugins {
+    id 'com.android.library'
+    id 'kotlin-android'
+    id 'com.google.devtools.ksp'
+    id 'kotlin-parcelize'
+}
+
+android {
+    namespace 'com.xiaojinzi.component.user'
+}
+
+apply from: "../demo_module.gradle"
+
+ksp {
+    arg("ModuleName", "user")
+}

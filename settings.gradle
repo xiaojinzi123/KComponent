@@ -1,0 +1,28 @@
+pluginManagement {
+    repositories {
+        maven { url 'https://jitpack.io' }
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        maven { url 'https://jitpack.io' }
+        google()
+        mavenCentral()
+        jcenter()
+    }
+}
+rootProject.name = "KComponent"
+include ':ComponentPlugin',
+        ':ComponentApi',
+        ':ComponentImpl',
+        ':ComponentRxImpl'
+include ':Demo:app'
+include ':ComponentCompiler'
+include ':Demo:module-base'
+include ':Demo:module-user'
+include ':Demo:lib-resource'
+include ':Demo:module-support'

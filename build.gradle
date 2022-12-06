@@ -1,0 +1,52 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
+
+    ext.kotlin_version = "1.6.10"
+    ext.kotlin_coroutines_version = '1.6.4'
+
+    apply from: "common_support.gradle"
+    apply from: "dependencies.gradle"
+
+    ext {
+        compose_version = '1.1.1'
+    }
+
+    ext.component_group_id = "com.xiaojinzi"
+    ext.isDependMavenOnline = false
+    ext.component_asm_util_class_output_path = "./Temp/ASMUtil.class"
+    ext.component_asm_disable = false
+    // 注解生成器生成的文件 json 信息都
+    ext.component_router_doc_folder = "./Doc"
+    ext.component_router_doc_enable = false
+
+    repositories {
+        google()
+        jcenter()
+        if (!rootProject.ext.isDependMavenOnline) {
+            maven {
+                url './RepoComponent'
+            }
+        }
+        maven { url 'https://jitpack.io' }
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.3.1'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        if (rootProject.ext.isDependMavenOnline) {
+            classpath "com.github.xiaojinzi123.Component:component-plugin:${versions.component_version}"
+        } else {
+            classpath "com.xiaojinzi.component:component-plugin:${versions.component_version}"
+        }
+    }
+}
+
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version "$kotlin_version" apply false
+    id 'com.google.devtools.ksp' version "$kotlin_version-1.0.4" apply false
+    id 'com.android.library' version '7.3.1' apply false
+    id 'org.jetbrains.kotlin.android' version "$kotlin_version" apply false
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

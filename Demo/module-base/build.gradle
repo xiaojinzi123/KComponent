@@ -1,0 +1,37 @@
+plugins {
+    id 'com.android.library'
+    id 'kotlin-android'
+    id 'com.google.devtools.ksp'
+    id 'kotlin-parcelize'
+}
+
+android {
+    namespace 'com.xiaojinzi.component.base'
+}
+
+apply from: project.getRootProjectPath() + "/common_android.gradle"
+apply from: project.getRootProjectPath() + "/common_ksp_for_component.gradle"
+
+dependencies {
+    api project(':Demo:lib-resource')
+    api project(':ComponentImpl')
+    api project(':ComponentRxImpl')
+    ksp project(':ComponentCompiler')
+
+    api libs.support_logger
+    api libs.support_ktx
+    api libs.support_compose
+    api libs.support_architecture
+
+    api libs.accompanist_pager
+    api libs.accompanist_swiperefresh
+    api libs.accompanist_insets
+    api libs.accompanist_sysuicontrol
+    api libs.accompanist_flowlayout
+    api libs.accompanist_placeholder
+    api libs.accompanist_permissions
+    api libs.accompanist_webview
+
+    api libs.lottie_compose
+
+}

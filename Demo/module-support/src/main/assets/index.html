@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body style="margin: 0px;padding: 0px;font-size: 18px;">
+
+<script type="text/javascript">
+
+    function openUrl(url) {
+        window.testWebRouter.openUrl(url);
+    }
+
+</script>
+<ol>
+    <li style="color:#FF0000">
+        组件化之后的js 和 原生交互就发生了很大的变化, html只管根据 url 来跳转到原生的各个界面
+    </li>
+    <li style="color:#FF0000">
+        再也不需要根据 html 的 type 来判断跳转到那个页面
+    </li>
+    <li style="color:#FF0000">
+        对于需要登录、权限、定位或者其他先决条件的界面也不需要在跳转前处理
+    </li>
+</ol>
+<ol>
+    <li>
+        <a href="#" onclick='openUrl("router://support/testInject?data1=1&data1=2")'>测试自动注入data1=1&data1=2</a>
+    </li>
+    <li>
+        <a href="#" onclick='openUrl("router://support/testQuery?name=webName&pass=webPass")'>router://support/testQuery?name=webName&pass=webPass</a>
+    </li>
+    <li>
+        <a href="#"
+           onclick='openUrl("router://system/callPhone?tel=17321174171")'>打电话：router://system/callPhone?tel=18888888888</a>
+    </li>
+    <li>
+        <a href="#"
+           onclick='openUrl("router://system/callPhone?tel=15857913627")'>打电话：router://system/callPhone?tel=18888888888</a>
+    </li>
+    <li>
+        <a href="#"
+           onclick='openUrl("router://system/takePhoto")'>去拍照(router://system/takePhoto)</a>
+    </li>
+    <li>
+        <a href="#"
+           onclick='openUrl("https://www.baidu.com")'>https://www.baidu.com</a>
+    </li>
+    <li>
+        <a href="#"
+           onclick='openUrl("https://github.com/ManbangGroup/Phantom")'>https://github.com/ManbangGroup/Phantom/</a>
+    </li>
+</ol>
+
+</body>
+</html>

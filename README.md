@@ -12,7 +12,7 @@
 
 ### 依赖配置
 
-
+[手动加载 反射](https://github.com/xiaojinzi123/KComponent/wiki/%E4%BE%9D%E8%B5%96%E9%85%8D%E7%BD%AE(%E5%8F%8D%E5%B0%84%E5%8A%A0%E8%BD%BD)) 或者 [自动加载 ASM 字节码](https://github.com/xiaojinzi123/KComponent/wiki/%E4%BE%9D%E8%B5%96%E9%85%8D%E7%BD%AE(%E5%AD%97%E8%8A%82%E7%A0%81%E5%8A%A0%E8%BD%BD))
 
 ### 路由
 

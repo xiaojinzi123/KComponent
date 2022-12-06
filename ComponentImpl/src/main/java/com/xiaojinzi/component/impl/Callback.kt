@@ -19,6 +19,10 @@ import com.xiaojinzi.component.support.OnRouterSuccess
 @CheckClassNameAnno
 interface Callback : OnRouterSuccess, OnRouterError, OnRouterCancel {
 
+    override fun onSuccess(result: RouterResult)
+
+    override fun onError(errorResult: RouterErrorResult)
+
     /**
      * 两个参数肯定有一个不会为空
      *
@@ -27,5 +31,7 @@ interface Callback : OnRouterSuccess, OnRouterError, OnRouterCancel {
      */
     @UiThread
     fun onEvent(successResult: RouterResult?, errorResult: RouterErrorResult?)
+
+    override fun onCancel(originalRequest: RouterRequest?)
 
 }

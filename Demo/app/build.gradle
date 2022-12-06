@@ -5,7 +5,7 @@ apply plugin: 'kotlin-kapt'*/
 
 plugins {
     id 'com.android.application'
-    id 'com.xiaojinzi.component.plugin'
+    id 'com.xiaojinzi.kcomponent.plugin'
     id 'kotlin-android'
     id 'com.google.devtools.ksp'
     id 'kotlin-parcelize'

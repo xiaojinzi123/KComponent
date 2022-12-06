@@ -35,14 +35,18 @@ class App : Application() {
         Component.init(
             application = this,
             isDebug = BuildConfig.DEBUG,
+            config = Config.Builder()
+                .optimizeInit(isOptimizeInit = true)
+                .autoRegisterModule(isAutoRegisterModule = true)
+                .build()
         )
 
-        ModuleManager.registerArr(
+        /*ModuleManager.registerArr(
             RouterConfig.HOST_BASE,
             RouterConfig.HOST_APP,
             RouterConfig.HOST_USER,
             RouterConfig.HOST_SUPPORT,
-        )
+        )*/
 
         Router.addRouterListener(
             listener = object : RouterListener {
@@ -76,8 +80,8 @@ class App : Application() {
             }
         )
 
-        AppScope.launch(context = ErrorIgnoreContext) {
-
+        if (BuildConfig.DEBUG) {
+            Component.check()
         }
 
     }

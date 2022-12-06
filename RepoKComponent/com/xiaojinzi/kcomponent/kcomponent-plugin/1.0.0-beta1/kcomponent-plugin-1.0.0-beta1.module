@@ -27,11 +27,11 @@
         {
           "name": "kcomponent-plugin-1.0.0-beta1.jar",
           "url": "kcomponent-plugin-1.0.0-beta1.jar",
-          "size": 23504,
-          "sha512": "b5203f58e0728fa0e7b6e19ed2323e144811afb85259b9903127fdce55f89c672998539bf08b9636d4c5a01aa8b84238b4d8f7a6c683f77764e747d7ccd43c5e",
-          "sha256": "e0e62c8daf050324890aabf3896c4d47de5e3d590658b688732aea849b71fd67",
-          "sha1": "4aa6c61723f9087a87d90f6f93af724ffc028468",
-          "md5": "3adac36af4f447a0496b33352368ebc6"
+          "size": 14687,
+          "sha512": "caf80af45fc98a6dc75c52fd20e7c052dd631dba1f21df4ea4dd114f5108069c49735a7a59e87c09669e18087e5936a7ffc25a0f992c87ed89077e5e07d2b040",
+          "sha256": "1d316adae497037ec5515b124f1f3929f946f7596ea49eb425707744717f9a9b",
+          "sha1": "7e731e4e694b4ec00dd769d2089cc4088d4fd2b1",
+          "md5": "04c544736123b489a2136d91b2dffdf3"
         }
       ]
     },
@@ -71,11 +71,11 @@
         {
           "name": "kcomponent-plugin-1.0.0-beta1.jar",
           "url": "kcomponent-plugin-1.0.0-beta1.jar",
-          "size": 23504,
-          "sha512": "b5203f58e0728fa0e7b6e19ed2323e144811afb85259b9903127fdce55f89c672998539bf08b9636d4c5a01aa8b84238b4d8f7a6c683f77764e747d7ccd43c5e",
-          "sha256": "e0e62c8daf050324890aabf3896c4d47de5e3d590658b688732aea849b71fd67",
-          "sha1": "4aa6c61723f9087a87d90f6f93af724ffc028468",
-          "md5": "3adac36af4f447a0496b33352368ebc6"
+          "size": 14687,
+          "sha512": "caf80af45fc98a6dc75c52fd20e7c052dd631dba1f21df4ea4dd114f5108069c49735a7a59e87c09669e18087e5936a7ffc25a0f992c87ed89077e5e07d2b040",
+          "sha256": "1d316adae497037ec5515b124f1f3929f946f7596ea49eb425707744717f9a9b",
+          "sha1": "7e731e4e694b4ec00dd769d2089cc4088d4fd2b1",
+          "md5": "04c544736123b489a2136d91b2dffdf3"
         }
       ]
     }

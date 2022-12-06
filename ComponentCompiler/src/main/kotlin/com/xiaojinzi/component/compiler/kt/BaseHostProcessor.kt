@@ -34,9 +34,6 @@ abstract class BaseHostProcessor(
     private var isProcessed = false
 
     final override fun process(resolver: Resolver): List<KSAnnotated> {
-        environment.logger.warn(
-            message = "BaseHostProcessor process $componentModuleName ${this::class.simpleName} =========== ${UUID.randomUUID()}"
-        )
         if (isProcessed) {
         } else {
             isProcessed = true

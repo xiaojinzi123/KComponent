@@ -10,7 +10,7 @@ java {
 }
 
 group = 'com.github.xiaojinzi123'
-archivesBaseName = "component-annotation"
+archivesBaseName = "kcomponent-annotation"
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])

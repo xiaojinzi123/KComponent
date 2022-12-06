@@ -3,9 +3,12 @@ apply plugin: 'kotlin-android'
 apply plugin: 'maven-publish'
 
 group = 'com.github.xiaojinzi123'
-archivesBaseName = "component-impl"
+archivesBaseName = "kcomponent"
 
 android {
+
+    namespace 'com.xiaojinzi.component.impl'
+
     compileSdkVersion versions.android_compile_sdk
     defaultConfig {
         minSdkVersion versions.android_min_sdk
@@ -27,7 +30,6 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
-    namespace 'com.xiaojinzi.component.impl'
 
 }
 
@@ -35,11 +37,7 @@ dependencies {
     api libs.appcompat
     api libs.lifecycle_runtime_ktx
     api libs.kotlin_reflect
-    if (rootProject.ext.isDependMavenOnline) {
-        api libs.component_annotation
-    } else {
-        api project(':ComponentApi')
-    }
+    api project(':ComponentApi')
 }
 
 task androidSourcesJar(type: Jar) {

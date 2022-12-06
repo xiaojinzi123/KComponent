@@ -21,9 +21,9 @@ dependencies {
 sourceCompatibility = "8"
 targetCompatibility = "8"
 
-group = 'com.xiaojinzi.component'
+group = 'com.xiaojinzi.kcomponent'
 version = "${versions.component_plugin_upload_version}"
-archivesBaseName = 'component-plugin'
+archivesBaseName = 'kcomponent-plugin'
 
 publishing {
     publications {
@@ -36,7 +36,7 @@ publishing {
     }
     repositories {
         maven {
-            url = "$rootDir/RepoComponent"
+            url = "$rootDir/RepoKComponent"
         }
     }
 }

@@ -15,9 +15,8 @@ ext.versions = [
         page3                               : "3.1.1",
         coil                                : "2.2.2",
         emoji2                              : "1.2.0",
-        // component_version                   : "2.0.0-beta12",
-        component_version                   : "1.0.0-alpha1",
-        component_plugin_upload_version     : "1.0.0-alpha1",
+        component_version                   : "1.0.0-beta1",
+        component_plugin_upload_version     : "1.0.0-beta1",
 ]
 
 ext.libs = [

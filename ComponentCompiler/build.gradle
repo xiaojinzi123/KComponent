@@ -10,6 +10,9 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
+group = 'com.github.xiaojinzi123'
+archivesBaseName = "kcomponent-compiler"
+
 // 配置模块的 freeCompilerArgs 参数
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
     kotlinOptions {

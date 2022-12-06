@@ -3,7 +3,7 @@ apply plugin: 'kotlin-android'
 apply plugin: 'maven-publish'
 
 group = 'com.github.xiaojinzi123'
-archivesBaseName = "component-impl-rx"
+archivesBaseName = "kcomponent-rx"
 
 android {
     compileSdkVersion versions.android_compile_sdk
@@ -34,11 +34,7 @@ android {
 dependencies {
     compileOnly libs.appcompat
     compileOnly libs.rxjava
-    if (rootProject.ext.isDependMavenOnline) {
-        api libs.component_impl
-    }else {
-        api project(':ComponentImpl')
-    }
+    api project(':ComponentImpl')
 }
 
 task androidSourcesJar(type: Jar) {

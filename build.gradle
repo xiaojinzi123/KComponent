@@ -12,7 +12,6 @@ buildscript {
     }
 
     ext.component_group_id = "com.xiaojinzi"
-    ext.isDependMavenOnline = false
     ext.component_asm_util_class_output_path = "./Temp/ASMUtil.class"
     ext.component_asm_disable = false
     // 注解生成器生成的文件 json 信息都
@@ -22,21 +21,15 @@ buildscript {
     repositories {
         google()
         jcenter()
-        if (!rootProject.ext.isDependMavenOnline) {
-            maven {
-                url './RepoComponent'
-            }
+        maven {
+            url './RepoKComponent'
         }
         maven { url 'https://jitpack.io' }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:7.3.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        if (rootProject.ext.isDependMavenOnline) {
-            classpath "com.github.xiaojinzi123.Component:component-plugin:${versions.component_version}"
-        } else {
-            classpath "com.xiaojinzi.component:component-plugin:${versions.component_version}"
-        }
+        classpath "com.xiaojinzi.kcomponent:kcomponent-plugin:${versions.component_version}"
     }
 }
 

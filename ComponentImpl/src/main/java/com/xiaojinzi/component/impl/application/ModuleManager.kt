@@ -109,7 +109,7 @@ object ModuleManager {
         } else {
             val module = findModuleApplication(moduleName)
             if (module == null) {
-                LogUtil.log("模块 '$moduleName' 加载失败, 请根据链接中的内容自行排查! ${Component.COMMON_ERROR_ISSUE}")
+                LogUtil.log("模块 '$moduleName' 加载失败")
             } else {
                 register(module = module)
             }
@@ -140,7 +140,7 @@ object ModuleManager {
         for (host in hosts) {
             val moduleApplication = findModuleApplication(moduleName = host)
             if (moduleApplication == null) {
-                LogUtil.log("模块 '$host' 加载失败, 请根据链接中的内容自行排查! ${Component.COMMON_ERROR_ISSUE}")
+                LogUtil.log("模块 '$host' 加载失败")
             } else {
                 appList.add(element = moduleApplication)
             }

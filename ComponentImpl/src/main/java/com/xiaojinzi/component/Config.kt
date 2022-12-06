@@ -11,9 +11,8 @@ import com.xiaojinzi.component.support.Utils.checkNullPointer
  *
  * @see Component.init
  */
-class Config private constructor(builder: Builder) {
+class Config constructor(builder: Builder = Builder()) {
 
-    val application: Application
     val defaultScheme: String
     val isErrorCheck: Boolean
     val isInitRouterAsync: Boolean
@@ -24,12 +23,9 @@ class Config private constructor(builder: Builder) {
     val routeRepeatCheckDuration: Long
     val notifyModuleChangedDelayTime: Long
     val interceptorDefaultThread: InterceptorThreadType
-
-    @NeedOptimizeAnno("需要重命名为正确的")
     val attrAutoWireMode: AttrAutoWireMode
 
     init {
-        application = builder.application!!
         isErrorCheck = builder.isErrorCheck
         isInitRouterAsync = builder.isInitRouterAsync
         isOptimizeInit = builder.isOptimizeInit
@@ -43,9 +39,8 @@ class Config private constructor(builder: Builder) {
         interceptorDefaultThread = builder.interceptorDefaultThread
     }
 
-    class Builder(application: Application) {
+    class Builder {
 
-        var application: Application?
         var defaultScheme: String? = "router"
 
         // 是否进行检查, 默认是打开的, 仅在 debug 的时候有效
@@ -64,11 +59,6 @@ class Config private constructor(builder: Builder) {
 
         /*标记是否已经使用*/
         private var isUsed = false
-
-        init {
-            checkNullPointer(application, "application")
-            this.application = application
-        }
 
         fun defaultScheme(defaultScheme: String): Builder {
             this.defaultScheme = defaultScheme
@@ -135,8 +125,7 @@ class Config private constructor(builder: Builder) {
 
         fun build(): Config {
             // 参数检查
-            checkNullPointer(application, "application")
-            checkNullPointer(defaultScheme, "application")
+            checkNullPointer(defaultScheme, "defaultScheme")
             if (isUsed) {
                 throw UnsupportedOperationException("this builder only can build once!")
             }
@@ -151,17 +140,10 @@ class Config private constructor(builder: Builder) {
             isUsed = true
             // 提前创建对象
             val config = Config(this)
-            // 解除占用
-            application = null
             defaultScheme = null
             return config
         }
 
     }
 
-    companion object {
-        fun with(application: Application): Builder {
-            return Builder(application)
-        }
-    }
 }

@@ -435,7 +435,7 @@ class NavigatorImpl<T : INavigator<T>> constructor(
                     } else {
                         finalRequest.rawContext
                     } ?: throw NavigationCancelException(
-                        message = "is your fragment or Activity is Destroyed? see ${Component.ROUTER_UES_NOTE}".trimIndent()
+                        message = "is your fragment or Activity is Destroyed?".trimIndent()
                     )
                     // 降级跳转
                     val targetDegradeIntent: Intent? = withContext(context = Dispatchers.Main) {

@@ -1,23 +1,17 @@
 package com.xiaojinzi.component
 
 import android.app.Application
-import androidx.annotation.UiThread
-import com.xiaojinzi.component.impl.application.ModuleManager
-import com.xiaojinzi.component.support.LogUtil
-import androidx.annotation.AnyThread
 import android.content.Intent
 import android.os.Bundle
+import androidx.annotation.UiThread
 import com.xiaojinzi.component.anno.support.NotAppUseAnno
 import com.xiaojinzi.component.impl.RouterCenter
-import com.xiaojinzi.component.impl.interceptor.InterceptorCenter
+import com.xiaojinzi.component.impl.application.ModuleManager
 import com.xiaojinzi.component.impl.fragment.FragmentCenter
+import com.xiaojinzi.component.impl.interceptor.InterceptorCenter
 import com.xiaojinzi.component.support.Inject
+import com.xiaojinzi.component.support.LogUtil
 import com.xiaojinzi.component.support.Utils
-import java.lang.Exception
-import java.lang.RuntimeException
-import kotlin.reflect.KClass
-import kotlin.reflect.jvm.internal.impl.load.kotlin.KotlinClassFinder.Result.KotlinClass
-import kotlin.reflect.jvm.internal.impl.resolve.constants.KClassValue
 
 /**
  * 组件化类,需要被初始化
@@ -28,11 +22,8 @@ import kotlin.reflect.jvm.internal.impl.resolve.constants.KClassValue
  */
 object Component {
 
-    const val GITHUB_URL = "https://github.com/xiaojinzi123/Component"
-    const val DOC_URL = "https://github.com/xiaojinzi123/Component/wiki"
-    const val COMMON_ERROR_ISSUE = "https://github.com/xiaojinzi123/Component/issues/21"
-    const val ROUTER_UES_NOTE =
-        "https://github.com/xiaojinzi123/Component/wiki/%E4%B8%BB%E9%A1%B5#%E7%89%B9%E5%88%AB%E6%B3%A8%E6%84%8F"
+    const val GITHUB_URL = "https://github.com/xiaojinzi123/KComponent"
+    const val DOC_URL = "https://github.com/xiaojinzi123/KComponent/wiki"
 
     /**
      * 是否初始化过了
@@ -40,13 +31,12 @@ object Component {
     private var isInit = false
 
     /**
-     * 返回是否是 debug 状态
-     */
-    /**
      * 是否是 debug 状态
      */
     var isDebug = false
         private set
+
+    private lateinit var application: Application
 
     /**
      * 配置对象
@@ -59,19 +49,24 @@ object Component {
      * @see Config 初始化的配置对象
      */
     @UiThread
-    fun init(isDebug: Boolean, config: Config) {
+    fun init(
+        application: Application,
+        isDebug: Boolean,
+        config: Config = Config(),
+    ) {
         // 做必要的检查
         if (isInit) {
             throw RuntimeException("you have init Component already!")
         }
         Utils.checkMainThread()
+        Component.application = application
         Component.isDebug = isDebug
         mConfig = config
         if (isDebug) {
             printComponent()
         }
         // 注册
-        mConfig!!.application.registerActivityLifecycleCallbacks(ComponentLifecycleCallback())
+        application.registerActivityLifecycleCallbacks(ComponentLifecycleCallback())
         if (mConfig!!.isOptimizeInit && mConfig!!.isAutoRegisterModule) {
             ModuleManager.autoRegister()
         }
@@ -83,15 +78,8 @@ object Component {
         return mConfig!!
     }
 
-    /**
-     * 获取 Application
-     *
-     * @return Application
-     */
-    @AnyThread
     fun getApplication(): Application {
-        checkInit()
-        return mConfig!!.application
+        return application
     }
 
     private fun checkInit() {
@@ -191,10 +179,9 @@ object Component {
         sb.append("       ****              ****\n")
         sb.append("          ****        ****\n")
         sb.append("             *********\n")
-        sb.append("感谢您选择 Component 组件化框架. \n有任何问题欢迎提 issue 或者扫描 github 上的二维码进入群聊@群主\n")
+        sb.append("感谢您选择 KComponent 组件化框架. \n有任何问题欢迎提 issue 或者扫描 github 上的二维码进入群聊@群主\n")
         sb.append("Github 地址：$GITHUB_URL \n")
         sb.append("文档地址：$DOC_URL \n")
-        sb.append("错误排查指南：$COMMON_ERROR_ISSUE \n")
         LogUtil.logw(sb.toString())
     }
 

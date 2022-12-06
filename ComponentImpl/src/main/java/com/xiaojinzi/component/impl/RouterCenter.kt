@@ -121,7 +121,7 @@ object RouterCenter {
         } else {
             request.rawContext
         } ?: throw NavigationCancelException(
-            message = "is your fragment or Activity is Destroyed? see ${Component.ROUTER_UES_NOTE}".trimIndent()
+            message = "is your fragment or Activity is Destroyed?".trimIndent()
         )
         // 如果 Context 和 Fragment 中的 Context 都是 null
         var intent: Intent? = null

@@ -3,8 +3,10 @@ package com.xiaojinzi.component.demo
 import android.app.Application
 import com.xiaojinzi.component.Component
 import com.xiaojinzi.component.Config
+import com.xiaojinzi.component.base.RouterConfig
 import com.xiaojinzi.component.base.spi.UserSpi
 import com.xiaojinzi.component.impl.*
+import com.xiaojinzi.component.impl.application.ModuleManager
 import com.xiaojinzi.component.impl.service.service
 import com.xiaojinzi.component.support.ASMUtil
 import com.xiaojinzi.support.init.AppInstance
@@ -31,12 +33,20 @@ class App : Application() {
         )
 
         Component.init(
+            application = this,
             isDebug = BuildConfig.DEBUG,
             config = Config
-                .with(application = this)
-                .optimizeInit(isOptimizeInit = true)
-                .autoRegisterModule(isAutoRegisterModule = true)
+                .Builder()
+                // .optimizeInit(isOptimizeInit = true)
+                // .autoRegisterModule(isAutoRegisterModule = true)
                 .build()
+        )
+
+        ModuleManager.registerArr(
+            RouterConfig.HOST_APP,
+            RouterConfig.HOST_BASE,
+            RouterConfig.HOST_USER,
+            RouterConfig.HOST_SUPPORT,
         )
 
         Router.addRouterListener(

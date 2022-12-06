@@ -17,17 +17,13 @@
 ### 路由
 
 ```Kotlin
-Router.with(context)
-			.hostAndPath("user/login")
-			.forword()
+Router.with(context).hostAndPath("user/login").forword()
 ```
 
 ### 服务发现
 
 ```Kotlin
-UserSpi::class
-			.service()
-			?.login(name = "xiaojinzi", password = "xxxxxx")
+UserSpi::class.service()?.login(name = "xiaojinzi", password = "xxxxxx")
 ```
 
 

@@ -628,6 +628,7 @@ data class RouterRequest(
         builder.beforeStartActivityAction(action = beforeStartActivityAction)
         builder.afterStartActivityAction(action = afterStartActivityAction)
         builder.afterRouteSuccessAction(action = afterRouteSuccessAction)
+        builder.afterActivityResultRouteSuccessAction(action = afterActivityResultRouteSuccessAction)
         builder.afterRouteErrorAction(action = afterRouteErrorAction)
         builder.afterRouteEventAction(action = afterRouteEventAction)
         return builder

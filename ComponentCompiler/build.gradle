@@ -1,7 +1,8 @@
 plugins {
     id 'java-library'
-    id 'kotlin'
+    // id 'kotlin'
     id 'org.jetbrains.kotlin.jvm'
+    id 'maven-publish'
     id 'kotlin-kapt'
 }
 
@@ -29,4 +30,20 @@ dependencies {
     implementation "com.google.devtools.ksp:symbol-processing-api:$kotlin_version-1.0.4"
     implementation("com.squareup:kotlinpoet:1.12.0")
     implementation("com.squareup:kotlinpoet-ksp:1.12.0")
+}
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId project.group
+            artifactId archivesBaseName
+            version project.version
+            from components.java
+        }
+    }
 }

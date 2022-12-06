@@ -1,8 +1,9 @@
 **KComponent** 从 [Component](https://github.com/xiaojinzi123/Component) 升级而来. 全面升级为纯 **Kotlin** 项目
 
-可以说到目前为止, 基于 `URI` 方面的所有路由框架中(`ARouter`、`WMRouter`、`ActivityRouter` ...) `KComponent` 是最强大和完善的组件化框架.
+KComponent 是一个组件化框架. 它提供了两大核心：路由 和 服务发现
+和其他框架这里就不比较了. 用过以前的 [Component](https://github.com/xiaojinzi123/Component) 的朋友是清楚的.
 
-选择一个更好、更全面的、更稳定、更有发展前景的框架更是你们技术团队或者技术负责人要做的事情!
+[查看文档请点我](https://github.com/xiaojinzi123/KComponent/wiki)
 
 # KComponent
 

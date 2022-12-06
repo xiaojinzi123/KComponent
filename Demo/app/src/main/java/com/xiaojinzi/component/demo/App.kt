@@ -35,16 +35,11 @@ class App : Application() {
         Component.init(
             application = this,
             isDebug = BuildConfig.DEBUG,
-            config = Config
-                .Builder()
-                // .optimizeInit(isOptimizeInit = true)
-                // .autoRegisterModule(isAutoRegisterModule = true)
-                .build()
         )
 
         ModuleManager.registerArr(
-            RouterConfig.HOST_APP,
             RouterConfig.HOST_BASE,
+            RouterConfig.HOST_APP,
             RouterConfig.HOST_USER,
             RouterConfig.HOST_SUPPORT,
         )

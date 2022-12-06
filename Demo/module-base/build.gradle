@@ -12,6 +12,10 @@ android {
 apply from: project.getRootProjectPath() + "/common_android.gradle"
 apply from: project.getRootProjectPath() + "/common_ksp_for_component.gradle"
 
+ksp {
+    arg("ModuleName", "base")
+}
+
 dependencies {
     api project(':Demo:lib-resource')
     api project(':ComponentImpl')

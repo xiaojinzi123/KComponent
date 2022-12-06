@@ -706,84 +706,99 @@ class NavigatorImpl<T : INavigator<T>> constructor(
     override fun navigateForResult(
         callback: BiCallback<ActivityResult>,
     ): NavigationDisposable {
-        return try {
-            // 标记此次是需要框架帮助获取 ActivityResult 的
-            isForResult(isForResult = true)
-            // 为了拿数据做的检查
-            onCheckForResult()
-            // 声明fragment
-            val fm: FragmentManager = if (context == null) {
-                fragment!!.childFragmentManager
-            } else {
-                (Utils.getActivityFromContext(context) as FragmentActivity?)!!.supportFragmentManager
-            }
-            // 寻找是否添加过 Fragment
-            var findRxFragment =
-                fm.findFragmentByTag(ComponentConstants.ACTIVITY_RESULT_FRAGMENT_TAG) as RouterFragment?
-            if (findRxFragment == null) {
-                findRxFragment = RouterFragment()
-                fm.beginTransaction()
-                    .add(
-                        findRxFragment,
-                        ComponentConstants.ACTIVITY_RESULT_FRAGMENT_TAG
-                    ) // 这里必须使用 now 的形式, 否则连续的话立马就会new出来. 因为判断进来了
-                    .commitNowAllowingStateLoss()
-            }
-            val rxFragment: RouterFragment = findRxFragment
-            navigate(object : CallbackAdapter() {
-                override fun onSuccess(result: RouterResult) {
-                    super.onSuccess(result)
-                    val request = result.originalRequest
-                    rxFragment.addActivityResultConsumer(
-                        request = request,
-                    ) { activityResult ->
-                        RouterUtil.activityResultSuccessCallback(
-                            callback = callback,
-                            successResult = ActivityResultRouterResult(
-                                routerResult = result,
-                                activityResult = activityResult,
-                            ),
-                        )
-                    }
-                    // 添加这个 requestCode 到 map, 重复的事情不用考虑了, 在 build RouterRequest 的时候已经处理了
-                    Help.addRequestCode(request = result.originalRequest)
-                }
 
-                override fun onError(errorResult: RouterErrorResult) {
-                    super.onError(errorResult)
-                    errorResult.originalRequest?.let { routerRequest ->
-                        rxFragment.removeActivityResultConsumer(
-                            request = routerRequest,
-                        )
-                        Help.removeRequestCode(request = routerRequest)
-                    }
-                    callback.onError(
-                        errorResult = errorResult
-                    )
+        val callable = {
+            try {
+                // 标记此次是需要框架帮助获取 ActivityResult 的
+                isForResult(isForResult = true)
+                // 为了拿数据做的检查
+                onCheckForResult()
+                // 声明fragment
+                val fm: FragmentManager = if (context == null) {
+                    fragment!!.childFragmentManager
+                } else {
+                    (Utils.getActivityFromContext(context) as FragmentActivity?)!!.supportFragmentManager
                 }
+                // 寻找是否添加过 Fragment
+                var findRxFragment =
+                    fm.findFragmentByTag(ComponentConstants.ACTIVITY_RESULT_FRAGMENT_TAG) as RouterFragment?
+                if (findRxFragment == null) {
+                    findRxFragment = RouterFragment()
+                    fm.beginTransaction()
+                        .add(
+                            findRxFragment,
+                            ComponentConstants.ACTIVITY_RESULT_FRAGMENT_TAG
+                        ) // 这里必须使用 now 的形式, 否则连续的话立马就会new出来. 因为判断进来了
+                        .commitNowAllowingStateLoss()
+                }
+                val rxFragment: RouterFragment = findRxFragment
+                navigate(object : CallbackAdapter() {
+                    override fun onSuccess(result: RouterResult) {
+                        super.onSuccess(result)
+                        val request = result.originalRequest
+                        rxFragment.addActivityResultConsumer(
+                            request = request,
+                        ) { activityResult ->
+                            RouterUtil.activityResultSuccessCallback(
+                                callback = callback,
+                                successResult = ActivityResultRouterResult(
+                                    routerResult = result,
+                                    activityResult = activityResult,
+                                ),
+                            )
+                        }
+                        // 添加这个 requestCode 到 map, 重复的事情不用考虑了, 在 build RouterRequest 的时候已经处理了
+                        Help.addRequestCode(request = result.originalRequest)
+                    }
 
-                override fun onCancel(originalRequest: RouterRequest?) {
-                    super.onCancel(originalRequest)
-                    originalRequest?.let { routerRequest ->
-                        rxFragment.removeActivityResultConsumer(
-                            request = routerRequest,
+                    override fun onError(errorResult: RouterErrorResult) {
+                        super.onError(errorResult)
+                        errorResult.originalRequest?.let { routerRequest ->
+                            rxFragment.removeActivityResultConsumer(
+                                request = routerRequest,
+                            )
+                            Help.removeRequestCode(request = routerRequest)
+                        }
+                        callback.onError(
+                            errorResult = errorResult
                         )
-                        Help.removeRequestCode(request = routerRequest)
                     }
-                    callback.onCancel(
-                        originalRequest = originalRequest
+
+                    override fun onCancel(originalRequest: RouterRequest?) {
+                        super.onCancel(originalRequest)
+                        originalRequest?.let { routerRequest ->
+                            rxFragment.removeActivityResultConsumer(
+                                request = routerRequest,
+                            )
+                            Help.removeRequestCode(request = routerRequest)
+                        }
+                        callback.onCancel(
+                            originalRequest = originalRequest
+                        )
+                    }
+                })
+            } catch (e: Exception) {
+                RouterUtil.errorCallback(
+                    biCallback = callback,
+                    errorResult = RouterErrorResult(
+                        error = e,
                     )
-                }
-            })
-        } catch (e: Exception) {
-            RouterUtil.errorCallback(
-                biCallback = callback,
-                errorResult = RouterErrorResult(
-                    error = e,
                 )
-            )
-            NavigationDisposable.EmptyNavigationDisposable
+                NavigationDisposable.EmptyNavigationDisposable
+            }
         }
+
+        val proxyDisposable = NavigationDisposable.NavigationDisposableProxy()
+        if (Utils.isMainThread()) {
+            return callable.invoke()
+        } else {
+            Utils.postActionToMainThreadAnyway {
+                proxyDisposable.setProxy(
+                    target = callable.invoke()
+                )
+            }
+        }
+        return proxyDisposable
 
     }
 

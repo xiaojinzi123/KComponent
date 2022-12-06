@@ -47,6 +47,29 @@ interface NavigationDisposable {
 
     }
 
+    class NavigationDisposableProxy: NavigationDisposable {
+
+        private var proxy: NavigationDisposable? = null
+
+        private var _isCanceled: Boolean = false
+
+        override val isCanceled: Boolean
+            get() = _isCanceled
+
+        override fun cancel() {
+            _isCanceled = true
+            proxy?.cancel()
+        }
+
+        fun setProxy(target: NavigationDisposable) {
+            if (isCanceled) {
+                target.cancel()
+            }
+            proxy = target
+        }
+
+    }
+
 }
 
 class NavigationDisposableImpl(

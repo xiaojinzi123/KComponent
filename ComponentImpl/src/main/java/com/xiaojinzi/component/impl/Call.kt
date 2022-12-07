@@ -516,7 +516,6 @@ interface Call {
      * 匹配 resultCode
      */
     @AnyThread
-    @CheckResult
     suspend fun resultCodeMatchAwait(
         expectedResultCode: Int = Activity.RESULT_OK,
     ) {

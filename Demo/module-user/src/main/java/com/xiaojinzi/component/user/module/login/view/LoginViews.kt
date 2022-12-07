@@ -130,7 +130,9 @@ private fun LoginView() {
                 .fillMaxWidth()
                 .nothing(),
             enabled = canNext,
-            onClick = { /*TODO*/ },
+            onClick = {
+                vm.login(context = context)
+            },
         ) {
             Text(
                 text = "登录",

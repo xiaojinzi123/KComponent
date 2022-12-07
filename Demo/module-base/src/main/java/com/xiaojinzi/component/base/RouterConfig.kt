@@ -16,6 +16,7 @@ object RouterConfig {
 
     const val HOST_USER = "user"
     const val USER_LOGIN = "$HOST_USER/login"
+    const val USER_USER_CENTER = "$HOST_USER/userCenter"
 
     const val HOST_BASE = "base"
 
@@ -30,7 +31,8 @@ object RouterConfig {
     const val FRAGMENT_USER1 = "user1"
     const val FRAGMENT_USER2 = "user2"
 
-    const val INTERCEPTOR_CALL_PHONE = "callPhone"
+    const val INTERCEPTOR_PERMISSION_LOGIN = "login"
+    const val INTERCEPTOR_PERMISSION_CALL_PHONE = "permissionCallPhone"
     const val INTERCEPTOR_PERMISSION_CAMERA = "permissionCamera"
 
 }

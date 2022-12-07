@@ -10,7 +10,7 @@ import com.xiaojinzi.component.impl.RouterInterceptor
 import com.xiaojinzi.component.impl.RouterResult
 import com.xiaojinzi.component.impl.routeApi
 
-@InterceptorAnno(RouterConfig.INTERCEPTOR_CALL_PHONE)
+@InterceptorAnno(RouterConfig.INTERCEPTOR_PERMISSION_CALL_PHONE)
 class CallPhonePermissionInterceptor : RouterInterceptor {
 
     override suspend fun intercept(chain: RouterInterceptor.Chain): RouterResult {

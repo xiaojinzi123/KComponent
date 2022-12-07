@@ -27,7 +27,7 @@ fun appDetail(request: RouterRequest): Intent {
 
 @RouterAnno(
     hostAndPath = RouterConfig.SYSTEM_CALL_PHONE,
-    interceptorNames = [RouterConfig.INTERCEPTOR_CALL_PHONE],
+    interceptorNames = [RouterConfig.INTERCEPTOR_PERMISSION_CALL_PHONE],
 )
 fun callPhone(request: RouterRequest): Intent {
     val tel = ParameterSupport.getString(request.bundle, "tel")

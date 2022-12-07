@@ -10,13 +10,19 @@ import kotlinx.coroutines.flow.map
 @ServiceAnno(UserSpi::class)
 class UserSpiImpl : UserSpi {
 
-    override val userInfoObservableDto: Flow<UserInfoDto?> = MutableSharedStateFlow(
+    override val userInfoObservableDto = MutableSharedStateFlow<UserInfoDto?>(
         initValue = null
     )
+
     override val isLoginObservableDto = userInfoObservableDto.map { it != null }
 
     override suspend fun login(userName: String, userPassword: String) {
-        TODO("Not yet implemented")
+        userInfoObservableDto.emit(
+            value = UserInfoDto(
+                name = userName,
+                password = userPassword,
+            )
+        )
     }
 
 }

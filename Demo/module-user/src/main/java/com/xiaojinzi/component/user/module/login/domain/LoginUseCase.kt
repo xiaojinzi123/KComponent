@@ -1,14 +1,22 @@
 package com.xiaojinzi.component.user.module.login.domain
 
+import android.app.Activity
 import android.content.Context
 import androidx.annotation.UiContext
+import com.xiaojinzi.component.base.spi.UserSpi
+import com.xiaojinzi.component.impl.service.service
 import com.xiaojinzi.support.annotation.HotObservable
 import com.xiaojinzi.support.annotation.ViewModelLayer
 import com.xiaojinzi.support.architecture.mvvm1.BaseUseCase
 import com.xiaojinzi.support.architecture.mvvm1.BaseUseCaseImpl
+import com.xiaojinzi.support.ktx.ErrorIgnoreContext
 import com.xiaojinzi.support.ktx.MutableSharedStateFlow
+import com.xiaojinzi.support.ktx.getActivity
+import com.xiaojinzi.support.ktx.tryFinishActivity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 @ViewModelLayer
 interface LoginUseCase : BaseUseCase {
@@ -56,7 +64,25 @@ class LoginUseCaseImpl(
     }
 
     override fun login(context: Context) {
+        scope.launch(context = ErrorIgnoreContext) {
 
+            val name = userNameObservableDto.first()
+            val password = userPasswordObservableDto.first()
+
+            // 进行登录
+            UserSpi::class.service()?.login(
+                userName = name,
+                userPassword = password
+            )
+
+            context.getActivity()?.apply {
+                this.setResult(Activity.RESULT_OK)
+            }
+
+            // 销毁界面
+            context.tryFinishActivity()
+
+        }
     }
 
 }

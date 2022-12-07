@@ -2,7 +2,8 @@
 kotlin {
     sourceSets {
         debug.kotlin.srcDirs += 'build/generated/ksp/debug/kotlin'
-        main.kotlin.srcDirs += 'build/generated/ksp/main/kotlin'
+        release.kotlin.srcDirs += 'build/generated/ksp/release/kotlin'
+        // main.kotlin.srcDirs += 'build/generated/ksp/main/kotlin'
     }
 }
 

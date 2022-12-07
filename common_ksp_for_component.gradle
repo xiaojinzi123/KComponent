@@ -7,7 +7,5 @@ ksp {
     }
 
     arg("ModuleName", name)
-    arg("RouterDocFolder", project.property("component_router_doc_folder"))
-    arg("RouterDocEnable", String.valueOf(project.property("component_router_doc_enable")))
 
 }

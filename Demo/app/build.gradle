@@ -37,15 +37,52 @@ android {
     }
 
     buildTypes {
+        debug {
+            minifyEnabled = false
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
         release {
             minifyEnabled true
             signingConfig signingConfigs.debug
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
-        debug {
-            minifyEnabled = false
-            signingConfig signingConfigs.release
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+    }
+
+    flavorDimensions 'env', "leakcanary", "simulatorCheck"
+
+    productFlavors {
+        product {
+            dimension 'env'
+        }
+        dev {
+            dimension 'env'
+        }
+
+        leakcanary1 {
+            dimension 'leakcanary'
+        }
+        leakcanary0 {
+            dimension 'leakcanary'
+        }
+
+        simulatorCheck1 {
+            dimension 'simulatorCheck'
+        }
+        simulatorCheck0 {
+            dimension 'simulatorCheck'
+        }
+    }
+
+}
+
+kotlin {
+    sourceSets {
+        android.applicationVariants.all { variant ->
+            def variantName = variant.getName()
+            // debug.kotlin.srcDirs += "build/generated/ksp/" + variantName +"/kotlin"
+            main.kotlin.srcDirs += "build/generated/ksp/" + variantName +"/kotlin"
+            // release.kotlin.srcDirs += "build/generated/ksp/" + variantName +"/kotlin"
         }
     }
 }

@@ -9,7 +9,6 @@ import com.xiaojinzi.component.ComponentUtil
 import com.xiaojinzi.component.anno.support.CheckClassNameAnno
 import com.xiaojinzi.component.cache.ClassCache
 import com.xiaojinzi.component.support.ProxyIntentAct
-import com.xiaojinzi.component.support.Utils
 import java.util.*
 import kotlin.reflect.KClass
 
@@ -27,6 +26,10 @@ fun Context.withHost(host: String): Navigator {
 
 fun Context.withHostAndPath(hostAndPath: String): Navigator {
     return Router.with(this).hostAndPath(hostAndPath = hostAndPath)
+}
+
+fun <T : Any> KClass<T>.routeApi(): T {
+    return Router.withApi(apiClass = this)
 }
 
 /**
@@ -136,8 +139,4 @@ object Router {
         return bundle.getBoolean(ProxyIntentAct.EXTRA_ROUTER_PROXY_INTENT)
     }
 
-}
-
-fun <T : Any> KClass<T>.routeApi(): T {
-    return Router.withApi(apiClass = this)
 }

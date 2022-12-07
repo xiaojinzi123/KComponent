@@ -22,6 +22,7 @@ annotation class ServiceDecoratorAnno(
      * 这个服务对应的接口
      */
     val value: KClass<*>,
+
     /**
      * 优先级, 值越大优先级越高
      */

@@ -70,7 +70,7 @@ class LoginUseCaseImpl(
             val password = userPasswordObservableDto.first()
 
             // 进行登录
-            UserSpi::class.service()?.login(
+            UserSpi::class.service()!!.login(
                 userName = name,
                 userPassword = password
             )

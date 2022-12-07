@@ -3,17 +3,10 @@ package com.xiaojinzi.component.demo
 import android.app.Application
 import com.xiaojinzi.component.Component
 import com.xiaojinzi.component.Config
-import com.xiaojinzi.component.base.RouterConfig
-import com.xiaojinzi.component.base.spi.UserSpi
 import com.xiaojinzi.component.impl.*
-import com.xiaojinzi.component.impl.application.ModuleManager
-import com.xiaojinzi.component.impl.service.service
 import com.xiaojinzi.component.support.ASMUtil
 import com.xiaojinzi.support.init.AppInstance
-import com.xiaojinzi.support.ktx.AppScope
-import com.xiaojinzi.support.ktx.ErrorIgnoreContext
 import com.xiaojinzi.support.ktx.LogSupport
-import kotlinx.coroutines.launch
 
 /**
  *
@@ -24,8 +17,6 @@ class App : Application() {
         super.onCreate()
 
         AppInstance.app = this
-
-        UserSpi::class.service()
 
         LogSupport.d(
             tag = "demoApp",

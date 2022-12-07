@@ -1,7 +1,6 @@
 package com.xiaojinzi.component.user.interceptor
 
 import com.xiaojinzi.component.anno.InterceptorAnno
-import com.xiaojinzi.component.anno.RouterAnno
 import com.xiaojinzi.component.base.RouterConfig
 import com.xiaojinzi.component.base.spi.UserSpi
 import com.xiaojinzi.component.impl.Router
@@ -15,11 +14,12 @@ class LoginRouterInterceptor : RouterInterceptor {
 
     override suspend fun intercept(chain: RouterInterceptor.Chain): RouterResult {
 
+        val isLogin = UserSpi::class
+            .service()
+            ?.isLoginObservableDto?.first() == true
+
         // 如果没有登录
-        if (UserSpi::class
-                .service()
-                ?.isLoginObservableDto?.first() == false
-        ) {
+        if (!isLogin) {
             val context = chain.request().rawAliveContext!!
             Router.with(context = context)
                 .hostAndPath(hostAndPath = RouterConfig.USER_LOGIN)

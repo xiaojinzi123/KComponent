@@ -6,11 +6,15 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
@@ -22,7 +26,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.xiaojinzi.component.base.theme.SPECIFIC_7AB567B5
 import com.xiaojinzi.component.base.theme.SPECIFIC_FF3A373A
 import com.xiaojinzi.component.base.theme.SPECIFIC_FF958F95
 import com.xiaojinzi.component.base.view.AppbarNormal
@@ -80,6 +83,12 @@ private fun LoginView() {
                     textAlign = TextAlign.Center,
                 )
             },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Filled.Person,
+                    contentDescription = null,
+                )
+            }
         )
 
         Spacer(
@@ -115,7 +124,13 @@ private fun LoginView() {
             },
             keyboardOptions = KeyboardOptions.Default.copy(
                 keyboardType = KeyboardType.Password,
-            )
+            ),
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Filled.Lock,
+                    contentDescription = null,
+                )
+            }
         )
 
         Spacer(

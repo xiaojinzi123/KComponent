@@ -273,10 +273,10 @@ object ServiceManager {
 
 }
 
-fun <T: Any> KClass<T>.service(): T? {
-    return ServiceManager.get(tClass = this)
+fun <T : Any> KClass<T>.service(name: String = ServiceManager.DEFAULT_NAME): T? {
+    return ServiceManager.get(tClass = this, name = name)
 }
 
-fun <T: Any> KClass<T>.serviceRequired(): T {
-    return ServiceManager.requiredGet(tClass = this)
+fun <T : Any> KClass<T>.serviceRequired(name: String = ServiceManager.DEFAULT_NAME): T {
+    return ServiceManager.requiredGet(tClass = this, name = name)
 }

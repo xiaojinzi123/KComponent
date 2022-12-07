@@ -41,6 +41,16 @@ android {
             minifyEnabled = false
             signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            kotlin {
+                sourceSets {
+                    android.applicationVariants.all { variant ->
+                        def variantName = variant.getName()
+                        if(variantName.toLowerCase(Locale.getDefault()).endsWith("debug")) {
+                            debug.kotlin.srcDirs += "build/generated/ksp/" + variantName +"/kotlin"
+                        }
+                    }
+                }
+            }
         }
         release {
             minifyEnabled true
@@ -74,17 +84,6 @@ android {
         }
     }
 
-}
-
-kotlin {
-    sourceSets {
-        android.applicationVariants.all { variant ->
-            def variantName = variant.getName()
-            // debug.kotlin.srcDirs += "build/generated/ksp/" + variantName +"/kotlin"
-            main.kotlin.srcDirs += "build/generated/ksp/" + variantName +"/kotlin"
-            // release.kotlin.srcDirs += "build/generated/ksp/" + variantName +"/kotlin"
-        }
-    }
 }
 
 dependencies {

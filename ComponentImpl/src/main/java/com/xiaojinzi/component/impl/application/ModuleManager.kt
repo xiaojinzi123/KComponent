@@ -68,6 +68,7 @@ object ModuleManager {
         if (moduleApplicationMap.containsKey(key = module.moduleName)) {
             LogUtil.loge("The module \"" + module.moduleName + "\" is already registered")
         } else {
+            LogUtil.logw("The module \"" + module.moduleName + "\" is ready to register")
             // 标记已经注册
             moduleApplicationMap[module.moduleName] = module
             // 模块的 Application 的 onCreate 执行
@@ -107,7 +108,7 @@ object ModuleManager {
             LogUtil.loge("the host '$moduleName' is already load")
             return
         } else {
-            val module = findModuleApplication(moduleName)
+            val module = findModuleApplication(moduleName = moduleName)
             if (module == null) {
                 LogUtil.log("模块 '$moduleName' 加载失败")
             } else {
@@ -203,10 +204,10 @@ object ModuleManager {
 
     @UiThread
     private fun doNotifyModuleChanged() {
+        LogUtil.logw("doNotifyModuleChanged will be called")
         val application: Application = getApplication()
         moduleApplicationMap
             .values
-            .filterIsInstance<IModuleNotifyChanged>()
             .forEach {
                 it.onModuleChanged(app = application)
             }

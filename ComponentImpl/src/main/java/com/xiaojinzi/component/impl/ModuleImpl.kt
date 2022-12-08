@@ -3,6 +3,7 @@ package com.xiaojinzi.component.impl
 import android.app.Application
 import androidx.annotation.CallSuper
 import com.xiaojinzi.component.application.IApplicationLifecycle
+import com.xiaojinzi.component.application.IModuleNotifyChanged
 import com.xiaojinzi.component.bean.RouterBean
 import com.xiaojinzi.component.bean.RouterDegradeBean
 import com.xiaojinzi.component.impl.interceptor.InterceptorBean
@@ -32,6 +33,15 @@ abstract class ModuleImpl : IModuleLifecycle {
         destroySpi()
         isInit = false
         moduleApplicationList = null
+    }
+
+    override fun onModuleChanged(app: Application) {
+        val targetApplicationList = moduleApplicationList?: return
+        targetApplicationList
+            .filterIsInstance<IModuleNotifyChanged>()
+            .forEach {
+                it.onModuleChanged(app = app)
+            }
     }
 
 }

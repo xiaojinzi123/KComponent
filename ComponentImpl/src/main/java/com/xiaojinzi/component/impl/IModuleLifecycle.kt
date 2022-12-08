@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.annotation.UiThread
 import com.xiaojinzi.component.anno.support.CheckClassNameAnno
 import com.xiaojinzi.component.application.IApplicationLifecycle
+import com.xiaojinzi.component.application.IModuleNotifyChanged
 import com.xiaojinzi.component.bean.RouterBean
 import com.xiaojinzi.component.bean.RouterDegradeBean
 import com.xiaojinzi.component.impl.interceptor.InterceptorBean
@@ -31,7 +32,7 @@ interface IModuleFragmentLifecycle {
  */
 @UiThread
 @CheckClassNameAnno
-interface IModuleLifecycle : IModuleFragmentLifecycle, IBaseLifecycle {
+interface IModuleLifecycle : IModuleFragmentLifecycle, IBaseLifecycle, IModuleNotifyChanged {
 
     /**
      * 此模块的名字

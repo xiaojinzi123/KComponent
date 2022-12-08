@@ -13,9 +13,11 @@ android {
         debug {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            kotlin {
-                sourceSets {
-                    debug.kotlin.srcDirs('build/generated/ksp/debug/kotlin')
+            if (Boolean.parseBoolean(project.findProperty("support.isIncludeKspFolder"))) {
+                kotlin {
+                    sourceSets {
+                        debug.kotlin.srcDirs('build/generated/ksp/debug/kotlin')
+                    }
                 }
             }
         }

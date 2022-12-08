@@ -11,7 +11,6 @@ import kotlinx.parcelize.Parcelize
 data class UserInfoDto(
     val name: String,
     val password: String,
-
 ) : Parcelable
 
 interface UserSpi {

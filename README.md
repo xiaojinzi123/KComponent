@@ -18,16 +18,57 @@ KComponent 是一个组件化框架. 它提供了两大核心：路由 和 服�
 ### 路由
 
 ```Kotlin
-Router.with(context).hostAndPath("user/login").forword()
+@RouterAnno(
+    hostAndPath = "user/login",
+)
+class LoginAct: AppCompatActivity {
+  
+  @AttrValueAutowiredAnno
+  late init name: String
+  
+  @AttrValueAutowiredAnno("password")
+  var password1: String? = null
+  
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    Component.inject(target = this)
+    // xxxxxx
+  }
+  
+}
 ```
 
+```Kotlin
+Router
+.with(context)
+.hostAndPath("user/login")
+.putString("name", "xiaojinzi")
+.putString("password", "123456")
+.forword()
+```
+
+更多的用法和更详细的解释请查看文档：[路由跳转](https://github.com/xiaojinzi123/KComponent/wiki/%E8%B7%AF%E7%94%B1%E8%B7%B3%E8%BD%AC) 和 [路由标记 @RouterAnno 的使用](https://github.com/xiaojinzi123/KComponent/wiki/RouterAnno-%E6%B3%A8%E8%A7%A3%E7%9A%84%E4%BD%BF%E7%94%A8)
+
 ### 服务发现
+
+```Kotlin
+interface UserSpi {
+  fun login(name: String, password: String)
+}
+
+@ServiceAnno(UserSpi::class)
+class UserSpiImpl : UserSpi {
+  fun login(name: String, password: String) {
+    // xxxx
+  }
+}
+```
 
 ```Kotlin
 UserSpi::class.service()?.login(name = "xiaojinzi", password = "xxxxxx")
 ```
 
-
+更多的用法和更详细的解释请查看文档：[服务发现的使用](https://github.com/xiaojinzi123/KComponent/wiki/%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0%E7%9A%84%E4%BD%BF%E7%94%A8) 和 [服务的装饰增强](https://github.com/xiaojinzi123/KComponent/wiki/%E6%9C%8D%E5%8A%A1%E7%9A%84%E8%A3%85%E9%A5%B0%E5%A2%9E%E5%BC%BA)
 
 ## 扫码进群
 

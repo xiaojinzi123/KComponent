@@ -11,6 +11,7 @@ import com.squareup.kotlinpoet.*
 import com.xiaojinzi.component.ComponentConstants
 import com.xiaojinzi.component.ComponentUtil
 import com.xiaojinzi.component.anno.router.*
+import com.xiaojinzi.component.anno.support.ComponentGeneratedAnno
 import com.xiaojinzi.component.packageName
 import com.xiaojinzi.component.simpleClassName
 
@@ -98,6 +99,8 @@ class RouterApiProcessor(
 
         val typeSpec = TypeSpec
             .classBuilder(name = targetClassSimpleName)
+            .addAnnotation(annotation = mClassNameAndroidKeepAnno)
+            .addAnnotation(annotation = ComponentGeneratedAnno::class)
             .addSuperinterface(
                 superinterface = targetRouterApiInterfaceClassName
             )

@@ -11,6 +11,7 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.xiaojinzi.component.ComponentConstants
 import com.xiaojinzi.component.ComponentUtil
 import com.xiaojinzi.component.anno.*
+import com.xiaojinzi.component.anno.support.ComponentGeneratedAnno
 import com.xiaojinzi.component.compiler.kt.bean.RouterAnnoBean
 import com.xiaojinzi.component.packageName
 import com.xiaojinzi.component.simpleClassName
@@ -150,7 +151,7 @@ class ModuleProcessor(
                         parameterSpec = ParameterSpec
                             .builder(
                                 name = "application",
-                                type = mClassNameApplication,
+                                type = mClassNameAndroidApplication,
                             )
                             .build()
                     )
@@ -188,7 +189,7 @@ class ModuleProcessor(
                                                 val targetApplicationConstructor =
                                                     item.getConstructors()
                                                         .find {
-                                                            it.parameters.size == 1 && it.parameters[0].typeToClassName() == mClassNameApplication
+                                                            it.parameters.size == 1 && it.parameters[0].typeToClassName() == mClassNameAndroidApplication
                                                         }
                                                 if (targetApplicationConstructor == null
                                                 ) {
@@ -208,7 +209,7 @@ class ModuleProcessor(
                                                     notSupport()
                                                 }
                                                 item.parameters.firstOrNull()?.let {
-                                                    if (it.typeToClassName() != mClassNameApplication) {
+                                                    if (it.typeToClassName() != mClassNameAndroidApplication) {
                                                         notSupport()
                                                     }
                                                 }
@@ -531,7 +532,7 @@ class ModuleProcessor(
                                     .anonymousClassBuilder()
                                     .addSuperinterface(
                                         superinterface = mClassNameFunction1.parameterizedBy(
-                                            mClassNameBundle.copy(
+                                            mClassNameAndroidBundle.copy(
                                                 nullable = true,
                                             ),
                                             targetClassName,
@@ -547,7 +548,7 @@ class ModuleProcessor(
                                                 parameterSpec = ParameterSpec
                                                     .builder(
                                                         name = "t",
-                                                        type = mClassNameBundle.copy(
+                                                        type = mClassNameAndroidBundle.copy(
                                                             nullable = true,
                                                         ),
                                                     )
@@ -1093,6 +1094,8 @@ class ModuleProcessor(
             )
             .addModifiers(KModifier.FINAL)
             .superclass(superclass = moduleImplClassName)
+            .addAnnotation(annotation = mClassNameAndroidKeepAnno)
+            .addAnnotation(annotation = ComponentGeneratedAnno::class)
             .addProperty(
                 propertySpec = PropertySpec
                     .builder(

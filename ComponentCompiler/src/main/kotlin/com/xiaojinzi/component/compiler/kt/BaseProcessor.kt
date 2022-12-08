@@ -126,12 +126,17 @@ abstract class BaseProcessor : SymbolProcessor {
         ComponentConstants.KOTLIN_LIST.simpleClassName(),
     )
 
-    val mClassNameApplication: ClassName = ClassName(
+    val mClassNameAndroidKeepAnno: ClassName = ClassName(
+        packageName = ComponentConstants.ANDROID_ANNOTATION_KEEP.packageName(),
+        ComponentConstants.ANDROID_ANNOTATION_KEEP.simpleClassName(),
+    )
+
+    val mClassNameAndroidApplication: ClassName = ClassName(
         packageName = ComponentConstants.ANDROID_APPLICATION.packageName(),
         ComponentConstants.ANDROID_APPLICATION.simpleClassName(),
     )
 
-    val mClassNameBundle: ClassName = ClassName(
+    val mClassNameAndroidBundle: ClassName = ClassName(
         packageName = ComponentConstants.ANDROID_BUNDLE.packageName(),
         ComponentConstants.ANDROID_BUNDLE.simpleClassName(),
     )
@@ -374,7 +379,7 @@ abstract class BaseProcessor : SymbolProcessor {
                     }
                 }
             }
-            mClassNameBundle -> {
+            mClassNameAndroidBundle -> {
                 "Bundle"
             }
             else -> {

@@ -14,6 +14,7 @@ import com.xiaojinzi.component.ComponentConstants
 import com.xiaojinzi.component.anno.AttrValueAutowiredAnno
 import com.xiaojinzi.component.anno.ServiceAutowiredAnno
 import com.xiaojinzi.component.anno.UriAutowiredAnno
+import com.xiaojinzi.component.anno.support.ComponentGeneratedAnno
 import com.xiaojinzi.component.support.AttrAutoWireMode
 
 class AutowireProcessor(
@@ -66,6 +67,8 @@ class AutowireProcessor(
 
         val typeSpec = TypeSpec
             .classBuilder(classSimpleName)
+            .addAnnotation(annotation = mClassNameAndroidKeepAnno)
+            .addAnnotation(annotation = ComponentGeneratedAnno::class)
             .addSuperinterface(
                 superinterface = injectClassName.parameterizedBy(
                     targetClassClassName,
@@ -101,7 +104,7 @@ class AutowireProcessor(
                     )
                     .addParameter(
                         name = "bundle",
-                        type = mClassNameBundle,
+                        type = mClassNameAndroidBundle,
                     )
                     .addComment("App 默认的模式")
                     .addStatement(

@@ -18,6 +18,12 @@ ksp {
     arg("ModuleName", "app")
 }
 
+/*kotlin {
+    sourceSets.main {
+        kotlin.srcDir("build/generated/ksp/main/kotlin")
+    }
+}*/
+
 android {
     namespace 'com.xiaojinzi.component.demo'
 
@@ -46,7 +52,7 @@ android {
                     android.applicationVariants.all { variant ->
                         def variantName = variant.getName()
                         if(variantName.toLowerCase(Locale.getDefault()).endsWith("debug")) {
-                            debug.kotlin.srcDirs += "build/generated/ksp/" + variantName +"/kotlin"
+                            debug.kotlin.srcDirs("build/generated/ksp/" + variantName +"/kotlin")
                         }
                     }
                 }

@@ -75,7 +75,7 @@ UserSpi::class.service()?.login(name = "xiaojinzi", password = "xxxxxx")
 微信群的话, 需要先添加微信 **xiaojinzi_wx** 或者直接扫码. 并且备注：github 我看到了会拉你进群
 
 <div>
-    <img src="./imgs/wx1.JPG" height="300px" />
+    <img src="./imgs/wx1.jpg" height="300px" />
     <img src="./imgs/qq_group1.JPG" height="300px" />
     <img src="./imgs/qq_group2.JPG" height="300px" />
 </div>

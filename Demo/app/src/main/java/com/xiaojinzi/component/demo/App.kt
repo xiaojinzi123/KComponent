@@ -3,7 +3,9 @@ package com.xiaojinzi.component.demo
 import android.app.Application
 import com.xiaojinzi.component.Component
 import com.xiaojinzi.component.Config
+import com.xiaojinzi.component.base.spi.UserSpi
 import com.xiaojinzi.component.impl.*
+import com.xiaojinzi.component.impl.service.serviceRequired
 import com.xiaojinzi.component.support.ASMUtil
 import com.xiaojinzi.support.init.AppInstance
 import com.xiaojinzi.support.ktx.LogSupport
@@ -31,6 +33,8 @@ class App : Application() {
                 .autoRegisterModule(isAutoRegisterModule = true)
                 .build()
         )
+
+        UserSpi::class.serviceRequired()
 
         /*ModuleManager.registerArr(
             RouterConfig.HOST_BASE,

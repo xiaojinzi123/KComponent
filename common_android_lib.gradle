@@ -16,7 +16,7 @@ android {
             if (Boolean.parseBoolean(project.findProperty("support.isIncludeKspFolder"))) {
                 kotlin {
                     sourceSets {
-                        debug.kotlin.srcDirs('build/generated/ksp/debug/kotlin')
+                        debug.kotlin.srcDirs += 'build/generated/ksp/debug/kotlin'
                     }
                 }
             }

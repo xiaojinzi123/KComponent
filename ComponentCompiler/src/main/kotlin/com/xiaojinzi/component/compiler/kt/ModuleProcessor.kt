@@ -291,11 +291,18 @@ class ModuleProcessor(
 
                                 funSpec.addStatement(stateCode, *args.toTypedArray())
                                 val serviceClassPathList = serviceAnno.serviceClassPathList
-                                val nameList = serviceAnno.name
-                                if (nameList.isNotEmpty() && serviceClassPathList.size != nameList.size) {
-                                    throw IllegalArgumentException(
-                                        "@ServiceAnno 注解, name 属性可以为空数组, 如果不为空, name 属性和 value 属性的个数必须是相等的"
+                                if (serviceClassPathList.isEmpty()) {
+                                    throw ProcessException(
+                                        message = "${item.getDescName()} 的 @ServiceAnno 注解, value 不可以为空"
                                     )
+                                }
+                                val nameList = serviceAnno.name
+                                if(nameList.isNotEmpty() || serviceClassPathList.size > 1) {
+                                    if (serviceClassPathList.size != nameList.size) {
+                                        throw ProcessException(
+                                            message = "${item.getDescName()} 的 @ServiceAnno 注解, name 属性可以为空数组, 如果不为空, name 属性和 value 属性的个数必须是相等的"
+                                        )
+                                    }
                                 }
 
                                 serviceClassPathList.forEachIndexed { index, interfaceClassPath ->

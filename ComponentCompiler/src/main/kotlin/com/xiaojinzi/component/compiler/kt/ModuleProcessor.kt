@@ -525,7 +525,7 @@ class ModuleProcessor(
                                 else -> throw RuntimeException("Unsupported type")
                             }
                             if (fragmentAnno.value.isEmpty()) {
-                                throw ProcessException(message = "FragmentAnno.value can't be empty")
+                                throw ProcessException(message = "FragmentAnno.value can't be empty: ${item.getDescName()} ")
                             }
                             val targetClassName = ClassName(
                                 packageName = targetClassNameStr.packageName(),
@@ -855,7 +855,9 @@ class ModuleProcessor(
                                 this.append("\n\t}")
                                 this.append("\n}")
                             }
-                            else -> throw ProcessException()
+                            else -> throw ProcessException(
+                                message = "not support"
+                            )
                         }
                     }
                     .append("\n)")
@@ -913,7 +915,9 @@ class ModuleProcessor(
                             element.parameters.first().name!!.asString(),
                         )
                     }
-                    else -> throw ProcessException()
+                    else -> throw ProcessException(
+                        message = "not support"
+                    )
                 }
 
             }

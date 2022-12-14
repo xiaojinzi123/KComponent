@@ -3,7 +3,6 @@ package com.xiaojinzi.component.compiler.kt
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.symbol.KSAnnotated
-import java.util.*
 
 abstract class BaseHostProcessor(
     open val environment: SymbolProcessorEnvironment,

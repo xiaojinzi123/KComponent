@@ -64,7 +64,7 @@ object ModuleManager {
     }
 
     @UiThread
-    fun register(module: IModuleLifecycle) {
+    private fun register(module: IModuleLifecycle) {
         if (moduleApplicationMap.containsKey(key = module.moduleName)) {
             LogUtil.loge("The module \"" + module.moduleName + "\" is already registered")
         } else {

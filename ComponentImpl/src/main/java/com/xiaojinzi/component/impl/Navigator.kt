@@ -889,12 +889,11 @@ class NavigatorImpl<T : INavigator<T>> constructor(
     @Throws(NavigationException::class)
     @CoreLogicAnno(value = "这是自动取消功能的核心实现")
     private suspend fun navigateWithAutoCancel(originalRequest: RouterRequest): RouterResult {
-        return if (originalRequest.autoCancel) {
+        val actScope = (originalRequest.context as? FragmentActivity)?.lifecycleScope
+        val fragScope = fragment?.lifecycleScope
+        val scope = (actScope ?: fragScope)
+        return if (scope != null && originalRequest.autoCancel) {
             suspendCancellableCoroutine { cancellableContinuation ->
-                val actScope = (originalRequest.context as? FragmentActivity)?.lifecycleScope
-                val fragScope = fragment?.lifecycleScope
-                val scope = (actScope ?: fragScope)
-                    ?: throw NavigationException("can't find lifecycleScope")
                 val job = scope.launch(context = Dispatchers.IO) {
                     try {
                         val result = navigateCore(

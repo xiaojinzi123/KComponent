@@ -123,11 +123,9 @@ private fun MainView() {
                 .nothing(),
             text = "去网页测试跳转",
         ) {
-
             RouterApi::class
                 .routeApi()
-                .toWebTestView1(context = context)
-
+                .toWebTestView1()
         }
 
         ActionButton(

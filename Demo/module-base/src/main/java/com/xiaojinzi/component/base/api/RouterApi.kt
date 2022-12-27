@@ -28,9 +28,7 @@ interface RouterApi {
     )
 
     @HostAndPathAnno(RouterConfig.SUPPORT_WEB_TEST)
-    fun toWebTestView1(
-        @UiContext context: Context,
-    )
+    fun toWebTestView1()
 
     @RequestCodeAnno
     @NavigateAnno(forResult = true)

@@ -31,6 +31,13 @@ android {
         jvmTarget = '1.8'
     }
 
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
+        }
+    }
+
 }
 
 dependencies {
@@ -38,15 +45,6 @@ dependencies {
     api libs.lifecycle_runtime_ktx
     api libs.kotlin_reflect
     api project(':ComponentApi')
-}
-
-task androidSourcesJar(type: Jar) {
-    archiveClassifier = 'sources'
-    from android.sourceSets.main.java.srcDirs
-}
-
-artifacts {
-    archives androidSourcesJar
 }
 
 afterEvaluate {

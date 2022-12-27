@@ -6,6 +6,8 @@ group = 'com.github.xiaojinzi123'
 archivesBaseName = "kcomponent-rx"
 
 android {
+
+    namespace 'com.xiaojinzi.component.impl.rx'
     compileSdkVersion versions.android_compile_sdk
     defaultConfig {
         minSdkVersion versions.android_min_sdk
@@ -27,7 +29,13 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
-    namespace 'com.xiaojinzi.component.impl.rx'
+
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
+        }
+    }
 
 }
 
@@ -35,15 +43,6 @@ dependencies {
     compileOnly libs.appcompat
     compileOnly libs.rxjava
     api project(':ComponentImpl')
-}
-
-task androidSourcesJar(type: Jar) {
-    archiveClassifier = 'sources'
-    from android.sourceSets.main.java.srcDirs
-}
-
-artifacts {
-    archives androidSourcesJar
 }
 
 afterEvaluate {

@@ -33,6 +33,7 @@ android {
 
     publishing {
         singleVariant("release") {
+            // if you don't want sources/javadoc, remove these lines
             withSourcesJar()
             withJavadocJar()
         }
@@ -45,6 +46,15 @@ dependencies {
     api libs.lifecycle_runtime_ktx
     api libs.kotlin_reflect
     api project(':ComponentApi')
+}
+
+task androidSourcesJar(type: Jar) {
+    archiveClassifier.set('sources')
+    from android.sourceSets.main.java.srcDirs
+}
+
+artifacts {
+    archives androidSourcesJar
 }
 
 afterEvaluate {

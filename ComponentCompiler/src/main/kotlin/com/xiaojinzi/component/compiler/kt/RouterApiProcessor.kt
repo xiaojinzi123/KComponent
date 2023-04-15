@@ -353,11 +353,14 @@ class RouterApiProcessor(
                                             KModifier.SUSPEND
                                         )
                                     }
+
                                     returnTypePoetTypeName?.let {
+                                        logger.warn(message = "returnTypePoetTypeName = $returnTypePoetTypeName")
                                         funSpecBuilder.returns(
                                             returnType = it
                                         )
                                     }
+
                                     val functionCodeStringBuffer = StringBuffer()
                                     val functionArgList = mutableListOf<Any>()
 

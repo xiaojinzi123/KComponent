@@ -1188,6 +1188,7 @@ class ModuleProcessor(
         return moduleAppAnnotatedList + serviceAnnotatedList + serviceDecoratorAnnotatedList +
                 fragmentAnnotatedList + globalInterceptorAnnotatedList + interceptorAnnotatedList +
                 routerAnnotatedList + routerDegradeAnnotatedList
+
     }
 
     override fun finish() {

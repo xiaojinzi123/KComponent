@@ -20,17 +20,18 @@ buildscript {
 
     repositories {
         google()
-        jcenter()
         maven {
             url './RepoKComponent'
         }
         maven { url 'https://jitpack.io' }
+        jcenter()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:7.4.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "com.xiaojinzi.kcomponent:kcomponent-plugin:${versions.component_version}"
     }
+
 }
 
 plugins {

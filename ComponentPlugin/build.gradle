@@ -18,8 +18,8 @@ dependencies {
     mavenCentral()
 }*/
 
-sourceCompatibility = "8"
-targetCompatibility = "8"
+sourceCompatibility = "11"
+targetCompatibility = "11"
 
 group = 'com.xiaojinzi.kcomponent'
 version = "${versions.component_plugin_upload_version}"
@@ -40,11 +40,3 @@ publishing {
         }
     }
 }
-
-/*publishToMavenLocal{
-    repositories {
-        mavenDeployer{
-            repository(url: uri('../RepoComponent'))
-        }
-    }
-}*/

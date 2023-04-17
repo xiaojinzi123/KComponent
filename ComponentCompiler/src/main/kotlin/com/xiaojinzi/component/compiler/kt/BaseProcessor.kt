@@ -52,7 +52,10 @@ fun KSClassDeclaration.toClassName(): ClassName {
 
 fun KSFunctionDeclaration.returnTypeToTypeName(): TypeName? {
     return this.returnType?.run {
-        this.resolve().toTypeName()
+        this.resolve().let {  ksType ->
+
+            ksType.toTypeName()
+        }
     }
 }
 

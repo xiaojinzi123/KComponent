@@ -1,0 +1,143 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.xiaojinzi.kcomponent",
+    "module": "kcomponent-plugin2",
+    "version": "1.0.0-beta1",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "7.5"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.environment": "standard-jvm",
+        "org.gradle.jvm.version": 11,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.7.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "kcomponent-plugin2-1.0.0-beta1.jar",
+          "url": "kcomponent-plugin2-1.0.0-beta1.jar",
+          "size": 3225,
+          "sha512": "aa884675690efeab4055fe0569e041ea290d5a04bcbaa8d3b206fb343504035e0ea82d3f29494c4e5b1c61702b3d200847d573190187df7db4162524477244db",
+          "sha256": "b0b1cae8fb169d4379f73917b8e287074d6a9575a7a288d999d6401b9f201e83",
+          "sha1": "6faf107facd94e6dabff5e879d64296584931984",
+          "md5": "6480dd1823b661805ad8380e973a08f0"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.environment": "standard-jvm",
+        "org.gradle.jvm.version": 11,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "dependencies": [
+        {
+          "group": "org.ow2.asm",
+          "module": "asm-all",
+          "version": {
+            "requires": "5.2"
+          }
+        },
+        {
+          "group": "com.android.tools.build",
+          "module": "gradle",
+          "version": {
+            "requires": "7.4.2"
+          }
+        },
+        {
+          "group": "com.google.code.gson",
+          "module": "gson",
+          "version": {
+            "requires": "2.10.1"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.7.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "kcomponent-plugin2-1.0.0-beta1.jar",
+          "url": "kcomponent-plugin2-1.0.0-beta1.jar",
+          "size": 3225,
+          "sha512": "aa884675690efeab4055fe0569e041ea290d5a04bcbaa8d3b206fb343504035e0ea82d3f29494c4e5b1c61702b3d200847d573190187df7db4162524477244db",
+          "sha256": "b0b1cae8fb169d4379f73917b8e287074d6a9575a7a288d999d6401b9f201e83",
+          "sha1": "6faf107facd94e6dabff5e879d64296584931984",
+          "md5": "6480dd1823b661805ad8380e973a08f0"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "kcomponent-plugin2-1.0.0-beta1-sources.jar",
+          "url": "kcomponent-plugin2-1.0.0-beta1-sources.jar",
+          "size": 1840,
+          "sha512": "a0027f3273bbf91b09f24b83c746aaf7a2700b39bb2570cf3f5e0c596336104e88ac93d845e1407e785a0da0e2f88b4811dad7b4a4e7efcdff296f57dd771020",
+          "sha256": "13ed983db34582539c34d70a306faaca9a77c0d275e8fc3c0065df54a120cc11",
+          "sha1": "cca2f704947613c2e40162339f4fdf28c6849fe4",
+          "md5": "f22c32e13641fb67f1f5fa8135cfac8e"
+        }
+      ]
+    },
+    {
+      "name": "javadocElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "javadoc",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "kcomponent-plugin2-1.0.0-beta1-javadoc.jar",
+          "url": "kcomponent-plugin2-1.0.0-beta1-javadoc.jar",
+          "size": 261,
+          "sha512": "4f9baff195945894b6e9c9be5ed47295358c84b70bec92281f0d8e548f762a14aa0d0ae068c8e26d18c3664bf2700a11af778b772e011db5c210406d175d75bf",
+          "sha256": "c7f294a013f20fe230f9d05d72c263deee51d8aecc3b3482c11fb703c575ee09",
+          "sha1": "2ecae16571aab7985f44be1d95115d0fbaab91e1",
+          "md5": "8b767518b9994ad6d39c0ab9bc54e168"
+        }
+      ]
+    }
+  ]
+}

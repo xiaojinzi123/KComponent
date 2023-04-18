@@ -7,8 +7,9 @@ import com.android.build.api.transform.TransformException;
 import com.android.build.api.transform.TransformInput;
 import com.android.build.api.transform.TransformInvocation;
 import com.android.build.api.transform.TransformOutputProvider;
-import com.android.utils.FileUtils;
 import com.xiaojinzi.component.plugin.util.IOUtil;
+
+import org.gradle.internal.impldep.org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;

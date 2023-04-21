@@ -7,12 +7,15 @@ import org.gradle.api.artifacts.transform.TransformParameters
 import org.gradle.api.file.FileSystemLocation
 import org.gradle.api.provider.Provider
 
-abstract class TestTransform: TransformAction<TransformParameters.None> {
+abstract class TestTransform : TransformAction<TransformParameters.None> {
 
     @get:InputArtifact
     abstract val inputArtifact: Provider<FileSystemLocation>
 
     override fun transform(outputs: TransformOutputs) {
+        inputArtifact.get().asFile.walkTopDown().forEach { file ->
+            println("file = ${file.path}")
+        }
     }
 
 }

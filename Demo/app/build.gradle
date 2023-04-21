@@ -26,6 +26,7 @@ ksp {
 }*/
 
 android {
+
     namespace 'com.xiaojinzi.component.demo'
 
     signingConfigs {
@@ -53,8 +54,8 @@ android {
                     sourceSets {
                         android.applicationVariants.all { variant ->
                             def variantName = variant.getName()
-                            if(variantName.toLowerCase(Locale.getDefault()).endsWith("debug")) {
-                                debug.kotlin.srcDirs("build/generated/ksp/" + variantName +"/kotlin")
+                            if (variantName.toLowerCase(Locale.getDefault()).endsWith("debug")) {
+                                debug.kotlin.srcDirs("build/generated/ksp/" + variantName + "/kotlin")
                             }
                         }
                     }
@@ -100,3 +101,10 @@ dependencies {
     api project(':Demo:module-user')
     api project(':Demo:module-base')
 }
+
+afterEvaluate {
+
+
+}
+
+

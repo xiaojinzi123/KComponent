@@ -11,6 +11,7 @@ import com.xiaojinzi.component.impl.IModuleLifecycle;
 import com.xiaojinzi.component.impl.application.ModuleManager;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -73,7 +74,9 @@ public class ASMUtil {
     public static List<String> getModuleNames() {
         List<String> result = new ArrayList<>();
         // 示例代码
-        // result.add("user");
+        result.add("user");
+        result.add("Base");
+        result.add("Order");
         return result;
     }
 

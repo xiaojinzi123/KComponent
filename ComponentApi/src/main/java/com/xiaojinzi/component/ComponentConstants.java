@@ -21,6 +21,7 @@ public class ComponentConstants {
     public static final String ATTRAUTOWIREMODE_CLASS_NAME = "com.xiaojinzi.component.support.AttrAutoWireMode";
     public static final String COMPONENT_CLASS_NAME = "com.xiaojinzi.component.Component";
     public static final String UTILS_CLASS_NAME = "com.xiaojinzi.component.support.Utils";
+    public static final String MODULE_APPLICATION_ANNO_CLASS_NAME = "com.xiaojinzi.component.anno.support.ModuleApplicationAnno";
     public static final String COMPONENT_GENERATED_ANNO_CLASS_NAME = "com.xiaojinzi.component.anno.support.ComponentGeneratedAnno";
     public static final String MODULE_IMPL_CLASS_NAME = "com.xiaojinzi.component.impl.ModuleImpl";
     public static final String APPLICATION_LIFECYCLE_INTERFACE_CLASS_NAME = "com.xiaojinzi.component.application.IApplicationLifecycle";

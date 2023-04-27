@@ -31,11 +31,6 @@ class App : Application() {
                 .build()
         )
 
-        LogSupport.d(
-            tag = "xxx",
-            content = "================= ${ASMUtil.getModuleNames()}",
-        )
-
         UserSpi::class.serviceRequired()
 
         /*ModuleManager.registerArr(

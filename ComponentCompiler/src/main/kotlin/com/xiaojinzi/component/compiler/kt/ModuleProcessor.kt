@@ -12,6 +12,7 @@ import com.xiaojinzi.component.ComponentConstants
 import com.xiaojinzi.component.ComponentUtil
 import com.xiaojinzi.component.anno.*
 import com.xiaojinzi.component.anno.support.ComponentGeneratedAnno
+import com.xiaojinzi.component.anno.support.ModuleApplicationAnno
 import com.xiaojinzi.component.compiler.kt.bean.RouterAnnoBean
 import com.xiaojinzi.component.packageName
 import com.xiaojinzi.component.simpleClassName
@@ -176,9 +177,11 @@ class ModuleProcessor(
                                     is KSClassDeclaration -> {
                                         item.toClassName()
                                     }
+
                                     is KSFunctionDeclaration -> {
                                         item.returnTypeToTypeName()!!
                                     }
+
                                     else -> notSupport()
                                 }
 
@@ -204,6 +207,7 @@ class ModuleProcessor(
                                                     )
                                                 }
                                             }
+
                                             is KSFunctionDeclaration -> {
                                                 if (item.parameters.size > 1) {
                                                     notSupport()
@@ -225,6 +229,7 @@ class ModuleProcessor(
                                                     )
                                                 }
                                             }
+
                                             else -> notSupport()
                                         }
                                     }
@@ -297,7 +302,7 @@ class ModuleProcessor(
                                     )
                                 }
                                 val nameList = serviceAnno.name
-                                if(nameList.isNotEmpty() || serviceClassPathList.size > 1) {
+                                if (nameList.isNotEmpty() || serviceClassPathList.size > 1) {
                                     if (serviceClassPathList.size != nameList.size) {
                                         throw ProcessException(
                                             message = "${item.getDescName()} 的 @ServiceAnno 注解, name 属性可以为空数组, 如果不为空, name 属性和 value 属性的个数必须是相等的"
@@ -511,9 +516,11 @@ class ModuleProcessor(
                                         ?.asString()
                                         ?: ""
                                 }
+
                                 is KSClassDeclaration -> {
                                     item.qualifiedName?.asString() ?: ""
                                 }
+
                                 else -> throw RuntimeException("Unsupported type")
                             }
                             val fragmentAnno: FragmentAnno = when (item) {
@@ -522,6 +529,7 @@ class ModuleProcessor(
                                         annotationKClass = FragmentAnno::class,
                                     ).first()
                                 }
+
                                 else -> throw RuntimeException("Unsupported type")
                             }
                             if (fragmentAnno.value.isEmpty()) {
@@ -583,6 +591,7 @@ class ModuleProcessor(
                                                             targetClassName,
                                                         )
                                                     }
+
                                                     is KSClassDeclaration -> {
                                                         it.addStatement(
                                                             format = "val fragment = %T()",
@@ -592,6 +601,7 @@ class ModuleProcessor(
                                                             format = "fragment.arguments = targetBundle"
                                                         )
                                                     }
+
                                                     else -> throw RuntimeException("Unsupported type")
                                                 }
                                             }
@@ -630,6 +640,7 @@ class ModuleProcessor(
                                         annotationKClass = FragmentAnno::class,
                                     ).first()
                                 }
+
                                 else -> throw RuntimeException("Unsupported type")
                             }
                             fragmentAnno.value.forEach { fragmentName ->
@@ -848,6 +859,7 @@ class ModuleProcessor(
                             is KSClassDeclaration -> {
                                 this.append("\ntargetClass = %L::class,")
                             }
+
                             is KSFunctionDeclaration -> {
                                 this.append("\ncustomerIntentCall = object : %T {")
                                 this.append("\n\toverride fun get(request: RouterRequest): %T {")
@@ -855,6 +867,7 @@ class ModuleProcessor(
                                 this.append("\n\t}")
                                 this.append("\n}")
                             }
+
                             else -> throw ProcessException(
                                 message = "not support"
                             )
@@ -906,6 +919,7 @@ class ModuleProcessor(
                     is KSClassDeclaration -> {
                         listOf(element.qualifiedName!!.asString())
                     }
+
                     is KSFunctionDeclaration -> {
                         logger.warn("element.qualifiedName = ${element.qualifiedName?.asString()}")
                         listOf(
@@ -915,6 +929,7 @@ class ModuleProcessor(
                             element.parameters.first().name!!.asString(),
                         )
                     }
+
                     else -> throw ProcessException(
                         message = "not support"
                     )
@@ -1106,6 +1121,7 @@ class ModuleProcessor(
             .addModifiers(KModifier.FINAL)
             .superclass(superclass = moduleImplClassName)
             .addAnnotation(annotation = mClassNameAndroidKeepAnno)
+            .addAnnotation(annotation = ModuleApplicationAnno::class)
             .addAnnotation(annotation = ComponentGeneratedAnno::class)
             .addProperty(
                 propertySpec = PropertySpec

@@ -9,8 +9,17 @@ import org.objectweb.asm.Opcodes;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * 用户帮助生成 ASMUtil 这个类的
+ */
 public class ASMUtilClassGen implements Opcodes {
 
+    /**
+     * 获取字节码的字节数组
+     *
+     * @param applicationMap 模块相关的参数
+     * @return 字节码的字节数组
+     */
     public static byte[] getBytes(
             Map<String, String> applicationMap
     ) {

@@ -5,12 +5,10 @@ import androidx.annotation.Nullable;
 
 import com.xiaojinzi.component.Config;
 import com.xiaojinzi.component.anno.support.CheckClassNameAnno;
-import com.xiaojinzi.component.anno.support.NeedOptimizeAnno;
 import com.xiaojinzi.component.application.IComponentHostApplication;
 import com.xiaojinzi.component.impl.IModuleLifecycle;
 import com.xiaojinzi.component.impl.application.ModuleManager;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -72,12 +70,7 @@ public class ASMUtil {
      */
     @NonNull
     public static List<String> getModuleNames() {
-        List<String> result = new ArrayList<>();
-        // 示例代码
-        result.add("user");
-        result.add("Base");
-        result.add("Order");
-        return result;
+        return Collections.emptyList();
     }
 
     /**

@@ -10,9 +10,6 @@ import com.xiaojinzi.component.support.ASMUtil
 import com.xiaojinzi.support.init.AppInstance
 import com.xiaojinzi.support.ktx.LogSupport
 
-/**
- *
- */
 class App : Application() {
 
     override fun onCreate() {
@@ -32,6 +29,11 @@ class App : Application() {
                 .optimizeInit(isOptimizeInit = true)
                 .autoRegisterModule(isAutoRegisterModule = true)
                 .build()
+        )
+
+        LogSupport.d(
+            tag = "xxx",
+            content = "================= ${ASMUtil.getModuleNames()}",
         )
 
         UserSpi::class.serviceRequired()

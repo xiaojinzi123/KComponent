@@ -82,25 +82,37 @@ interface Call {
 
                     override fun onSuccess(result: RouterResult) {
                         super.onSuccess(result)
-                        cout.resume(
-                            value = Unit
-                        )
+                        try {
+                            cout.resume(
+                                value = Unit
+                            )
+                        } catch (e: Exception) {
+                            // ignore
+                        }
                     }
 
                     override fun onError(errorResult: RouterErrorResult) {
                         super.onError(errorResult)
-                        cout.resumeWithException(
-                            exception = errorResult.error,
-                        )
+                        try {
+                            cout.resumeWithException(
+                                exception = errorResult.error,
+                            )
+                        } catch (e: Exception) {
+                            // ignore
+                        }
                     }
 
                     override fun onCancel(originalRequest: RouterRequest?) {
                         super.onCancel(originalRequest)
-                        cout.resumeWithException(
-                            exception = NavigationCancelException(
-                                originalRequest = originalRequest,
-                            ),
-                        )
+                        try {
+                            cout.resumeWithException(
+                                exception = NavigationCancelException(
+                                    originalRequest = originalRequest,
+                                ),
+                            )
+                        } catch (e: Exception) {
+                            // ignore
+                        }
                     }
 
                 }
@@ -178,25 +190,37 @@ interface Call {
 
                     override fun onSuccess(result: RouterResult, targetValue: ActivityResult) {
                         super.onSuccess(result, targetValue)
-                        cout.resume(
-                            value = targetValue,
-                        )
+                        try {
+                            cout.resume(
+                                value = targetValue,
+                            )
+                        } catch (e: Exception) {
+                            // ignore
+                        }
                     }
 
                     override fun onError(errorResult: RouterErrorResult) {
                         super.onError(errorResult)
-                        cout.resumeWithException(
-                            exception = errorResult.error,
-                        )
+                        try {
+                            cout.resumeWithException(
+                                exception = errorResult.error,
+                            )
+                        } catch (e: Exception) {
+                            // ignore
+                        }
                     }
 
                     override fun onCancel(originalRequest: RouterRequest?) {
                         super.onCancel(originalRequest)
-                        cout.resumeWithException(
-                            exception = NavigationCancelException(
-                                originalRequest = originalRequest,
-                            ),
-                        )
+                        try {
+                            cout.resumeWithException(
+                                exception = NavigationCancelException(
+                                    originalRequest = originalRequest,
+                                ),
+                            )
+                        } catch (e: Exception) {
+                            // ignore
+                        }
                     }
 
                 }

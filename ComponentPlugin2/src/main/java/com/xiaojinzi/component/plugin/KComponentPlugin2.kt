@@ -13,7 +13,6 @@ import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.Opcodes
 import java.io.File
 
-
 val moduleNameSet = mutableSetOf<String>()
 
 var buildFolder: File? = null

@@ -90,14 +90,12 @@ open class InterceptorChain(
                             )
                         )
                     }
-
                     calls > 1 -> { // 调用了两次
                         throw NavigationException(
                             "interceptor " + mInterceptors[mIndex - 1]
                                     + " must call proceed() exactly once"
                         )
                     }
-
                     else -> {
                         // current Interceptor
                         val interceptor = mInterceptors[mIndex]!!
@@ -507,13 +505,11 @@ class NavigatorImpl<T : INavigator<T>> constructor(
                             .getInterceptorByClass(tClass = (item as KClass<out RouterInterceptor>))
                             ?: throw InterceptorNotFoundException("can't find the interceptor and it's className is " + item as KClass<*> + ",target url is " + originalRequest.uri.toString())
                     }
-
                     is String -> {
                         InterceptorCenter
                             .getByName(interceptorName = item)
                             ?: throw InterceptorNotFoundException("can't find the interceptor and it's name is " + item + ",target url is " + originalRequest.uri.toString())
                     }
-
                     else -> null
                 }
             }
@@ -908,13 +904,9 @@ class NavigatorImpl<T : INavigator<T>> constructor(
                             value = result,
                         )
                     } catch (e: Exception) {
-                        try {
-                            cancellableContinuation.resumeWithException(
-                                exception = e,
-                            )
-                        } catch (e: Exception) {
-                            // ignore
-                        }
+                        cancellableContinuation.resumeWithException(
+                            exception = e,
+                        )
                     }
                 }
                 job.invokeOnCompletion { error ->

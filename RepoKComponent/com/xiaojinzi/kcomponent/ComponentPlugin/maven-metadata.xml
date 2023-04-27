@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <metadata>
   <groupId>com.xiaojinzi.kcomponent</groupId>
-  <artifactId>kcomponent-plugin</artifactId>
+  <artifactId>ComponentPlugin</artifactId>
   <versioning>
     <latest>1.0.0-beta1</latest>
     <release>1.0.0-beta1</release>

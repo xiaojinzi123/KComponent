@@ -10,9 +10,6 @@ import com.xiaojinzi.component.support.ASMUtil
 import com.xiaojinzi.support.init.AppInstance
 import com.xiaojinzi.support.ktx.LogSupport
 
-/**
- *
- */
 class App : Application() {
 
     override fun onCreate() {

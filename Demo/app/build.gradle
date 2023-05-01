@@ -25,6 +25,7 @@ ksp {
 }*/
 
 android {
+
     namespace 'com.xiaojinzi.component.demo'
 
     signingConfigs {
@@ -52,8 +53,8 @@ android {
                     sourceSets {
                         android.applicationVariants.all { variant ->
                             def variantName = variant.getName()
-                            if(variantName.toLowerCase(Locale.getDefault()).endsWith("debug")) {
-                                debug.kotlin.srcDirs("build/generated/ksp/" + variantName +"/kotlin")
+                            if (variantName.toLowerCase(Locale.getDefault()).endsWith("debug")) {
+                                debug.kotlin.srcDirs("build/generated/ksp/" + variantName + "/kotlin")
                             }
                         }
                     }
@@ -67,31 +68,6 @@ android {
         }
     }
 
-    flavorDimensions 'env', "leakcanary", "simulatorCheck"
-
-    productFlavors {
-        product {
-            dimension 'env'
-        }
-        dev {
-            dimension 'env'
-        }
-
-        leakcanary1 {
-            dimension 'leakcanary'
-        }
-        leakcanary0 {
-            dimension 'leakcanary'
-        }
-
-        simulatorCheck1 {
-            dimension 'simulatorCheck'
-        }
-        simulatorCheck0 {
-            dimension 'simulatorCheck'
-        }
-    }
-
 }
 
 dependencies {
@@ -99,3 +75,9 @@ dependencies {
     api project(':Demo:module-user')
     api project(':Demo:module-base')
 }
+
+afterEvaluate {
+
+}
+
+

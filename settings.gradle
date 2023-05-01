@@ -16,8 +16,8 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "KComponent"
-include ':ComponentPlugin',
-        ':ComponentApi',
+include ':ComponentApi',
+        ':ComponentPlugin',
         ':ComponentImpl',
         ':ComponentRxImpl'
 include ':Demo:app'

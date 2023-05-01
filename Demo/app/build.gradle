@@ -68,31 +68,6 @@ android {
         }
     }
 
-    flavorDimensions 'env', "leakcanary", "simulatorCheck"
-
-    productFlavors {
-        product {
-            dimension 'env'
-        }
-        dev {
-            dimension 'env'
-        }
-
-        leakcanary1 {
-            dimension 'leakcanary'
-        }
-        leakcanary0 {
-            dimension 'leakcanary'
-        }
-
-        simulatorCheck1 {
-            dimension 'simulatorCheck'
-        }
-        simulatorCheck0 {
-            dimension 'simulatorCheck'
-        }
-    }
-
 }
 
 dependencies {
@@ -102,7 +77,6 @@ dependencies {
 }
 
 afterEvaluate {
-
 
 }
 

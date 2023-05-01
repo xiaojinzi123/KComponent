@@ -31,6 +31,7 @@ dependencies {
     implementation 'com.android.tools.build:gradle:7.4.2'
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation "com.joom.grip:grip:0.9.1"
+    implementation "org.javassist:javassist:3.26.0-GA"
 }
 
 java {

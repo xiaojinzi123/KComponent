@@ -29,11 +29,11 @@
         {
           "name": "ComponentPlugin-1.0.0-beta1.jar",
           "url": "ComponentPlugin-1.0.0-beta1.jar",
-          "size": 20175,
-          "sha512": "b1e6704428a50d6eb1e9ff7969b57fd692b8c334d9c10a1c7941f945736a940f334a67a181b79b69b2e72bc0e465be10d46e4cfdca353ef910464ecf7f0066f8",
-          "sha256": "9da5cf0df961058a02f5a1b59c9a82a1332026e5a3c1e900ff6038fbe3c251bb",
-          "sha1": "23110be36b9887119b869c0600d6d73bf1d6f23f",
-          "md5": "6b444a98dbbdbcfdb9551e4c13d8292b"
+          "size": 44294,
+          "sha512": "1d6a0165eea1ee2f769cd22698dcfca7e0b607896347093f993cdfbea22cb4795ffb89ef9a1508007fe88948e79be31c536c1936b9ff2049f17c2e58e946a2fa",
+          "sha256": "7e26fb118adfbf1e69db797d97a7a7586cfe8cc8ce5362ece7d8ae8929954083",
+          "sha1": "818bfe581f2e8515c376f7f4db606835cc0b4df0",
+          "md5": "a102be8e41bc7481468cb3692c1b6662"
         }
       ]
     },
@@ -83,17 +83,24 @@
           "version": {
             "requires": "0.9.1"
           }
+        },
+        {
+          "group": "org.javassist",
+          "module": "javassist",
+          "version": {
+            "requires": "3.26.0-GA"
+          }
         }
       ],
       "files": [
         {
           "name": "ComponentPlugin-1.0.0-beta1.jar",
           "url": "ComponentPlugin-1.0.0-beta1.jar",
-          "size": 20175,
-          "sha512": "b1e6704428a50d6eb1e9ff7969b57fd692b8c334d9c10a1c7941f945736a940f334a67a181b79b69b2e72bc0e465be10d46e4cfdca353ef910464ecf7f0066f8",
-          "sha256": "9da5cf0df961058a02f5a1b59c9a82a1332026e5a3c1e900ff6038fbe3c251bb",
-          "sha1": "23110be36b9887119b869c0600d6d73bf1d6f23f",
-          "md5": "6b444a98dbbdbcfdb9551e4c13d8292b"
+          "size": 44294,
+          "sha512": "1d6a0165eea1ee2f769cd22698dcfca7e0b607896347093f993cdfbea22cb4795ffb89ef9a1508007fe88948e79be31c536c1936b9ff2049f17c2e58e946a2fa",
+          "sha256": "7e26fb118adfbf1e69db797d97a7a7586cfe8cc8ce5362ece7d8ae8929954083",
+          "sha1": "818bfe581f2e8515c376f7f4db606835cc0b4df0",
+          "md5": "a102be8e41bc7481468cb3692c1b6662"
         }
       ]
     },
@@ -109,11 +116,11 @@
         {
           "name": "ComponentPlugin-1.0.0-beta1-sources.jar",
           "url": "ComponentPlugin-1.0.0-beta1-sources.jar",
-          "size": 4622,
-          "sha512": "cf45beeedb053f8d65dfaade4cf35ece294a8cbdf2437ad72000793257359e15013addfcce2f231b800f726ab62514f9864f1ada4d0d3b1049c3e7927d07cfae",
-          "sha256": "8c58eb6afbce677ca99f7b09caa819ce3f8e5679da772b19e27cfa7682b898f7",
-          "sha1": "0b06ff3fba72e9271b744ced826a563219263335",
-          "md5": "bdc9482ddf977b9b324f3fae94484a80"
+          "size": 7950,
+          "sha512": "fca8d59d903e98432030aa57d04f5fd795d8f6790dbee35f8ebf8d6e1367d128ac8ed5d5405849d6f9ce96a1e12a7c04cea7019b66a6ec4c32d444d7fcdd1e5d",
+          "sha256": "e74a1df411118028cbe6a01f0610b4accb2cbc26c48aadd35cc6cf389f7431a9",
+          "sha1": "9063dc4b17f827239021e85c8183de9c771b29e1",
+          "md5": "1704e37da1e66458d8d473804f2b5260"
         }
       ]
     },
@@ -130,10 +137,10 @@
           "name": "ComponentPlugin-1.0.0-beta1-javadoc.jar",
           "url": "ComponentPlugin-1.0.0-beta1-javadoc.jar",
           "size": 82894,
-          "sha512": "f633e842320136c3b8a9f0b7140449c0e2dc20df75aef62819b87dfddb9b42c4b46bdd9a4f9b9c57740f77d9580cae1a04d0169c388b40d15052e708c21c4a6b",
-          "sha256": "140f260905575ea97fa969019c27afec85f9602b367307a8de282ada01c6ce4d",
-          "sha1": "6b80f928f142cafd1b979559a50b60b830eaa5e7",
-          "md5": "dda108512fc79b4cb655ca593523e0d4"
+          "sha512": "fc797b613be0183c0a90154c1cc8a6a6239079233fcde4f1bf4665a7358b210dc7b49d112f160a18bd423fed7f70bf9bd9f804d3dd9800fa407fc844c530f2b3",
+          "sha256": "b04aca038f71d79c0785eb3d54e3354e7257d83eec68d011fbafa4e521848d06",
+          "sha1": "a1de407d22ef33e11fb55fd74c860a4a064071f6",
+          "md5": "fd0bf8ecd15954125fa27a10eee6012b"
         }
       ]
     }

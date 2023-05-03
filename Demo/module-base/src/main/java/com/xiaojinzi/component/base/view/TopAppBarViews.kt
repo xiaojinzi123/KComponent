@@ -2,9 +2,24 @@ package com.xiaojinzi.component.base.view
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
+import androidx.compose.material.contentColorFor
+import androidx.compose.material.primarySurface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,7 +30,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.xiaojinzi.component.base.R
 import com.xiaojinzi.support.bean.StringItemDto
 import com.xiaojinzi.support.compose.util.contentWithComposable
 import com.xiaojinzi.support.ktx.nothing
@@ -28,7 +42,7 @@ fun AppbarNormal(
     backgroundColor: Color = MaterialTheme.colors.primarySurface,
     contentColor: Color = contentColorFor(backgroundColor),
     backIconColor: Color = contentColor,
-    @DrawableRes backIconRsd: Int? = R.drawable.res_back1,
+    @DrawableRes backIconRsd: Int? = com.xiaojinzi.component.lib.resource.R.drawable.res_back1,
     backClickListener: (() -> Unit)? = null,
     title: StringItemDto? = null,
     titleAlign: TextAlign = TextAlign.Start,
@@ -148,6 +162,6 @@ fun AppbarNormal(
 private fun AppbarNormalPreview() {
     AppbarNormal(
         title = "测试".toStringItemDto(),
-        menu1IconRsd = R.drawable.res_back1,
+        menu1IconRsd = com.xiaojinzi.component.lib.resource.R.drawable.res_back1,
     )
 }

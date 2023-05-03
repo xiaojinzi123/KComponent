@@ -11,11 +11,17 @@ object ASMUtilClassUtil {
         val moduleNames = moduleNameMap.keys
         val classPool = ClassPool.getDefault()
         val listClass = classPool.get("java.util.List")
-        val asmUtilClass = classPool.makeClass("com.xiaojinzi.component.support.ASMUtil")
+        val asmUtilClassPath = "com.xiaojinzi.component.support.ASMUtil"
+        val asmUtilClass = classPool.getOrNull(asmUtilClassPath)
+            ?: classPool.makeClass(asmUtilClassPath)
+
+        if (asmUtilClass.isFrozen) {
+            return asmUtilClass.toBytecode()
+        }
 
         val getModuleNamesMethod = CtMethod(listClass, "getModuleNames", emptyArray(), asmUtilClass)
         getModuleNamesMethod.modifiers = javassist.Modifier.PUBLIC or javassist.Modifier.STATIC
-        // getModuleNamesMethod.genericSignature = "(Ljava/util/List<Ljava/lang/String;>;)V"
+        getModuleNamesMethod.genericSignature = "(Ljava/util/List<Ljava/lang/String;>;)V"
 
         val getModuleNamesMethodBodySb = StringBuilder()
         getModuleNamesMethodBodySb.append("{")

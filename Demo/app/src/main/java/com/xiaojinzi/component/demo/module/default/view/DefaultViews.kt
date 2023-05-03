@@ -18,7 +18,6 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.xiaojinzi.component.base.view.AppbarNormal
-import com.xiaojinzi.component.demo.R
 import com.xiaojinzi.support.ktx.nothing
 import com.xiaojinzi.support.ktx.toStringItemDto
 import kotlinx.coroutines.InternalCoroutinesApi
@@ -41,7 +40,7 @@ private fun DefaultView() {
     ) {
 
         val composition by rememberLottieComposition(
-            LottieCompositionSpec.RawRes(R.raw.lottie_anim1)
+            LottieCompositionSpec.RawRes(com.xiaojinzi.component.lib.resource.R.raw.lottie_anim1)
         )
         LottieAnimation(
             modifier = Modifier

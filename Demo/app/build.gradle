@@ -76,8 +76,5 @@ dependencies {
     api project(':Demo:module-base')
 }
 
-afterEvaluate {
-
-}
 
 

@@ -4,7 +4,12 @@ import android.app.Application
 import com.xiaojinzi.component.Component
 import com.xiaojinzi.component.Config
 import com.xiaojinzi.component.base.spi.UserSpi
-import com.xiaojinzi.component.impl.*
+import com.xiaojinzi.component.impl.ActivityResultRouterResult
+import com.xiaojinzi.component.impl.Router
+import com.xiaojinzi.component.impl.RouterErrorResult
+import com.xiaojinzi.component.impl.RouterListener
+import com.xiaojinzi.component.impl.RouterRequest
+import com.xiaojinzi.component.impl.RouterResult
 import com.xiaojinzi.component.impl.service.serviceRequired
 import com.xiaojinzi.component.support.ASMUtil
 import com.xiaojinzi.support.init.AppInstance
@@ -24,7 +29,7 @@ class App : Application() {
 
         Component.init(
             application = this,
-            isDebug = BuildConfig.DEBUG,
+            isDebug = true,
             config = Config.Builder()
                 .optimizeInit(isOptimizeInit = true)
                 .autoRegisterModule(isAutoRegisterModule = true)
@@ -72,9 +77,7 @@ class App : Application() {
             }
         )
 
-        if (BuildConfig.DEBUG) {
-            Component.check()
-        }
+        Component.check()
 
     }
 

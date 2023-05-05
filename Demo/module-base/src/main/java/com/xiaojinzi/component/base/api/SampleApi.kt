@@ -31,7 +31,7 @@ import io.reactivex.Single
  */
 @RouterApiAnno
 @SchemeAnno("SampleApiScheme")
-@HostAnno(RouterConfig.HOST_APP)
+@HostAnno(RouterConfig.HOST_APP1)
 @CategoryAnno(Intent.CATEGORY_APP_BROWSER)
 @FlagAnno(Intent.FLAG_ACTIVITY_CLEAR_TASK)
 interface SampleApi {
@@ -62,7 +62,7 @@ interface SampleApi {
 
     @NavigateAnno
     @UrlAnno("www.baidu.com")
-    @HostAnno(RouterConfig.HOST_APP)
+    @HostAnno(RouterConfig.HOST_APP1)
     @PathAnno(RouterConfig.APP_TEST_NO_TARGET)
     @RequestCodeAnno()
     fun test1(
@@ -71,7 +71,7 @@ interface SampleApi {
     )
 
     @NavigateAnno(forResult = true)
-    @HostAndPathAnno(RouterConfig.HOST_APP + "/" + RouterConfig.APP_TEST_NO_TARGET)
+    @HostAndPathAnno(RouterConfig.HOST_APP1 + "/" + RouterConfig.APP_TEST_NO_TARGET)
     fun test2(
         context: Context?,
         @ParameterAnno("data") data: String?, callback: BiCallback<ActivityResult>

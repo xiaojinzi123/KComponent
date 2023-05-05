@@ -16,7 +16,9 @@ object ASMUtilClassUtil {
             ?: classPool.makeClass(asmUtilClassPath)
 
         if (asmUtilClass.isFrozen) {
-            return asmUtilClass.toBytecode()
+            println("${KComponentPlugin.TAG}, asmUtilClass is frozen, will call defrost() method")
+            asmUtilClass.defrost()
+            // return asmUtilClass.toBytecode()
         }
 
         val getModuleNamesMethod = CtMethod(listClass, "getModuleNames", emptyArray(), asmUtilClass)
@@ -34,6 +36,9 @@ object ASMUtilClassUtil {
         getModuleNamesMethod.setBody(
             getModuleNamesMethodBodySb.toString()
         )
+        asmUtilClass.getDeclaredMethods("getModuleNames").forEach {
+            asmUtilClass.removeMethod(it)
+        }
         asmUtilClass.addMethod(getModuleNamesMethod)
 
         val interfaceIModuleLifecycle =
@@ -90,6 +95,9 @@ object ASMUtilClassUtil {
         findModuleApplicationAsmImplMethod.setBody(
             findModuleApplicationAsmImplMethodBodySb.toString(),
         )
+        asmUtilClass.getDeclaredMethods("findModuleApplicationAsmImpl").forEach {
+            asmUtilClass.removeMethod(it)
+        }
         asmUtilClass.addMethod(findModuleApplicationAsmImplMethod)
 
         return asmUtilClass.toBytecode()

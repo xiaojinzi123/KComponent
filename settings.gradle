@@ -20,9 +20,10 @@ include ':ComponentApi',
         ':ComponentPlugin',
         ':ComponentImpl',
         ':ComponentRxImpl'
-include ':Demo:app'
+include ':Demo:app1'
+include ':Demo:app2'
 include ':ComponentCompiler'
 include ':Demo:module-base'
 include ':Demo:module-user'
-include ':Demo:lib-resource'
 include ':Demo:module-support'
+include ':Demo:lib-resource'

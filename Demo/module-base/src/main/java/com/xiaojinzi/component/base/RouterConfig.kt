@@ -7,12 +7,15 @@ object RouterConfig {
     const val SYSTEM_TAKE_PHOTO = "$HOST_SYSTEM/takePhoto"
     const val SYSTEM_APP_DETAIL = "$HOST_SYSTEM/appDetail"
 
-    const val HOST_APP = "app"
-    const val APP_TEST_NO_TARGET = "$HOST_APP/testNoTarget"
-    const val APP_DEFAULT = "$HOST_APP/default"
-    const val APP_MAIN = "$HOST_APP/main"
-    const val APP_TEST_ROUTE = "$HOST_APP/testRoute"
-    const val APP_FRAGMENT_ROUTE_TEST = "$HOST_APP/fragmentRouteTest"
+    const val HOST_APP1 = "app1"
+    const val APP_TEST_NO_TARGET = "$HOST_APP1/testNoTarget"
+    const val APP_DEFAULT = "$HOST_APP1/default"
+    const val APP_MAIN = "$HOST_APP1/main"
+    const val APP_TEST_ROUTE = "$HOST_APP1/testRoute"
+    const val APP_FRAGMENT_ROUTE_TEST = "$HOST_APP1/fragmentRouteTest"
+
+    const val HOST_APP2 = "app2"
+    const val APP2_MAIN = "$HOST_APP2/main"
 
     const val HOST_USER = "user"
     const val USER_LOGIN = "$HOST_USER/login"

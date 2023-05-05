@@ -32,6 +32,12 @@ import java.util.jar.JarOutputStream
 
 class KComponentPlugin : Plugin<Project> {
 
+    companion object {
+
+        const val TAG = "KComponentPlugin"
+
+    }
+
     abstract class ModifyClassesTask : DefaultTask() {
 
         @get:InputFiles
@@ -62,6 +68,7 @@ class KComponentPlugin : Plugin<Project> {
             val grip: Grip =
                 GripFactory.newInstance(Opcodes.ASM9)
                     .create(classPaths + inputs)
+
             val query = grip
                 .select(classes)
                 .from(inputs)
@@ -72,6 +79,7 @@ class KComponentPlugin : Plugin<Project> {
                         )
                     )
                 )
+
             // 找到所有满足条件的 class
             val moduleNameMap = query
                 .execute()
@@ -81,6 +89,8 @@ class KComponentPlugin : Plugin<Project> {
                         .removePrefix(prefix = "com.xiaojinzi.component.impl.")
                         .removeSuffix(suffix = "ModuleGenerated") to "${it.name}.class"
                 }
+
+            println("${KComponentPlugin.TAG}, moduleNameMap = $moduleNameMap")
 
             val jarOutput = JarOutputStream(
                 BufferedOutputStream(
@@ -94,6 +104,7 @@ class KComponentPlugin : Plugin<Project> {
                 val jarFile = JarFile(file.asFile)
                 jarFile.entries().iterator().forEach { jarEntry ->
                     if ("com/xiaojinzi/component/support/ASMUtil.class" == jarEntry.name) {
+                        println("${KComponentPlugin.TAG}, 找到目标 ASMUtil.class")
                         val asmUtilClassBytes =
                             ASMUtilClassUtil.getClassBytes(moduleNameMap = moduleNameMap)
                         jarOutput.putNextEntry(JarEntry(jarEntry.name))

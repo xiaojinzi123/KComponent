@@ -6,8 +6,8 @@ plugins {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 group = 'com.xiaojinzi.kcomponent'
@@ -28,7 +28,7 @@ dependencies {
     implementation localGroovy()
     implementation "org.ow2.asm:asm-commons:9.4"
     implementation "org.ow2.asm:asm-util:9.4"
-    implementation 'com.android.tools.build:gradle:7.4.2'
+    implementation 'com.android.tools.build:gradle:8.0.1'
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation "com.joom.grip:grip:0.9.1"
     implementation "org.javassist:javassist:3.26.0-GA"

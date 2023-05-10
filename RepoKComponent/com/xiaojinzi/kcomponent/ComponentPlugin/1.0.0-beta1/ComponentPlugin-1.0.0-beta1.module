@@ -30,10 +30,10 @@
           "name": "ComponentPlugin-1.0.0-beta1.jar",
           "url": "ComponentPlugin-1.0.0-beta1.jar",
           "size": 21748,
-          "sha512": "cad7d8e1be7c5948c72fcd2cb8a800e424381b6c6e6e5a92c3281bbdf10ed5bf3044df27fbac85a79003bb21cca7c6d47d8fa8f7917cf1bf5230c3147c6b1300",
-          "sha256": "921c1bde7434a9a7a43a6118d2f16e4ac5faeb1daa7aa2c81e42e2710bf1b5f6",
-          "sha1": "5f1e91883bcd7f0d777a538b085f6bcaf3b8e489",
-          "md5": "194f3a0ba7d9a5f6541f5d5c83590e9c"
+          "sha512": "152c5a9cf1e8e0277cd903db10d48079e466d1f676a02e97b84763c9daf4b456a84c6a6ffe6d5f492d8d68c7a17669dd6cd15f275ed92cfb48b7ea14c021937c",
+          "sha256": "4d9a51639bd52f8b7afda4e51379af196cc6686151c515932769a18e7626c011",
+          "sha1": "17a0f6b39f9b92827cec262ef816d9157c0a9060",
+          "md5": "30984dee55a3cbf0cf215390366a42e6"
         }
       ]
     },
@@ -67,7 +67,7 @@
           "group": "com.android.tools.build",
           "module": "gradle",
           "version": {
-            "requires": "8.0.1"
+            "requires": "7.4.2"
           }
         },
         {
@@ -97,10 +97,10 @@
           "name": "ComponentPlugin-1.0.0-beta1.jar",
           "url": "ComponentPlugin-1.0.0-beta1.jar",
           "size": 21748,
-          "sha512": "cad7d8e1be7c5948c72fcd2cb8a800e424381b6c6e6e5a92c3281bbdf10ed5bf3044df27fbac85a79003bb21cca7c6d47d8fa8f7917cf1bf5230c3147c6b1300",
-          "sha256": "921c1bde7434a9a7a43a6118d2f16e4ac5faeb1daa7aa2c81e42e2710bf1b5f6",
-          "sha1": "5f1e91883bcd7f0d777a538b085f6bcaf3b8e489",
-          "md5": "194f3a0ba7d9a5f6541f5d5c83590e9c"
+          "sha512": "152c5a9cf1e8e0277cd903db10d48079e466d1f676a02e97b84763c9daf4b456a84c6a6ffe6d5f492d8d68c7a17669dd6cd15f275ed92cfb48b7ea14c021937c",
+          "sha256": "4d9a51639bd52f8b7afda4e51379af196cc6686151c515932769a18e7626c011",
+          "sha1": "17a0f6b39f9b92827cec262ef816d9157c0a9060",
+          "md5": "30984dee55a3cbf0cf215390366a42e6"
         }
       ]
     },
@@ -117,10 +117,10 @@
           "name": "ComponentPlugin-1.0.0-beta1-sources.jar",
           "url": "ComponentPlugin-1.0.0-beta1-sources.jar",
           "size": 4238,
-          "sha512": "6d9691021bcb8791d87fb6ee9262041279bc9ebb3515e0ede23e66084f60a0256064893295eef09ea9c392591667b715ba8bc1674503fd80eeaab483348c0440",
-          "sha256": "191b8e272646fb75384a0c6cad1c522d3b2ac4e8d8ffaba2fcc7ee8ab7dab8e0",
-          "sha1": "1d09e8491893835b96c8dea1b5ef8881e898fd5d",
-          "md5": "48e0b23900a138fc66a12983517e323f"
+          "sha512": "0231ca55ecd811c5e629458955ea7afc83a08c93393e057126dca103579e1768d768ed3f5bbe9ba9ba65ac9c98af7c26406686168c814339ff13a583aa8dae2c",
+          "sha256": "f22adacb38f9faa54cb4bc629e973526559a5da810953c2f34a6bb4f74abec26",
+          "sha1": "7196f2ee6d5b43e190a70c29e3692115a8352ab6",
+          "md5": "5e9d8c9dae7b82eb55abd1064b877b22"
         }
       ]
     },
@@ -137,10 +137,10 @@
           "name": "ComponentPlugin-1.0.0-beta1-javadoc.jar",
           "url": "ComponentPlugin-1.0.0-beta1-javadoc.jar",
           "size": 261,
-          "sha512": "bb27b2b657f5faa8c1617ab323638a781756760b907e66c9b2f50b4ae8bf9dec4bbac749c6e626d747b46924ea69f69ee3992ad449f80f9183f44d2ddf978dee",
-          "sha256": "b8a545f952be7ba534bd85e5dab5e11cae4c2d7415f95ccc3d589907109cff6e",
-          "sha1": "8fc93a2fa347a9165c2eef6370fa4078dd737917",
-          "md5": "a35bbc6d32f43bcad23efe1c9f4213d9"
+          "sha512": "1dcef9b24f60ff39ac10c44e20898c493eb4e32147e31a71828a63dbe59367fcefbc9fbdb60fb7b2268e97f4b21f78bf3748b6bb47a12af21729323bec922d0f",
+          "sha256": "f882e9f857163dd19e7b40ca661245a29987f2ad5373dbfd058ff693d7d0af29",
+          "sha1": "951db0f1aee33b334225acb9438ee5273f6215f9",
+          "md5": "ff0d75fdbf3f40a03f573548b1961c3e"
         }
       ]
     }

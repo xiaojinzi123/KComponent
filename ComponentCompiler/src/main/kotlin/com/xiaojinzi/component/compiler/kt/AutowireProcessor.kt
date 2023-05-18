@@ -34,15 +34,15 @@ class AutowireProcessor(
         targetAnnotatedList: List<KSPropertyDeclaration>,
     ) {
 
-        val fragmentActivityKsClassDeclaration =
-            resolver.getClassDeclarationByName(name = ComponentConstants.ANDROID_FRAGMENT_ACTIVITY)
+        val activityKsClassDeclaration =
+            resolver.getClassDeclarationByName(name = ComponentConstants.ANDROID_ACTIVITY)
         val fragmentKsClassDeclaration =
             resolver.getClassDeclarationByName(name = ComponentConstants.ANDROID_FRAGMENT)
 
         // 目标注入对象的 KsType
         val classDeclarationKsType = classDeclaration.asStarProjectedType()
 
-        val isSubFragmentActivity = fragmentActivityKsClassDeclaration
+        val isSubActivity = activityKsClassDeclaration
             ?.asStarProjectedType()
             ?.isAssignableFrom(that = classDeclarationKsType)
             ?: false
@@ -52,7 +52,7 @@ class AutowireProcessor(
             ?.isAssignableFrom(that = classDeclarationKsType)
             ?: false
 
-        if (isSubFragmentActivity.not() && isSubFragment.not()) {
+        if (isSubActivity.not() && isSubFragment.not()) {
             return
         }
 
@@ -84,7 +84,7 @@ class AutowireProcessor(
                     )
                     .also {
                         when {
-                            isSubFragmentActivity -> {
+                            isSubActivity -> {
                                 it.addStatement("this.injectAttrValue(target = target, bundle = target.intent?.extras?: Bundle())")
                             }
                             isSubFragment -> {
@@ -331,7 +331,7 @@ class AutowireProcessor(
 
         try {
             logger.warn(
-                message = "classDeclarationKsType1 = $classDeclarationKsType, isSubFragmentActivity = $isSubFragmentActivity, isSubFragment = $isSubFragment",
+                message = "classDeclarationKsType1 = $classDeclarationKsType, isSubFragmentActivity = $isSubActivity, isSubFragment = $isSubFragment",
             )
             codeGenerator.createNewFile(
                 dependencies = Dependencies.ALL_FILES,
@@ -343,7 +343,7 @@ class AutowireProcessor(
                 )
             }
             logger.warn(
-                message = "classDeclarationKsType2 = $classDeclarationKsType, isSubFragmentActivity = $isSubFragmentActivity, isSubFragment = $isSubFragment",
+                message = "classDeclarationKsType2 = $classDeclarationKsType, isSubFragmentActivity = $isSubActivity, isSubFragment = $isSubFragment",
             )
         } catch (e: Exception) {
             // ignore

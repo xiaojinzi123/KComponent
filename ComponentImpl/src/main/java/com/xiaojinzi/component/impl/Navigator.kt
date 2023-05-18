@@ -11,6 +11,7 @@ import androidx.annotation.UiThread
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.xiaojinzi.component.Component
 import com.xiaojinzi.component.ComponentConstants
@@ -893,7 +894,7 @@ class NavigatorImpl<T : INavigator<T>> constructor(
     @Throws(NavigationException::class)
     @CoreLogicAnno(value = "这是自动取消功能的核心实现")
     private suspend fun navigateWithAutoCancel(originalRequest: RouterRequest): RouterResult {
-        val actScope = (originalRequest.context as? FragmentActivity)?.lifecycleScope
+        val actScope = (originalRequest.context as? LifecycleOwner)?.lifecycleScope
         val fragScope = fragment?.lifecycleScope
         val scope = (actScope ?: fragScope)
         return if (scope != null && originalRequest.autoCancel) {

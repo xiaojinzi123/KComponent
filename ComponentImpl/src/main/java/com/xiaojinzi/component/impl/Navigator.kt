@@ -744,6 +744,7 @@ class NavigatorImpl<T : INavigator<T>> constructor(
                         rxFragment.addActivityResultConsumer(
                             request = request,
                         ) { activityResult ->
+                            Help.removeRequestCode(request = request)
                             RouterUtil.activityResultSuccessCallback(
                                 callback = callback,
                                 successResult = ActivityResultRouterResult(

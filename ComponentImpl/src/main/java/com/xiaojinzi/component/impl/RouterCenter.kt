@@ -8,7 +8,6 @@ import android.net.Uri
 import androidx.annotation.UiThread
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import com.xiaojinzi.component.Component
 import com.xiaojinzi.component.Component.requiredConfig
 import com.xiaojinzi.component.ComponentConstants
 import com.xiaojinzi.component.anno.support.CheckClassNameAnno
@@ -97,6 +96,7 @@ object RouterCenter {
      * content 参数和 fragment 参数必须有一个有值的
      *
      * @param request 路由请求对象
+     * @return 如果是为了返回 Intent 来的
      */
     @UiThread
     @Throws(TargetActivityNotFoundException::class)
@@ -141,7 +141,7 @@ object RouterCenter {
      *
      * @param request 请求对象
      * @param intent  Intent
-     * @return 如果是为了返回 Inten 来的
+     * @return 如果是为了返回 Intent 来的
      */
     @UiThread
     @Throws(Exception::class)
@@ -190,6 +190,7 @@ object RouterCenter {
                             request.options
                         )
                     }
+
                     Utils.getActivityFromContext(request.context).also { rawAct = it } != null -> {
                         rawAct!!.startActivityForResult(
                             intent,
@@ -197,6 +198,7 @@ object RouterCenter {
                             request.options
                         )
                     }
+
                     else -> {
                         throw NavigationException("Context is not a Activity,so can't use 'startActivityForResult' method")
                     }
@@ -226,9 +228,11 @@ object RouterCenter {
                     request.context != null -> {
                         request.context.startActivity(intent, request.options)
                     }
+
                     request.fragment != null -> {
                         request.fragment.startActivity(intent, request.options)
                     }
+
                     else -> {
                         throw NavigationException("the context or fragment both are null")
                     }
@@ -243,6 +247,7 @@ object RouterCenter {
                             request.options
                         )
                     }
+
                     request.fragment != null -> {
                         request.fragment.startActivityForResult(
                             intent,
@@ -250,6 +255,7 @@ object RouterCenter {
                             request.options
                         )
                     }
+
                     else -> {
                         throw NavigationException("the context or fragment both are null")
                     }

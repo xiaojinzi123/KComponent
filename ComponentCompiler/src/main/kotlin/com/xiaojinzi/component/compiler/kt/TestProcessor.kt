@@ -1,17 +1,20 @@
 package com.xiaojinzi.component.compiler.kt
 
-import com.google.auto.service.AutoService
-import com.google.devtools.ksp.*
-import com.google.devtools.ksp.processing.*
+import com.google.devtools.ksp.getClassDeclarationByName
+import com.google.devtools.ksp.processing.CodeGenerator
+import com.google.devtools.ksp.processing.KSPLogger
+import com.google.devtools.ksp.processing.Resolver
+import com.google.devtools.ksp.processing.SymbolProcessor
+import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
+import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
-import com.xiaojinzi.component.anno.*
-import java.util.*
 
 class TestProcessor(
     override val environment: SymbolProcessorEnvironment,
@@ -50,7 +53,8 @@ class TestProcessor(
 
                 when (val dec = this.declaration) {
                     is KSClassDeclaration -> {
-                        val testTypeName = dec.toClassName().withTypeArguments(arguments.map { it.toTypeName() })
+                        val testTypeName =
+                            dec.toClassName().withTypeArguments(arguments.map { it.toTypeName() })
                         logger.warn("testTypeNamexxxx = $testTypeName, xxx = ${dec.classKind == ClassKind.ANNOTATION_CLASS}")
                     }
 

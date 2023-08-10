@@ -92,6 +92,23 @@ class KComponentPlugin : Plugin<Project> {
 
             println("${KComponentPlugin.TAG}, moduleNameMap = $moduleNameMap")
 
+            // 如果之前的插件已经生成了 output 文件（classes.jar），这里拷贝一份拿出来
+            val tempFiles = ArrayList<File>(1)
+            val jars: List<RegularFile> = allJars.get().map {
+                val jarFile = it.asFile
+                if (jarFile.path == output.asFile.get().path) {
+                    // 如果之前有处理过的jar，备份出来
+                    val tempFile =
+                        File(jarFile.absolutePath.replace(jarFile.name, "temp${jarFile.name}"))
+                    jarFile.copyTo(tempFile, true)
+                    jarFile.delete()
+                    tempFiles.add(tempFile)
+                    RegularFile { tempFile }
+                } else {
+                    it
+                }
+            }
+            
             val jarOutput = JarOutputStream(
                 BufferedOutputStream(
                     FileOutputStream(
@@ -100,7 +117,7 @@ class KComponentPlugin : Plugin<Project> {
                 )
             )
 
-            allJars.get().forEach { file ->
+            jars.forEach { file ->
                 val jarFile = JarFile(file.asFile)
                 jarFile.entries().iterator().forEach { jarEntry ->
                     if ("com/xiaojinzi/component/support/ASMUtil.class" == jarEntry.name) {
@@ -147,6 +164,9 @@ class KComponentPlugin : Plugin<Project> {
 
             jarOutput.close()
 
+            tempFiles.forEach {
+                it.delete()
+            }
         }
     }
 

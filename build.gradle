@@ -9,6 +9,7 @@ buildscript {
 
     ext {
         compose_version = '1.2.0'
+        kcomponent_isMergeOutputFile = true
     }
 
     ext.component_group_id = "com.xiaojinzi"

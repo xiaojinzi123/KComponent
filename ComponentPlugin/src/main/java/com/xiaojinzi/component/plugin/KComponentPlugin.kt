@@ -58,10 +58,21 @@ class KComponentPlugin : Plugin<Project> {
         @TaskAction
         fun taskAction() {
 
-            println("${KComponentPlugin.TAG}, output = ${output.asFile.get().path}")
+            // 读取配置的属性 isMergeOutputFile
+
+            val isMergeOutputFile = runCatching {
+                project.properties["kcomponent_isMergeOutputFile"].toString().toBoolean()
+            }.getOrNull()?: false
+
+            // /Users/hhkj/Documents/code/android/github/KComponent/Demo/app2/build/intermediates/classes/debug/ALL/classes.jar
+            val outputFile = output.asFile.get()
+            val allJarList = allJars.get()
+
+            println("${KComponentPlugin.TAG}, isMergeOutputFile = $isMergeOutputFile")
+            println("${KComponentPlugin.TAG}, output = ${outputFile.path}, outputFileIsExist = ${outputFile.exists()}")
 
             // 输入的 jar、aar、源码
-            val inputs = (allJars.get() + allDirectories.get()).map { it.asFile.toPath() }
+            val inputs = (allJarList + allDirectories.get()).map { it.asFile.toPath() }
 
             // 系统依赖
             val classPaths = bootClasspath.get().map { it.asFile.toPath() }
@@ -81,6 +92,35 @@ class KComponentPlugin : Plugin<Project> {
                         )
                     )
                 )
+
+            val targetAllJars = if (isMergeOutputFile) {
+                // 是否 AllJars 中有输出文件
+                val isAllJarsContainsOutputFile = allJarList
+                    .find {
+                        it.asFile == outputFile
+                    } != null
+                if (isAllJarsContainsOutputFile) {
+                    val tempFile = File.createTempFile(
+                        "${System.currentTimeMillis()}",
+                        ".${outputFile.extension}"
+                    )
+                    println("${KComponentPlugin.TAG}, tempFile = ${tempFile.path}")
+                    outputFile.copyTo(
+                        target = tempFile,
+                        overwrite = true,
+                    )
+                    allJarList
+                        .filter {
+                            it.asFile != outputFile
+                        } + listOf(
+                        RegularFile { tempFile }
+                    )
+                } else {
+                    allJarList
+                }
+            } else {
+                allJarList
+            }
 
             // 找到所有满足条件的 class
             val moduleNameMap = query
@@ -102,7 +142,7 @@ class KComponentPlugin : Plugin<Project> {
                 )
             )
 
-            allJars.get().forEach { file ->
+            targetAllJars.forEach { file ->
                 val jarFile = JarFile(file.asFile)
                 jarFile.entries().iterator().forEach { jarEntry ->
                     if ("com/xiaojinzi/component/support/ASMUtil.class" == jarEntry.name) {

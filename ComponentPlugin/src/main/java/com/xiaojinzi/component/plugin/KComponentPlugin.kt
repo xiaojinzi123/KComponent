@@ -101,7 +101,7 @@ class KComponentPlugin : Plugin<Project> {
                     } != null
                 if (isAllJarsContainsOutputFile) {
                     val tempFile = File.createTempFile(
-                        "${System.currentTimeMillis()}",
+                        "kcomponentOutput",
                         ".${outputFile.extension}"
                     )
                     println("${KComponentPlugin.TAG}, tempFile = ${tempFile.path}")

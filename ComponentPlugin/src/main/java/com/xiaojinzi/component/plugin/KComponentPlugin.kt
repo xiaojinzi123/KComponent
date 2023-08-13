@@ -58,6 +58,8 @@ class KComponentPlugin : Plugin<Project> {
         @TaskAction
         fun taskAction() {
 
+            println("${KComponentPlugin.TAG}, output = ${output.asFile.get().path}")
+
             // 输入的 jar、aar、源码
             val inputs = (allJars.get() + allDirectories.get()).map { it.asFile.toPath() }
 

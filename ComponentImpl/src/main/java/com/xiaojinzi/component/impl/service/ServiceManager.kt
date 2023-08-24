@@ -228,7 +228,7 @@ object ServiceManager {
         Utils.checkNullPointer(tClass, "tClass")
         Utils.checkNullPointer(name, "name")
         synchronized(serviceMap) {
-            val uniqueName = tClass.simpleName + ":" + name
+            val uniqueName = tClass.qualifiedName + ":" + name
             if (uniqueServiceSet.contains(uniqueName)) {
                 throw ServiceRepeatCreateException("className is " + tClass.simpleName + ", serviceName is '" + name + "'")
             }

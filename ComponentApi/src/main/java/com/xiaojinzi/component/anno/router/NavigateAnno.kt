@@ -23,17 +23,18 @@ annotation class NavigateAnno(
     val forResult: Boolean = false,
 
     /**
-     * 为了拿 Intent, 可以搭配 [resultCodeMatch] 属性使用
-     */
-    val forIntent: Boolean = false,
-
-    /**
      * 为了那 resultCode
      */
     val forResultCode: Boolean = false,
 
     /**
-     * 当你使用了 [.forIntent]的时候,
+     * 为了拿 Intent, 可以搭配 [resultCodeMatch] 属性使用
+     */
+    val forIntent: Boolean = false,
+
+    /**
+     * 1. 这个可以单独使用,
+     * 2. 也可以当你使用了 [.forIntent]的时候,
      * 你可以使用这个属性匹配 ResultCode
      * [Int.MIN_VALUE] 表示不启用
      */

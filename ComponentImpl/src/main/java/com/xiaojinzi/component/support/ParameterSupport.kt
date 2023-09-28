@@ -1244,6 +1244,7 @@ object ParameterSupport {
     }
 
 
+    @Suppress("UNCHECKED_CAST")
     fun <T : Serializable> getSerializable(
         bundle: Bundle?, key: String,
         defaultValue: T? = null

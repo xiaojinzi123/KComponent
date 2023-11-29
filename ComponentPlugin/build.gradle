@@ -33,6 +33,7 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation "com.joom.grip:grip:0.9.1"
     implementation "org.javassist:javassist:3.26.0-GA"
+    implementation 'com.github.gundy:semver4j:0.16.4'
 }
 
 java {

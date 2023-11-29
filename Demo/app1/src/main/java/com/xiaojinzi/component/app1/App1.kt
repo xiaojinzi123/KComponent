@@ -3,8 +3,6 @@ package com.xiaojinzi.component.app1
 import android.app.Application
 import com.xiaojinzi.component.Component
 import com.xiaojinzi.component.Config
-import com.xiaojinzi.component.base.RouterConfig
-import com.xiaojinzi.component.base.spi.UserSpi
 import com.xiaojinzi.component.impl.ActivityResultRouterResult
 import com.xiaojinzi.component.impl.IModuleLifecycle
 import com.xiaojinzi.component.impl.Router

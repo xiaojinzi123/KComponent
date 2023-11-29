@@ -62,7 +62,7 @@ class KComponentPlugin : Plugin<Project> {
 
             val isMergeOutputFile = runCatching {
                 project.properties["kcomponent_isMergeOutputFile"].toString().toBoolean()
-            }.getOrNull()?: false
+            }.getOrNull() ?: false
 
             // /Users/hhkj/Documents/code/android/github/KComponent/Demo/app2/build/intermediates/classes/debug/ALL/classes.jar
             val outputFile = output.asFile.get()
@@ -198,13 +198,13 @@ class KComponentPlugin : Plugin<Project> {
 
             plugins.withType(AppPlugin::class.java) {
 
-                val androidComponents =
-                    extensions.findByType(AndroidComponentsExtension::class.java)
+                val androidComponents = extensions
+                    .findByType(AndroidComponentsExtension::class.java)
                 androidComponents?.onVariants { variant ->
                     val name = "${variant.name}ModifyASMUtil"
                     val taskProvider = tasks.register<ModifyClassesTask>(name) {
-                        group = "component"
-                        description = "$name"
+                        group = "kcomponent"
+                        description = name
                         bootClasspath.set(androidComponents.sdkComponents.bootClasspath)
                         classpath = variant.compileClasspath
                     }

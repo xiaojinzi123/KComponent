@@ -29,7 +29,6 @@ dependencies {
 
     api libs.accompanist_pager
     api libs.accompanist_swiperefresh
-    api libs.accompanist_insets
     api libs.accompanist_sysuicontrol
     api libs.accompanist_flowlayout
     api libs.accompanist_placeholder

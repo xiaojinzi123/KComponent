@@ -10,7 +10,7 @@
   },
   "createdBy": {
     "gradle": {
-      "version": "8.0"
+      "version": "8.2"
     }
   },
   "variants": [
@@ -20,7 +20,7 @@
         "org.gradle.category": "library",
         "org.gradle.dependency.bundling": "external",
         "org.gradle.jvm.environment": "standard-jvm",
-        "org.gradle.jvm.version": 11,
+        "org.gradle.jvm.version": 17,
         "org.gradle.libraryelements": "jar",
         "org.gradle.usage": "java-api",
         "org.jetbrains.kotlin.platform.type": "jvm"
@@ -29,11 +29,11 @@
         {
           "name": "kcomponent-plugin-1.0.0-beta1.jar",
           "url": "kcomponent-plugin-1.0.0-beta1.jar",
-          "size": 23983,
-          "sha512": "d5e6711cd276d15c8eb7d91f56034f789ce22ecf3e8ed89e573d0f87c9b2d58692259e65fcc4c46acb6716b027588c3337f43bf61470eaa59f46a9dd0825d6fc",
-          "sha256": "ae807fdd4efe5718da3c4a4ac68bcbea81dfe059de979954161e91a7e5483b78",
-          "sha1": "0997b244d878cc852d4385f9bd0a41ce240d7c75",
-          "md5": "06b811df8107ac8f1fa1de66211e0780"
+          "size": 24889,
+          "sha512": "35f4b6403b65dcaab205d4fc82bde2afe3557719fd0ab9f87290f3a83654cc2711ac11588211a3d941a11f0bd0b981fe804204858f6f9170c0e9812749c879b4",
+          "sha256": "84a2df6a585382c04fa379c67bb1d71cff140710a4cf21cefbb21d383104cbb3",
+          "sha1": "af53dab937fe999aa9fa3d66553c7cc3338312f6",
+          "md5": "c24a24029f402b6ef29e37312113da39"
         }
       ]
     },
@@ -43,7 +43,7 @@
         "org.gradle.category": "library",
         "org.gradle.dependency.bundling": "external",
         "org.gradle.jvm.environment": "standard-jvm",
-        "org.gradle.jvm.version": 11,
+        "org.gradle.jvm.version": 17,
         "org.gradle.libraryelements": "jar",
         "org.gradle.usage": "java-runtime",
         "org.jetbrains.kotlin.platform.type": "jvm"
@@ -67,7 +67,7 @@
           "group": "com.android.tools.build",
           "module": "gradle",
           "version": {
-            "requires": "7.4.2"
+            "requires": "8.1.4"
           }
         },
         {
@@ -90,17 +90,24 @@
           "version": {
             "requires": "3.26.0-GA"
           }
+        },
+        {
+          "group": "com.github.gundy",
+          "module": "semver4j",
+          "version": {
+            "requires": "0.16.4"
+          }
         }
       ],
       "files": [
         {
           "name": "kcomponent-plugin-1.0.0-beta1.jar",
           "url": "kcomponent-plugin-1.0.0-beta1.jar",
-          "size": 23983,
-          "sha512": "d5e6711cd276d15c8eb7d91f56034f789ce22ecf3e8ed89e573d0f87c9b2d58692259e65fcc4c46acb6716b027588c3337f43bf61470eaa59f46a9dd0825d6fc",
-          "sha256": "ae807fdd4efe5718da3c4a4ac68bcbea81dfe059de979954161e91a7e5483b78",
-          "sha1": "0997b244d878cc852d4385f9bd0a41ce240d7c75",
-          "md5": "06b811df8107ac8f1fa1de66211e0780"
+          "size": 24889,
+          "sha512": "35f4b6403b65dcaab205d4fc82bde2afe3557719fd0ab9f87290f3a83654cc2711ac11588211a3d941a11f0bd0b981fe804204858f6f9170c0e9812749c879b4",
+          "sha256": "84a2df6a585382c04fa379c67bb1d71cff140710a4cf21cefbb21d383104cbb3",
+          "sha1": "af53dab937fe999aa9fa3d66553c7cc3338312f6",
+          "md5": "c24a24029f402b6ef29e37312113da39"
         }
       ]
     },
@@ -116,11 +123,11 @@
         {
           "name": "kcomponent-plugin-1.0.0-beta1-sources.jar",
           "url": "kcomponent-plugin-1.0.0-beta1-sources.jar",
-          "size": 4719,
-          "sha512": "baf617b813346958320138fcd82614b80b2d75833f0435f90ff48b5136fa6d4a60a4e237ef3f0568b5bc29257c043a91dc0d3dadcedfa161ee5ccd1a92f0db43",
-          "sha256": "e28f255560068329d22d5c1309d3015aa989b2b3097ee76538229024fa835552",
-          "sha1": "303e6517198aab91239a24d79c36d5c23d1b3735",
-          "md5": "650c2b549b0005398330c7ac6646a48e"
+          "size": 4720,
+          "sha512": "c04dd8600379b572e455b01bb7da8a03e4b260917613457840e02ea0c378cc65d02ce47eac6c5347c80f10c3927d0638ca6cdbd9403a71307d6de4ff4ca4798f",
+          "sha256": "ba9240c115302ccdb3fca7c345ff4c65b89701c06d54de544d9e075e933474f7",
+          "sha1": "610bb0ab7c335691bbfa31ee07273afd0a57c557",
+          "md5": "e9d8b84f859c44bb15c54e5cff48ebf9"
         }
       ]
     },
@@ -137,10 +144,10 @@
           "name": "kcomponent-plugin-1.0.0-beta1-javadoc.jar",
           "url": "kcomponent-plugin-1.0.0-beta1-javadoc.jar",
           "size": 261,
-          "sha512": "29bc6160839a11f1e2426dc6d8f94d5203748d3489e1ca217e3c4d78c73ecda518ed53e2f2999d820c1e41bb7b06c55767dc4fc88bc2d19ffdd4d784623c4ee3",
-          "sha256": "0ca9942a53e6595fafe4a02a9f63461f75ce7ad3f8e186e5b659d38457b1b394",
-          "sha1": "cb3168711c097d54098c9e4962814d93a7270f54",
-          "md5": "1cc938d3da7d257124692db0b2965ef1"
+          "sha512": "678666ecc5f58d8a3d685fe62e7fc703135d2d874802d5aece853a3ee336e4b2244c2ed829f6dc0b658d9b960581142f760ecdc6fcde8400a15c6b23b515231a",
+          "sha256": "3a5b6dd698fa63e63dd28e2c2f4d29a8d9ba101370edcb89821df5d76db0fb14",
+          "sha1": "7775abb32e785207a14edb61b27c95ab707900ef",
+          "md5": "0a5971c75f9c22b11eb71b595145b0c2"
         }
       ]
     }

@@ -199,6 +199,12 @@ private fun MainView() {
             notificationManager.notify(2, builder.build())
         }
 
+        Spacer(
+            modifier = Modifier
+                .height(height = 120.dp)
+                .nothing()
+        )
+
     }
 }
 

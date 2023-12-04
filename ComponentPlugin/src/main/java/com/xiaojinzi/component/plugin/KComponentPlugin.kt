@@ -55,13 +55,17 @@ class KComponentPlugin : Plugin<Project> {
         @get:CompileClasspath
         abstract var classpath: FileCollection
 
+        var isMergeOutputFileStr = project
+            .properties["kcomponent_isMergeOutputFile"]
+            ?.toString() ?: ""
+
         @TaskAction
         fun taskAction() {
 
             // 读取配置的属性 isMergeOutputFile
 
             val isMergeOutputFile = runCatching {
-                project.properties["kcomponent_isMergeOutputFile"].toString().toBoolean()
+                isMergeOutputFileStr.toBoolean()
             }.getOrNull() ?: false
 
             // /Users/hhkj/Documents/code/android/github/KComponent/Demo/app2/build/intermediates/classes/debug/ALL/classes.jar
@@ -190,6 +194,7 @@ class KComponentPlugin : Plugin<Project> {
             jarOutput.close()
 
         }
+
     }
 
     override fun apply(project: Project) {
@@ -200,6 +205,7 @@ class KComponentPlugin : Plugin<Project> {
 
                 val androidComponents = extensions
                     .findByType(AndroidComponentsExtension::class.java)
+
                 androidComponents?.onVariants { variant ->
                     val name = "${variant.name}ModifyASMUtil"
                     val taskProvider = tasks.register<ModifyClassesTask>(name) {

@@ -29,11 +29,11 @@
         {
           "name": "ComponentPlugin-1.0.0-beta1.jar",
           "url": "ComponentPlugin-1.0.0-beta1.jar",
-          "size": 24889,
-          "sha512": "35f4b6403b65dcaab205d4fc82bde2afe3557719fd0ab9f87290f3a83654cc2711ac11588211a3d941a11f0bd0b981fe804204858f6f9170c0e9812749c879b4",
-          "sha256": "84a2df6a585382c04fa379c67bb1d71cff140710a4cf21cefbb21d383104cbb3",
-          "sha1": "af53dab937fe999aa9fa3d66553c7cc3338312f6",
-          "md5": "c24a24029f402b6ef29e37312113da39"
+          "size": 25140,
+          "sha512": "014e8a4093d41b24fa8b4215c49b7c40dd31d5527c1a16699e7237f941c2c54c74d51a5cdfdc855da8660cf0e9298126f8b00d90b085e62853e3179f51b0928b",
+          "sha256": "7fb76d97a3b3098dd35bd71e52c1feecffabbde8fe8dc3eea79f15d8a86ae6ed",
+          "sha1": "2e0b8eb31df61dd8a7cc64a2624b7703dd8d5dbe",
+          "md5": "0a403300615426c1e96c009f46e91612"
         }
       ]
     },
@@ -103,11 +103,11 @@
         {
           "name": "ComponentPlugin-1.0.0-beta1.jar",
           "url": "ComponentPlugin-1.0.0-beta1.jar",
-          "size": 24889,
-          "sha512": "35f4b6403b65dcaab205d4fc82bde2afe3557719fd0ab9f87290f3a83654cc2711ac11588211a3d941a11f0bd0b981fe804204858f6f9170c0e9812749c879b4",
-          "sha256": "84a2df6a585382c04fa379c67bb1d71cff140710a4cf21cefbb21d383104cbb3",
-          "sha1": "af53dab937fe999aa9fa3d66553c7cc3338312f6",
-          "md5": "c24a24029f402b6ef29e37312113da39"
+          "size": 25140,
+          "sha512": "014e8a4093d41b24fa8b4215c49b7c40dd31d5527c1a16699e7237f941c2c54c74d51a5cdfdc855da8660cf0e9298126f8b00d90b085e62853e3179f51b0928b",
+          "sha256": "7fb76d97a3b3098dd35bd71e52c1feecffabbde8fe8dc3eea79f15d8a86ae6ed",
+          "sha1": "2e0b8eb31df61dd8a7cc64a2624b7703dd8d5dbe",
+          "md5": "0a403300615426c1e96c009f46e91612"
         }
       ]
     },
@@ -123,11 +123,11 @@
         {
           "name": "ComponentPlugin-1.0.0-beta1-sources.jar",
           "url": "ComponentPlugin-1.0.0-beta1-sources.jar",
-          "size": 4720,
-          "sha512": "c04dd8600379b572e455b01bb7da8a03e4b260917613457840e02ea0c378cc65d02ce47eac6c5347c80f10c3927d0638ca6cdbd9403a71307d6de4ff4ca4798f",
-          "sha256": "ba9240c115302ccdb3fca7c345ff4c65b89701c06d54de544d9e075e933474f7",
-          "sha1": "610bb0ab7c335691bbfa31ee07273afd0a57c557",
-          "md5": "e9d8b84f859c44bb15c54e5cff48ebf9"
+          "size": 4737,
+          "sha512": "c73ce8712454cc44a03bcae3b32e03075c00eb68d48233d94698ef003696341261e44b804c38cfbb07a939f67832b46c6b8ce0ce78f8c9c5206c4f4e4c7d14a5",
+          "sha256": "57c3b026f2d966c90beef8149456ddd31fa7a3b04d6707a47822f0b194890580",
+          "sha1": "cec3d84849d06d2865beff05e42979ecb500210a",
+          "md5": "ca23452e6f53cfc6849ea7303dccd6e1"
         }
       ]
     },
@@ -144,10 +144,10 @@
           "name": "ComponentPlugin-1.0.0-beta1-javadoc.jar",
           "url": "ComponentPlugin-1.0.0-beta1-javadoc.jar",
           "size": 261,
-          "sha512": "678666ecc5f58d8a3d685fe62e7fc703135d2d874802d5aece853a3ee336e4b2244c2ed829f6dc0b658d9b960581142f760ecdc6fcde8400a15c6b23b515231a",
-          "sha256": "3a5b6dd698fa63e63dd28e2c2f4d29a8d9ba101370edcb89821df5d76db0fb14",
-          "sha1": "7775abb32e785207a14edb61b27c95ab707900ef",
-          "md5": "0a5971c75f9c22b11eb71b595145b0c2"
+          "sha512": "5f57869813269f17ab4855a5cd7ab8ac3d9fe14115b194b6b9e12f1d4df25a7a908092e618ea14a705f4b1a84c07ca9da1bc2f19f566f466566654fb38010eac",
+          "sha256": "a45154de5bb77dfaa36fa0619185cb43fed0a8385d044d4902c32eb91c505fd3",
+          "sha1": "0f57cf9512cd265880e4fb44ed837f3a2e12e63d",
+          "md5": "4fb4a50364d5942703d58fed17cc5840"
         }
       ]
     }

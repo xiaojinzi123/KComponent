@@ -205,6 +205,12 @@ private fun MainView() {
                 .nothing()
         )
 
+        Spacer(
+            modifier = Modifier
+                .height(height = 120.dp)
+                .nothing()
+        )
+
     }
 }
 

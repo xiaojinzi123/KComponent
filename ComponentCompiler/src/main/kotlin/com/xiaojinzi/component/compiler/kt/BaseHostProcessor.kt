@@ -1,11 +1,13 @@
 package com.xiaojinzi.component.compiler.kt
 
+import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.symbol.KSAnnotated
 
 abstract class BaseHostProcessor(
     open val environment: SymbolProcessorEnvironment,
+    private val logger: KSPLogger = environment.logger,
     val componentModuleName: String = (environment.options["ModuleName"]
         ?: environment.options["HOST"]) ?: throw NULLHOSTEXCEPTION
 ) : BaseProcessor() {
@@ -33,10 +35,12 @@ abstract class BaseHostProcessor(
     private var isProcessed = false
 
     final override fun process(resolver: Resolver): List<KSAnnotated> {
-        if (isProcessed) {
-        } else {
-            isProcessed = true
+        logger.warn(
+            message = "BaseHostProcessor, isProcessed = $isProcessed, object is ${this.javaClass.simpleName}, componentModuleName is $componentModuleName",
+        )
+        if (!isProcessed) {
             doProcess(resolver = resolver)
+            isProcessed = true
         }
         return emptyList()
     }

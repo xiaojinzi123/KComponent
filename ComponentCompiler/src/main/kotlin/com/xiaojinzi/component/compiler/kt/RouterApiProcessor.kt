@@ -338,7 +338,7 @@ class RouterApiProcessor(
                                                 type = try {
                                                     ksValueParameter.typeToClassName()
                                                 } catch (e: Exception) {
-                                                    logger.warn(
+                                                    logger.info(
                                                         message = "ksValueParameter = $ksValueParameter"
                                                     )
                                                     throw e
@@ -355,7 +355,7 @@ class RouterApiProcessor(
                                     }
 
                                     returnTypePoetTypeName?.let {
-                                        logger.warn(message = "returnTypePoetTypeName = $returnTypePoetTypeName")
+                                        logger.info(message = "returnTypePoetTypeName = $returnTypePoetTypeName")
                                         funSpecBuilder.returns(
                                             returnType = it
                                         )
@@ -987,7 +987,7 @@ class RouterApiProcessor(
             .filterIsInstance<KSClassDeclaration>()
             .toList()
 
-        logger.warn(
+        logger.info(
             "targetList = $targetRouterApiAnnotatedList"
         )
 
@@ -1003,12 +1003,12 @@ class RouterApiProcessor(
 
     override fun finish() {
         super.finish()
-        logger.warn("$TAG finish")
+        logger.info("$TAG finish")
     }
 
     override fun onError() {
         super.onError()
-        logger.warn("$TAG onError")
+        logger.info("$TAG onError")
     }
 
 }

@@ -18,7 +18,7 @@ import com.squareup.kotlinpoet.ksp.toTypeName
 
 class TestProcessor(
     override val environment: SymbolProcessorEnvironment,
-    val logger: KSPLogger = environment.logger,
+    private val logger: KSPLogger = environment.logger,
     val codeGenerator: CodeGenerator = environment.codeGenerator,
 ) : BaseHostProcessor(
     environment = environment,
@@ -38,16 +38,16 @@ class TestProcessor(
 
         val testClass =
             resolver.getClassDeclarationByName("com.xiaojinzi.component.demo.TestInterface")
-        logger.warn("testClass = $testClass")
+        logger.info("testClass = $testClass")
 
         testClass?.run {
 
             val testFunction = this.getAllFunctions().first()
-            logger.warn("testFunction = $testFunction")
-            logger.warn("testFunction.returnType1 = ${(testFunction.returnType?.resolve())}")
+            logger.info("testFunction = $testFunction")
+            logger.info("testFunction.returnType1 = ${(testFunction.returnType?.resolve())}")
 
             val testFunctionReturnType2 = testFunction.returnTypeToTypeName() as? ClassName
-            logger.warn("testFunction.returnType2 = $testFunctionReturnType2")
+            logger.info("testFunction.returnType2 = $testFunctionReturnType2")
 
             testFunction.returnType?.resolve()?.run {
 
@@ -55,7 +55,7 @@ class TestProcessor(
                     is KSClassDeclaration -> {
                         val testTypeName =
                             dec.toClassName().withTypeArguments(arguments.map { it.toTypeName() })
-                        logger.warn("testTypeNamexxxx = $testTypeName, xxx = ${dec.classKind == ClassKind.ANNOTATION_CLASS}")
+                        logger.info("testTypeNamexxxx = $testTypeName, xxx = ${dec.classKind == ClassKind.ANNOTATION_CLASS}")
                     }
 
                     else -> {}
@@ -71,12 +71,12 @@ class TestProcessor(
 
     override fun finish() {
         super.finish()
-        logger.warn("$TAG finish")
+        logger.info("$TAG finish")
     }
 
     override fun onError() {
         super.onError()
-        logger.warn("$TAG onError")
+        logger.info("$TAG onError")
     }
 
 }

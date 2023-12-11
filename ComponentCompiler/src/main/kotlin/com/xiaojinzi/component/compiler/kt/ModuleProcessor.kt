@@ -578,7 +578,7 @@ class ModuleProcessor(
                                             .also {
                                                 when (item) {
                                                     is KSFunctionDeclaration -> {
-                                                        logger.warn(
+                                                        logger.info(
                                                             message = "fragment KSFunctionDeclaration = ${item.qualifiedName?.asString()}"
                                                         )
                                                         if (item.parameters.size != 1) {
@@ -771,9 +771,9 @@ class ModuleProcessor(
             path = ComponentConstants.SEPARATOR + path
         }
 
-        logger.warn("routerAnno.hostAndPath = ${element.location}")
+        logger.info("routerAnno.hostAndPath = ${element.location}")
         routerAnno.interceptorNames.forEach { item ->
-            logger.warn("routerAnno.interceptorName = $item")
+            logger.info("routerAnno.interceptorName = $item")
         }
 
         return RouterAnnoBean(
@@ -921,7 +921,7 @@ class ModuleProcessor(
                     }
 
                     is KSFunctionDeclaration -> {
-                        logger.warn("element.qualifiedName = ${element.qualifiedName?.asString()}")
+                        logger.info("element.qualifiedName = ${element.qualifiedName?.asString()}")
                         listOf(
                             customerIntentCallClassName,
                             mClassNameIntent,
@@ -1110,7 +1110,7 @@ class ModuleProcessor(
             componentModuleName
         ) + ComponentUtil.MODULE
 
-        logger.warn(
+        logger.info(
             "moduleAppAnnotatedList = $moduleAppAnnotatedList"
         )
 
@@ -1209,12 +1209,12 @@ class ModuleProcessor(
 
     override fun finish() {
         super.finish()
-        logger.warn("$TAG finish")
+        logger.info("$TAG finish")
     }
 
     override fun onError() {
         super.onError()
-        logger.warn("$TAG onError")
+        logger.info("$TAG onError")
     }
 
 }

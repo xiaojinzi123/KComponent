@@ -130,7 +130,7 @@ class AutowireProcessor(
                             ).firstOrNull()
 
                             if (uriAutoWireAnno != null) {
-                                logger.warn(
+                                logger.info(
                                     message = "uriAutoWireAnno = $uriAutoWireAnno"
                                 )
                             }
@@ -139,7 +139,7 @@ class AutowireProcessor(
                                 annotationKClass = AttrValueAutowiredAnno::class
                             ).firstOrNull()
 
-                            logger.warn(
+                            logger.info(
                                 message = "attrAutoWireAnno = $attrAutoWireAnno"
                             )
 
@@ -330,7 +330,7 @@ class AutowireProcessor(
             .build()
 
         try {
-            logger.warn(
+            logger.info(
                 message = "classDeclarationKsType1 = $classDeclarationKsType, isSubFragmentActivity = $isSubActivity, isSubFragment = $isSubFragment",
             )
             codeGenerator.createNewFile(
@@ -342,7 +342,7 @@ class AutowireProcessor(
                     fileSpec.toString().toByteArray()
                 )
             }
-            logger.warn(
+            logger.info(
                 message = "classDeclarationKsType2 = $classDeclarationKsType, isSubFragmentActivity = $isSubActivity, isSubFragment = $isSubFragment",
             )
         } catch (e: Exception) {
@@ -392,12 +392,12 @@ class AutowireProcessor(
 
     override fun finish() {
         super.finish()
-        logger.warn("$TAG finish")
+        logger.info("$TAG finish")
     }
 
     override fun onError() {
         super.onError()
-        logger.warn("$TAG onError")
+        logger.info("$TAG onError")
     }
 
 }
@@ -406,7 +406,7 @@ class AutowireProcessor(
 class AutowireProcessorProvider : SymbolProcessorProvider {
 
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
-        environment.logger.warn(
+        environment.logger.info(
             "AutowireProcessorProvider.create called"
         )
         return AutowireProcessor(

@@ -408,7 +408,5 @@ abstract class BaseProcessor : SymbolProcessor {
 
     }
 
-    init {
-    }
 
 }

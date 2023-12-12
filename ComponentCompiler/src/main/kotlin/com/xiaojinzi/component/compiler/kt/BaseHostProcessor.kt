@@ -32,15 +32,15 @@ abstract class BaseHostProcessor(
 
     }
 
-    private var isProcessed = false
+    private var round = 0
 
     final override fun process(resolver: Resolver): List<KSAnnotated> {
+        round++
         logger.warn(
-            message = "BaseHostProcessor, isProcessed = $isProcessed, object is ${this.javaClass.simpleName}, componentModuleName is $componentModuleName",
+            message = "BaseHostProcessor, round = $round, object is ${this.javaClass.simpleName}, componentModuleName is $componentModuleName",
         )
-        if (!isProcessed) {
+        if (round == 1) {
             doProcess(resolver = resolver)
-            isProcessed = true
         }
         return emptyList()
     }

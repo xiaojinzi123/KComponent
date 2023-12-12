@@ -47,7 +47,7 @@ dependencies {
     api project(':ComponentApi')
 }
 
-task androidSourcesJar(type: Jar) {
+tasks.register('androidSourcesJar', Jar) {
     archiveClassifier.set('sources')
     from android.sourceSets.main.java.srcDirs
 }

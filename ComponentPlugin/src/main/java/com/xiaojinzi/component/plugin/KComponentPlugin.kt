@@ -55,7 +55,7 @@ class KComponentPlugin : Plugin<Project> {
         @get:CompileClasspath
         abstract var classpath: FileCollection
 
-        var isMergeOutputFileStr = project
+        private var isMergeOutputFileStr = project
             .properties["kcomponent_isMergeOutputFile"]
             ?.toString() ?: ""
 

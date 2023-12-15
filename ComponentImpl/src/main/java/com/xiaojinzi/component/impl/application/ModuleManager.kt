@@ -72,6 +72,7 @@ object ModuleManager {
             // 标记已经注册
             moduleApplicationMap[module.moduleName] = module
             // 模块的 Application 的 onCreate 执行
+            // 服务发现会在这个阶段完成
             module.onCreate(app = getApplication())
             // 路由的部分的注册, 可选的异步还是同步
             val r = Runnable {
@@ -92,6 +93,8 @@ object ModuleManager {
                     moduleName = module.moduleName,
                     fragmentModule = module,
                 )
+                // 对一个模块中没有标记任何注解的情况进行 debug 报错
+
                 notifyModuleChanged()
             }
             // 路由是否异步初始化

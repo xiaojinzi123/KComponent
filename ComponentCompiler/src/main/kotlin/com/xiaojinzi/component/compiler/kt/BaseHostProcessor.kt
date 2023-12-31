@@ -13,6 +13,7 @@ abstract class BaseHostProcessor(
     val componentModuleName: String = (environment.options["ModuleName"]
         ?: environment.options["HOST"]) ?: throw NULL_HOST_EXCEPTION,
     val logEnable: Boolean = environment.options["LogEnable"]?.toBoolean() ?: false,
+    val incrementalDisable: Boolean = environment.options["IncrementalDisable"]?.toBoolean() ?: false,
 ) : BaseProcessor() {
 
     companion object {

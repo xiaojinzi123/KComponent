@@ -11,6 +11,3 @@ android {
 
 apply from: "../demo_module.gradle"
 
-ksp {
-    arg("ModuleName", "user")
-}

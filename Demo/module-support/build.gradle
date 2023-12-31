@@ -11,7 +11,3 @@ android {
 
 apply from: "../demo_module.gradle"
 
-ksp {
-    arg("ModuleName", "support")
-    arg("LogEnable", "true")
-}

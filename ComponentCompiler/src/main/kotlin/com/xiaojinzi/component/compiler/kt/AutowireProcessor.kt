@@ -350,6 +350,7 @@ class AutowireProcessor(
                 it.write(
                     fileSpec.toString().toByteArray()
                 )
+                it.flush()
             }
             if (logEnable) {
                 logger.warn(

@@ -14,10 +14,6 @@ plugins {
 
 apply from: "../demo_module.gradle"
 
-ksp {
-    arg("ModuleName", "app1")
-}
-
 /*kotlin {
     sourceSets.main {
         kotlin.srcDir("build/generated/ksp/main/kotlin")

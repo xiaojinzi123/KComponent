@@ -997,6 +997,7 @@ class RouterApiProcessor(
                 it.write(
                     fileSpec.toString().toByteArray()
                 )
+                it.flush()
             }
         } catch (e: Exception) {
             if (logEnable) {

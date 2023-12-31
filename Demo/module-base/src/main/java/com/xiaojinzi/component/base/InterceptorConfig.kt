@@ -1,5 +1,8 @@
 package com.xiaojinzi.component.base
 
+/**
+ * 写点注释
+ */
 object InterceptorConfig {
 
     const val USER_LOGIN = "userLogin"

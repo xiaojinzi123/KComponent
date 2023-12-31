@@ -8,5 +8,7 @@ ksp {
     }
 
     arg("ModuleName", name)
+    arg("LogEnable", "true")
+    arg("IncrementalDisable", "true")
 
 }

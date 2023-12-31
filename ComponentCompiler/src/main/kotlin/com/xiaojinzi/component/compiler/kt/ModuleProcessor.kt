@@ -31,6 +31,17 @@ class ModuleProcessor(
     environment = environment,
 ) {
 
+    private val annoNames = listOf(
+        ModuleAppAnno::class,
+        ServiceAnno::class,
+        ServiceDecoratorAnno::class,
+        FragmentAnno::class,
+        GlobalInterceptorAnno::class,
+        InterceptorAnno::class,
+        RouterAnno::class,
+        RouterDegradeAnno::class,
+    ).map { "@${it.simpleName}" }
+
     private val TAG = "ModuleProcessor"
 
     private val componentClassName = ClassName(
@@ -1072,23 +1083,11 @@ class ModuleProcessor(
                 "$TAG moduleAppAnnotatedList = $moduleAppAnnotatedList"
             )
         }
+
         if (logEnable) {
             logger.warn(
                 "$TAG moduleAppAnnotatedList.size = ${moduleAppAnnotatedList.size}"
             )
-        }
-
-        if (logEnable) {
-            resolver
-                .getSymbolsWithAnnotation(
-                    annotationName = ModuleAppAnno::class.qualifiedName!!,
-                    inDepth = true,
-                )
-                .forEach {
-                    logger.warn(
-                        "$TAG inDepth moduleAppAnnotatedList item = $it"
-                    )
-                }
         }
 
         // Service 的
@@ -1171,9 +1170,25 @@ class ModuleProcessor(
                 annotationName = RouterDegradeAnno::class.qualifiedName!!
             )
             .toList()
+
         if (logEnable) {
             logger.warn(
                 "$TAG routerDegradeAnnotatedList.size = ${routerDegradeAnnotatedList.size}"
+            )
+        }
+
+        // 如果都是为空的, 要不就是没有使用注解, 要不就是因为 ksp 的增量更新导致的获取不到
+        if (incrementalDisable && moduleAppAnnotatedList.isEmpty()
+            && serviceAnnotatedList.isEmpty()
+            && serviceDecoratorAnnotatedList.isEmpty()
+            && fragmentAnnotatedList.isEmpty()
+            && globalInterceptorAnnotatedList.isEmpty()
+            && interceptorAnnotatedList.isEmpty()
+            && routerAnnotatedList.isEmpty()
+            && routerDegradeAnnotatedList.isEmpty()
+        ) {
+            throw ProcessException(
+                message = "可能的原因: \n1. 您没有在 '$componentModuleName' 模块中使用任何一个注解(${annoNames.joinToString()}) \n2. 您使用了 ksp 的增量编译 \n\n解决方式：\n1. 模块中使用任意一个注解(${annoNames.joinToString()}), 如果还出现, 请确认关闭了 ksp 增量编译 \n2. 关闭 ksp 的增量编译 \n3. 模块设置中的 ksp 参数 IncrementalDisable 设置为 false 或者 删除"
             )
         }
 
@@ -1273,6 +1288,7 @@ class ModuleProcessor(
                 it.write(
                     fileSpec.toString().toByteArray()
                 )
+                it.flush()
             }
         } catch (e: Exception) {
             if (logEnable) {

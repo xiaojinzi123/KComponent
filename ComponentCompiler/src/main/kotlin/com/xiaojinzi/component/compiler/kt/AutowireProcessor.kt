@@ -19,8 +19,6 @@ import com.xiaojinzi.component.support.AttrAutoWireMode
 
 class AutowireProcessor(
     override val environment: SymbolProcessorEnvironment,
-    val logger: KSPLogger = environment.logger,
-    val codeGenerator: CodeGenerator = environment.codeGenerator,
 ) : BaseHostProcessor(
     environment = environment,
 ) {
@@ -87,6 +85,7 @@ class AutowireProcessor(
                             isSubActivity -> {
                                 it.addStatement("this.injectAttrValue(target = target, bundle = target.intent?.extras?: Bundle())")
                             }
+
                             isSubFragment -> {
                                 it.addStatement("this.injectAttrValue(target = target, bundle = target.arguments?: Bundle())")
                             }
@@ -130,18 +129,22 @@ class AutowireProcessor(
                             ).firstOrNull()
 
                             if (uriAutoWireAnno != null) {
-                                logger.info(
-                                    message = "uriAutoWireAnno = $uriAutoWireAnno"
-                                )
+                                if (logEnable) {
+                                    logger.info(
+                                        message = "uriAutoWireAnno = $uriAutoWireAnno"
+                                    )
+                                }
                             }
 
                             val attrAutoWireAnno = ksPropertyDeclaration.getAnnotationsByType(
                                 annotationKClass = AttrValueAutowiredAnno::class
                             ).firstOrNull()
 
-                            logger.info(
-                                message = "attrAutoWireAnno = $attrAutoWireAnno"
-                            )
+                            if (logEnable) {
+                                logger.info(
+                                    message = "attrAutoWireAnno = $attrAutoWireAnno"
+                                )
+                            }
 
                             val serviceAutoWireAnno = ksPropertyDeclaration.getAnnotationsByType(
                                 annotationKClass = ServiceAutowiredAnno::class
@@ -259,11 +262,13 @@ class AutowireProcessor(
                                                     }
                                                     funSpec.endControlFlow()
                                                 }
+
                                                 AttrAutoWireMode.Default -> {
                                                     defaultModel.invoke(
                                                         funSpec, attrAutoWireAnnoItemName,
                                                     )
                                                 }
+
                                                 AttrAutoWireMode.Override -> {
                                                     overrideModel.invoke(
                                                         funSpec,
@@ -295,7 +300,7 @@ class AutowireProcessor(
                                     format = "target.%N = %T.%N(tClass = %T::class)",
                                     propertyName,
                                     mClassNameServiceManager,
-                                    if(isPropertyNullable) {
+                                    if (isPropertyNullable) {
                                         "get"
                                     } else {
                                         "requiredGet"
@@ -330,9 +335,11 @@ class AutowireProcessor(
             .build()
 
         try {
-            logger.info(
-                message = "classDeclarationKsType1 = $classDeclarationKsType, isSubFragmentActivity = $isSubActivity, isSubFragment = $isSubFragment",
-            )
+            if (logEnable) {
+                logger.info(
+                    message = "classDeclarationKsType1 = $classDeclarationKsType, isSubFragmentActivity = $isSubActivity, isSubFragment = $isSubFragment",
+                )
+            }
             codeGenerator.createNewFile(
                 dependencies = Dependencies.ALL_FILES,
                 packageName = fileSpec.packageName,
@@ -342,9 +349,11 @@ class AutowireProcessor(
                     fileSpec.toString().toByteArray()
                 )
             }
-            logger.info(
-                message = "classDeclarationKsType2 = $classDeclarationKsType, isSubFragmentActivity = $isSubActivity, isSubFragment = $isSubFragment",
-            )
+            if (logEnable) {
+                logger.info(
+                    message = "classDeclarationKsType2 = $classDeclarationKsType, isSubFragmentActivity = $isSubActivity, isSubFragment = $isSubFragment",
+                )
+            }
         } catch (e: Exception) {
             // ignore
         }
@@ -387,17 +396,22 @@ class AutowireProcessor(
                 )
             }
 
-        return uriAutoWireAnnotatedList + attrAutoWireAnnotatedList + serviceAutoWireAnnotatedList
+        return emptyList()
+
     }
 
     override fun finish() {
         super.finish()
-        logger.info("$TAG finish")
+        if (logEnable) {
+            logger.info("$TAG finish")
+        }
     }
 
     override fun onError() {
         super.onError()
-        logger.info("$TAG onError")
+        if (logEnable) {
+            logger.info("$TAG onError")
+        }
     }
 
 }

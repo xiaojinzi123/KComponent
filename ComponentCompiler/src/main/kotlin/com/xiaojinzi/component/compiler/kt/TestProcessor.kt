@@ -18,13 +18,11 @@ import com.squareup.kotlinpoet.ksp.toTypeName
 
 class TestProcessor(
     override val environment: SymbolProcessorEnvironment,
-    private val logger: KSPLogger = environment.logger,
-    val codeGenerator: CodeGenerator = environment.codeGenerator,
 ) : BaseHostProcessor(
     environment = environment,
 ) {
 
-    private val TAG = "\nProcessor"
+    private val TAG = "TestProcessor"
 
     private fun ClassName.withTypeArguments(arguments: List<TypeName>): TypeName {
         return if (arguments.isEmpty()) {

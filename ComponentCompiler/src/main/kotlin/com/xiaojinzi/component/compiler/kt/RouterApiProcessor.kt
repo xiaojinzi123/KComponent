@@ -17,13 +17,11 @@ import com.xiaojinzi.component.simpleClassName
 
 class RouterApiProcessor(
     override val environment: SymbolProcessorEnvironment,
-    val logger: KSPLogger = environment.logger,
-    val codeGenerator: CodeGenerator = environment.codeGenerator,
 ) : BaseHostProcessor(
     environment = environment,
 ) {
 
-    val TAG = "RouterApiProcessor"
+    private val TAG = "RouterApiProcessor"
 
     @OptIn(KspExperimental::class)
     private fun createFile(
@@ -273,42 +271,50 @@ class RouterApiProcessor(
                                                 ) -> {
                                                     ksValueParameter_options = ksValueParameter
                                                 }
+
                                                 ksValueParameter.isAnnotationPresent(
                                                     annotationKClass = BeforeRouteSuccessActionAnno::class
                                                 ) -> {
                                                     ksValueParameter_beforeAction = ksValueParameter
                                                 }
+
                                                 ksValueParameter.isAnnotationPresent(
                                                     annotationKClass = BeforeStartActivityActionAnno::class
                                                 ) -> {
                                                     ksValueParameter_beforeStartAction =
                                                         ksValueParameter
                                                 }
+
                                                 ksValueParameter.isAnnotationPresent(
                                                     annotationKClass = AfterRouteActionAnno::class
                                                 ) -> {
                                                     ksValueParameter_afterAction = ksValueParameter
                                                 }
+
                                                 ksValueParameter.isAnnotationPresent(
                                                     annotationKClass = AfterRouteErrorActionAnno::class
                                                 ) -> {
                                                     ksValueParameter_afterError = ksValueParameter
                                                 }
+
                                                 ksValueParameter.isAnnotationPresent(
                                                     annotationKClass = AfterRouteEventActionAnno::class
                                                 ) -> {
                                                     ksValueParameter_afterEvent = ksValueParameter
                                                 }
+
                                                 ksValueParameter.isAnnotationPresent(
                                                     annotationKClass = AfterStartActivityActionAnno::class
                                                 ) -> {
                                                     ksValueParameter_afterStart = ksValueParameter
                                                 }
+
                                                 ksValueParameter.isAnnotationPresent(
                                                     annotationKClass = RequestCodeAnno::class
                                                 ) -> {
                                                     ksValueParameter_requestCode = ksValueParameter
                                                 }
+
                                                 ksValueParameter.isAnnotationPresent(
                                                     annotationKClass = ParameterBundleAnno::class
                                                 ) -> {
@@ -319,15 +325,19 @@ class RouterApiProcessor(
                                                 androidContextKSClassDeclaration -> {
                                                     ksValueParameter_context = ksValueParameter
                                                 }
+
                                                 componentCallbackKSClassDeclaration -> {
                                                     ksValueParameter_callback = ksValueParameter
                                                 }
+
                                                 componentBiCallbackKSClassDeclaration -> {
                                                     ksValueParameter_biCallback = ksValueParameter
                                                 }
+
                                                 kotlinFunction0KSClassDeclaration -> {
                                                     ksValueParameter_kt_function0 = ksValueParameter
                                                 }
+
                                                 kotlinFunction1KSClassDeclaration -> {
                                                     ksValueParameter_kt_function1 = ksValueParameter
                                                 }
@@ -338,9 +348,11 @@ class RouterApiProcessor(
                                                 type = try {
                                                     ksValueParameter.typeToClassName()
                                                 } catch (e: Exception) {
-                                                    logger.info(
-                                                        message = "ksValueParameter = $ksValueParameter"
-                                                    )
+                                                    if (logEnable) {
+                                                        logger.info(
+                                                            message = "ksValueParameter = $ksValueParameter"
+                                                        )
+                                                    }
                                                     throw e
                                                 },
                                             )
@@ -355,7 +367,9 @@ class RouterApiProcessor(
                                     }
 
                                     returnTypePoetTypeName?.let {
-                                        logger.info(message = "returnTypePoetTypeName = $returnTypePoetTypeName")
+                                        if (logEnable) {
+                                            logger.info(message = "returnTypePoetTypeName = $returnTypePoetTypeName")
+                                        }
                                         funSpecBuilder.returns(
                                             returnType = it
                                         )
@@ -724,6 +738,7 @@ class RouterApiProcessor(
                                                         )
                                                     }
                                                 }
+
                                                 isSuspendMethod -> {
                                                     if (navigateAnno.resultCodeMatchValid) {
                                                         functionCodeStringBuffer.append(
@@ -738,6 +753,7 @@ class RouterApiProcessor(
                                                         )
                                                     }
                                                 }
+
                                                 ksValueParameter_biCallback != null -> {
                                                     if (navigateAnno.resultCodeMatchValid) {
                                                         functionCodeStringBuffer.append(
@@ -758,6 +774,7 @@ class RouterApiProcessor(
                                                         )
                                                     }
                                                 }
+
                                                 ksValueParameter_kt_function1 != null -> {
                                                     if (navigateAnno.resultCodeMatchValid) {
                                                         functionCodeStringBuffer.append(
@@ -791,11 +808,13 @@ class RouterApiProcessor(
                                                         element = activityResultCallExtendMethodMemberName,
                                                     )
                                                 }
+
                                                 isSuspendMethod -> {
                                                     functionCodeStringBuffer.append(
                                                         "\n.activityResultAwait()",
                                                     )
                                                 }
+
                                                 ksValueParameter_biCallback != null -> {
                                                     functionCodeStringBuffer.append(
                                                         "\n.${navigatePrefixStr}ForResult(callback = %N)",
@@ -804,6 +823,7 @@ class RouterApiProcessor(
                                                         element = ksValueParameter_biCallback!!.name!!.asString(),
                                                     )
                                                 }
+
                                                 ksValueParameter_kt_function1 != null -> {
                                                     functionCodeStringBuffer.append(
                                                         "\n.${navigatePrefixStr}ForResult(callback = %N)",
@@ -825,11 +845,13 @@ class RouterApiProcessor(
                                                         element = resultCodeCallExtendMethodMemberName,
                                                     )
                                                 }
+
                                                 isSuspendMethod -> {
                                                     functionCodeStringBuffer.append(
                                                         "\n.resultCodeAwait()",
                                                     )
                                                 }
+
                                                 ksValueParameter_biCallback != null -> {
                                                     functionCodeStringBuffer.append(
                                                         "\n.${navigatePrefixStr}ForResultCode(callback = %N)",
@@ -838,6 +860,7 @@ class RouterApiProcessor(
                                                         element = ksValueParameter_biCallback!!.name!!.asString(),
                                                     )
                                                 }
+
                                                 ksValueParameter_kt_function1 != null -> {
                                                     functionCodeStringBuffer.append(
                                                         "\n.${navigatePrefixStr}ForResultCode(callback = %N)",
@@ -863,6 +886,7 @@ class RouterApiProcessor(
                                                         element = navigateAnno.resultCodeMatch,
                                                     )
                                                 }
+
                                                 isSuspendMethod -> {
                                                     functionCodeStringBuffer.append(
                                                         "\n.resultCodeMatchAwait(expectedResultCode = %L)",
@@ -871,6 +895,7 @@ class RouterApiProcessor(
                                                         element = navigateAnno.resultCodeMatch,
                                                     )
                                                 }
+
                                                 ksValueParameter_callback != null -> {
                                                     functionCodeStringBuffer.append(
                                                         "\n.${navigatePrefixStr}ForResultCodeMatch(expectedResultCode = %L, callback = %N)",
@@ -882,6 +907,7 @@ class RouterApiProcessor(
                                                         element = ksValueParameter_callback!!.name!!.asString(),
                                                     )
                                                 }
+
                                                 ksValueParameter_kt_function0 != null -> {
                                                     functionCodeStringBuffer.append(
                                                         "\n.${navigatePrefixStr}ForResultCodeMatch(expectedResultCode = %L, callback = %N)",
@@ -973,7 +999,9 @@ class RouterApiProcessor(
                 )
             }
         } catch (e: Exception) {
-            logger.exception(e = e)
+            if (logEnable) {
+                logger.exception(e = e)
+            }
         }
 
     }
@@ -987,9 +1015,11 @@ class RouterApiProcessor(
             .filterIsInstance<KSClassDeclaration>()
             .toList()
 
-        logger.info(
-            "targetList = $targetRouterApiAnnotatedList"
-        )
+        if (logEnable) {
+            logger.info(
+                "targetList = $targetRouterApiAnnotatedList"
+            )
+        }
 
         targetRouterApiAnnotatedList.forEach { item ->
             createFile(
@@ -998,17 +1028,22 @@ class RouterApiProcessor(
             )
         }
 
-        return targetRouterApiAnnotatedList
+        return emptyList()
+
     }
 
     override fun finish() {
         super.finish()
-        logger.info("$TAG finish")
+        if (logEnable) {
+            logger.info("$TAG finish")
+        }
     }
 
     override fun onError() {
         super.onError()
-        logger.info("$TAG onError")
+        if (logEnable) {
+            logger.info("$TAG onError")
+        }
     }
 
 }

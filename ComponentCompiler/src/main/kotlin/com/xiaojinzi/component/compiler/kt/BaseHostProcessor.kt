@@ -1,5 +1,6 @@
 package com.xiaojinzi.component.compiler.kt
 
+import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
@@ -7,14 +8,16 @@ import com.google.devtools.ksp.symbol.KSAnnotated
 
 abstract class BaseHostProcessor(
     open val environment: SymbolProcessorEnvironment,
-    private val logger: KSPLogger = environment.logger,
+    val logger: KSPLogger = environment.logger,
+    val codeGenerator: CodeGenerator = environment.codeGenerator,
     val componentModuleName: String = (environment.options["ModuleName"]
-        ?: environment.options["HOST"]) ?: throw NULLHOSTEXCEPTION
+        ?: environment.options["HOST"]) ?: throw NULL_HOST_EXCEPTION,
+    val logEnable: Boolean = environment.options["LogEnable"]?.toBoolean() ?: false,
 ) : BaseProcessor() {
 
     companion object {
 
-        val NULLHOSTEXCEPTION = RuntimeException(
+        val NULL_HOST_EXCEPTION = RuntimeException(
             """the host must not be null,you must define host in build.gradle file,such as:
             defaultConfig {
                 minSdkVersion 14
@@ -36,9 +39,11 @@ abstract class BaseHostProcessor(
 
     final override fun process(resolver: Resolver): List<KSAnnotated> {
         round++
-        logger.warn(
-            message = "BaseHostProcessor, round = $round, object is ${this.javaClass.simpleName}, componentModuleName is $componentModuleName",
-        )
+        if (logEnable) {
+            logger.warn(
+                message = "BaseHostProcessor, round = $round, object is ${this.javaClass.simpleName}, componentModuleName is $componentModuleName",
+            )
+        }
         if (round == 1) {
             doProcess(resolver = resolver)
         }

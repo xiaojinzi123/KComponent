@@ -27,13 +27,11 @@ import kotlin.reflect.KClass
  */
 class ModuleProcessor(
     override val environment: SymbolProcessorEnvironment,
-    val logger: KSPLogger = environment.logger,
-    val codeGenerator: CodeGenerator = environment.codeGenerator,
 ) : BaseHostProcessor(
     environment = environment,
 ) {
 
-    val TAG = "ModuleProcessor"
+    private val TAG = "ModuleProcessor"
 
     private val componentClassName = ClassName(
         packageName = ComponentConstants.COMPONENT_CLASS_NAME.packageName(),
@@ -578,9 +576,11 @@ class ModuleProcessor(
                                             .also {
                                                 when (item) {
                                                     is KSFunctionDeclaration -> {
-                                                        logger.info(
-                                                            message = "fragment KSFunctionDeclaration = ${item.qualifiedName?.asString()}"
-                                                        )
+                                                        if (logEnable) {
+                                                            logger.info(
+                                                                message = "fragment KSFunctionDeclaration = ${item.qualifiedName?.asString()}"
+                                                            )
+                                                        }
                                                         if (item.parameters.size != 1) {
                                                             throw RuntimeException(
                                                                 "FragmentAnno 注解的方法必须只有一个参数, ${item.qualifiedName}"
@@ -771,9 +771,13 @@ class ModuleProcessor(
             path = ComponentConstants.SEPARATOR + path
         }
 
-        logger.info("routerAnno.hostAndPath = ${element.location}")
+        if (logEnable) {
+            logger.info("routerAnno.hostAndPath = ${element.location}")
+        }
         routerAnno.interceptorNames.forEach { item ->
-            logger.info("routerAnno.interceptorName = $item")
+            if (logEnable) {
+                logger.info("routerAnno.interceptorName = $item")
+            }
         }
 
         return RouterAnnoBean(
@@ -921,7 +925,9 @@ class ModuleProcessor(
                     }
 
                     is KSFunctionDeclaration -> {
-                        logger.info("element.qualifiedName = ${element.qualifiedName?.asString()}")
+                        if (logEnable) {
+                            logger.info("element.qualifiedName = ${element.qualifiedName?.asString()}")
+                        }
                         listOf(
                             customerIntentCallClassName,
                             mClassNameIntent,
@@ -1053,6 +1059,16 @@ class ModuleProcessor(
             .mapNotNull { it as? KSClassDeclaration }
             .filterNot { it.qualifiedName == null }
             .toList()
+        if (logEnable) {
+            logger.info(
+                "moduleAppAnnotatedList = $moduleAppAnnotatedList"
+            )
+        }
+        if (logEnable) {
+            logger.info(
+                " $TAG, moduleAppAnnotatedList.size = ${moduleAppAnnotatedList.size}"
+            )
+        }
 
         // Service 的
         val serviceAnnotatedList: List<KSAnnotated> = resolver
@@ -1060,6 +1076,11 @@ class ModuleProcessor(
                 annotationName = ServiceAnno::class.qualifiedName!!
             )
             .toList()
+        if (logEnable) {
+            logger.info(
+                " $TAG, serviceAnnotatedList.size = ${serviceAnnotatedList.size}"
+            )
+        }
 
         // ServiceDecorator 的
         val serviceDecoratorAnnotatedList: List<KSAnnotated> = resolver
@@ -1067,6 +1088,11 @@ class ModuleProcessor(
                 annotationName = ServiceDecoratorAnno::class.qualifiedName!!
             )
             .toList()
+        if (logEnable) {
+            logger.info(
+                " $TAG, serviceDecoratorAnnotatedList.size = ${serviceDecoratorAnnotatedList.size}"
+            )
+        }
 
         // Fragment 的
         val fragmentAnnotatedList: List<KSAnnotated> = resolver
@@ -1074,6 +1100,11 @@ class ModuleProcessor(
                 annotationName = FragmentAnno::class.qualifiedName!!
             )
             .toList()
+        if (logEnable) {
+            logger.info(
+                " $TAG, fragmentAnnotatedList.size = ${fragmentAnnotatedList.size}"
+            )
+        }
 
         // 全局拦截器的
         val globalInterceptorAnnotatedList: List<KSClassDeclaration> = resolver
@@ -1082,6 +1113,11 @@ class ModuleProcessor(
             )
             .mapNotNull { it as? KSClassDeclaration }
             .toList()
+        if (logEnable) {
+            logger.info(
+                " $TAG, globalInterceptorAnnotatedList.size = ${globalInterceptorAnnotatedList.size}"
+            )
+        }
 
         // 拦截器
         val interceptorAnnotatedList: List<KSClassDeclaration> = resolver
@@ -1090,6 +1126,11 @@ class ModuleProcessor(
             )
             .mapNotNull { it as? KSClassDeclaration }
             .toList()
+        if (logEnable) {
+            logger.info(
+                " $TAG, interceptorAnnotatedList.size = ${interceptorAnnotatedList.size}"
+            )
+        }
 
         // 路由的
         val routerAnnotatedList: List<KSAnnotated> = resolver
@@ -1097,6 +1138,11 @@ class ModuleProcessor(
                 annotationName = RouterAnno::class.qualifiedName!!
             )
             .toList()
+        if (logEnable) {
+            logger.info(
+                " $TAG, routerAnnotatedList.size = ${routerAnnotatedList.size}"
+            )
+        }
 
         // 路由降级的
         val routerDegradeAnnotatedList: List<KSAnnotated> = resolver
@@ -1104,15 +1150,16 @@ class ModuleProcessor(
                 annotationName = RouterDegradeAnno::class.qualifiedName!!
             )
             .toList()
+        if (logEnable) {
+            logger.info(
+                " $TAG, routerDegradeAnnotatedList.size = ${routerDegradeAnnotatedList.size}"
+            )
+        }
 
         val packageNameStr = "com.xiaojinzi.component.impl"
         val classNameStr = ComponentUtil.transformHostForClass(
             componentModuleName
         ) + ComponentUtil.MODULE
-
-        logger.info(
-            "moduleAppAnnotatedList = $moduleAppAnnotatedList"
-        )
 
         val typeSpec = TypeSpec
             .classBuilder(
@@ -1188,6 +1235,15 @@ class ModuleProcessor(
             .build()
 
         try {
+            codeGenerator.generatedFile.apply {
+                if (logEnable) {
+                    logger.info("$TAG 一共有 ${this.size} 个生成的文件")
+                }
+            }.forEachIndexed { index, file ->
+                if (logEnable) {
+                    logger.info("$TAG 第${index + 1}个文件：${file.path}")
+                }
+            }
             codeGenerator.createNewFile(
                 dependencies = Dependencies.ALL_FILES,
                 packageName = fileSpec.packageName,
@@ -1198,23 +1254,28 @@ class ModuleProcessor(
                 )
             }
         } catch (e: Exception) {
-            // ignore
+            if (logEnable) {
+                logger.info("$TAG 生成文件异常啦~~~")
+                logger.exception(e)
+            }
         }
 
-        return moduleAppAnnotatedList + serviceAnnotatedList + serviceDecoratorAnnotatedList +
-                fragmentAnnotatedList + globalInterceptorAnnotatedList + interceptorAnnotatedList +
-                routerAnnotatedList + routerDegradeAnnotatedList
+        return emptyList()
 
     }
 
     override fun finish() {
         super.finish()
-        logger.info("$TAG finish")
+        if (logEnable) {
+            logger.info("$TAG finish")
+        }
     }
 
     override fun onError() {
         super.onError()
-        logger.info("$TAG onError")
+        if (logEnable) {
+            logger.info("$TAG onError")
+        }
     }
 
 }

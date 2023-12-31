@@ -23,7 +23,9 @@ class AutowireProcessor(
     environment = environment,
 ) {
 
-    val TAG = "AutowireProcessor"
+    companion object {
+        const val TAG = "AutowireProcessor"
+    }
 
     @OptIn(KspExperimental::class)
     private fun createFile(
@@ -131,7 +133,7 @@ class AutowireProcessor(
                             if (uriAutoWireAnno != null) {
                                 if (logEnable) {
                                     logger.warn(
-                                        message = "uriAutoWireAnno = $uriAutoWireAnno"
+                                        message = "$TAG uriAutoWireAnno = $uriAutoWireAnno"
                                     )
                                 }
                             }
@@ -142,7 +144,7 @@ class AutowireProcessor(
 
                             if (logEnable) {
                                 logger.warn(
-                                    message = "attrAutoWireAnno = $attrAutoWireAnno"
+                                    message = "$TAG attrAutoWireAnno = $attrAutoWireAnno"
                                 )
                             }
 
@@ -337,7 +339,7 @@ class AutowireProcessor(
         try {
             if (logEnable) {
                 logger.warn(
-                    message = "classDeclarationKsType1 = $classDeclarationKsType, isSubFragmentActivity = $isSubActivity, isSubFragment = $isSubFragment",
+                    message = "$TAG classDeclarationKsType1 = $classDeclarationKsType, isSubFragmentActivity = $isSubActivity, isSubFragment = $isSubFragment",
                 )
             }
             codeGenerator.createNewFile(
@@ -351,7 +353,7 @@ class AutowireProcessor(
             }
             if (logEnable) {
                 logger.warn(
-                    message = "classDeclarationKsType2 = $classDeclarationKsType, isSubFragmentActivity = $isSubActivity, isSubFragment = $isSubFragment",
+                    message = "$TAG classDeclarationKsType2 = $classDeclarationKsType, isSubFragmentActivity = $isSubActivity, isSubFragment = $isSubFragment",
                 )
             }
         } catch (e: Exception) {
@@ -421,7 +423,7 @@ class AutowireProcessorProvider : SymbolProcessorProvider {
 
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
         environment.logger.warn(
-            "AutowireProcessorProvider.create called"
+            "$AutowireProcessor.TAG, AutowireProcessorProvider.create called"
         )
         return AutowireProcessor(
             environment = environment,

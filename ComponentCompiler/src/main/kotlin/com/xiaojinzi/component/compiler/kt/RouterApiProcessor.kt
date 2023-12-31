@@ -350,7 +350,7 @@ class RouterApiProcessor(
                                                 } catch (e: Exception) {
                                                     if (logEnable) {
                                                         logger.warn(
-                                                            message = "ksValueParameter = $ksValueParameter"
+                                                            message = "$TAG ksValueParameter = $ksValueParameter"
                                                         )
                                                     }
                                                     throw e
@@ -368,7 +368,7 @@ class RouterApiProcessor(
 
                                     returnTypePoetTypeName?.let {
                                         if (logEnable) {
-                                            logger.warn(message = "returnTypePoetTypeName = $returnTypePoetTypeName")
+                                            logger.warn(message = "$TAG returnTypePoetTypeName = $returnTypePoetTypeName")
                                         }
                                         funSpecBuilder.returns(
                                             returnType = it
@@ -1000,6 +1000,9 @@ class RouterApiProcessor(
             }
         } catch (e: Exception) {
             if (logEnable) {
+                logger.warn(
+                    "$TAG 生成文件失败啦~~~"
+                )
                 logger.exception(e = e)
             }
         }
@@ -1017,7 +1020,7 @@ class RouterApiProcessor(
 
         if (logEnable) {
             logger.warn(
-                "targetList = $targetRouterApiAnnotatedList"
+                "$TAG targetList = $targetRouterApiAnnotatedList"
             )
         }
 

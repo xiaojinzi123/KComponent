@@ -1056,18 +1056,39 @@ class ModuleProcessor(
             .getSymbolsWithAnnotation(
                 annotationName = ModuleAppAnno::class.qualifiedName!!
             )
+            .onEach {
+                if (logEnable) {
+                    logger.warn(
+                        "$TAG moduleAppAnnotatedList item = $it"
+                    )
+                }
+            }
             .mapNotNull { it as? KSClassDeclaration }
             .filterNot { it.qualifiedName == null }
             .toList()
+
         if (logEnable) {
             logger.warn(
-                "moduleAppAnnotatedList = $moduleAppAnnotatedList"
+                "$TAG moduleAppAnnotatedList = $moduleAppAnnotatedList"
             )
         }
         if (logEnable) {
             logger.warn(
-                " $TAG, moduleAppAnnotatedList.size = ${moduleAppAnnotatedList.size}"
+                "$TAG moduleAppAnnotatedList.size = ${moduleAppAnnotatedList.size}"
             )
+        }
+
+        if (logEnable) {
+            resolver
+                .getSymbolsWithAnnotation(
+                    annotationName = ModuleAppAnno::class.qualifiedName!!,
+                    inDepth = true,
+                )
+                .forEach {
+                    logger.warn(
+                        "$TAG inDepth moduleAppAnnotatedList item = $it"
+                    )
+                }
         }
 
         // Service 的
@@ -1078,7 +1099,7 @@ class ModuleProcessor(
             .toList()
         if (logEnable) {
             logger.warn(
-                " $TAG, serviceAnnotatedList.size = ${serviceAnnotatedList.size}"
+                "$TAG serviceAnnotatedList.size = ${serviceAnnotatedList.size}"
             )
         }
 
@@ -1090,7 +1111,7 @@ class ModuleProcessor(
             .toList()
         if (logEnable) {
             logger.warn(
-                " $TAG, serviceDecoratorAnnotatedList.size = ${serviceDecoratorAnnotatedList.size}"
+                "$TAG serviceDecoratorAnnotatedList.size = ${serviceDecoratorAnnotatedList.size}"
             )
         }
 
@@ -1102,7 +1123,7 @@ class ModuleProcessor(
             .toList()
         if (logEnable) {
             logger.warn(
-                " $TAG, fragmentAnnotatedList.size = ${fragmentAnnotatedList.size}"
+                "$TAG fragmentAnnotatedList.size = ${fragmentAnnotatedList.size}"
             )
         }
 
@@ -1115,7 +1136,7 @@ class ModuleProcessor(
             .toList()
         if (logEnable) {
             logger.warn(
-                " $TAG, globalInterceptorAnnotatedList.size = ${globalInterceptorAnnotatedList.size}"
+                "$TAG globalInterceptorAnnotatedList.size = ${globalInterceptorAnnotatedList.size}"
             )
         }
 
@@ -1128,7 +1149,7 @@ class ModuleProcessor(
             .toList()
         if (logEnable) {
             logger.warn(
-                " $TAG, interceptorAnnotatedList.size = ${interceptorAnnotatedList.size}"
+                "$TAG interceptorAnnotatedList.size = ${interceptorAnnotatedList.size}"
             )
         }
 
@@ -1140,7 +1161,7 @@ class ModuleProcessor(
             .toList()
         if (logEnable) {
             logger.warn(
-                " $TAG, routerAnnotatedList.size = ${routerAnnotatedList.size}"
+                "$TAG routerAnnotatedList.size = ${routerAnnotatedList.size}"
             )
         }
 
@@ -1152,7 +1173,7 @@ class ModuleProcessor(
             .toList()
         if (logEnable) {
             logger.warn(
-                " $TAG, routerDegradeAnnotatedList.size = ${routerDegradeAnnotatedList.size}"
+                "$TAG routerDegradeAnnotatedList.size = ${routerDegradeAnnotatedList.size}"
             )
         }
 

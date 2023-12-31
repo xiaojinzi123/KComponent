@@ -577,7 +577,7 @@ class ModuleProcessor(
                                                 when (item) {
                                                     is KSFunctionDeclaration -> {
                                                         if (logEnable) {
-                                                            logger.info(
+                                                            logger.warn(
                                                                 message = "fragment KSFunctionDeclaration = ${item.qualifiedName?.asString()}"
                                                             )
                                                         }
@@ -772,11 +772,11 @@ class ModuleProcessor(
         }
 
         if (logEnable) {
-            logger.info("routerAnno.hostAndPath = ${element.location}")
+            logger.warn("routerAnno.hostAndPath = ${element.location}")
         }
         routerAnno.interceptorNames.forEach { item ->
             if (logEnable) {
-                logger.info("routerAnno.interceptorName = $item")
+                logger.warn("routerAnno.interceptorName = $item")
             }
         }
 
@@ -926,7 +926,7 @@ class ModuleProcessor(
 
                     is KSFunctionDeclaration -> {
                         if (logEnable) {
-                            logger.info("element.qualifiedName = ${element.qualifiedName?.asString()}")
+                            logger.warn("element.qualifiedName = ${element.qualifiedName?.asString()}")
                         }
                         listOf(
                             customerIntentCallClassName,
@@ -1060,12 +1060,12 @@ class ModuleProcessor(
             .filterNot { it.qualifiedName == null }
             .toList()
         if (logEnable) {
-            logger.info(
+            logger.warn(
                 "moduleAppAnnotatedList = $moduleAppAnnotatedList"
             )
         }
         if (logEnable) {
-            logger.info(
+            logger.warn(
                 " $TAG, moduleAppAnnotatedList.size = ${moduleAppAnnotatedList.size}"
             )
         }
@@ -1077,7 +1077,7 @@ class ModuleProcessor(
             )
             .toList()
         if (logEnable) {
-            logger.info(
+            logger.warn(
                 " $TAG, serviceAnnotatedList.size = ${serviceAnnotatedList.size}"
             )
         }
@@ -1089,7 +1089,7 @@ class ModuleProcessor(
             )
             .toList()
         if (logEnable) {
-            logger.info(
+            logger.warn(
                 " $TAG, serviceDecoratorAnnotatedList.size = ${serviceDecoratorAnnotatedList.size}"
             )
         }
@@ -1101,7 +1101,7 @@ class ModuleProcessor(
             )
             .toList()
         if (logEnable) {
-            logger.info(
+            logger.warn(
                 " $TAG, fragmentAnnotatedList.size = ${fragmentAnnotatedList.size}"
             )
         }
@@ -1114,7 +1114,7 @@ class ModuleProcessor(
             .mapNotNull { it as? KSClassDeclaration }
             .toList()
         if (logEnable) {
-            logger.info(
+            logger.warn(
                 " $TAG, globalInterceptorAnnotatedList.size = ${globalInterceptorAnnotatedList.size}"
             )
         }
@@ -1127,7 +1127,7 @@ class ModuleProcessor(
             .mapNotNull { it as? KSClassDeclaration }
             .toList()
         if (logEnable) {
-            logger.info(
+            logger.warn(
                 " $TAG, interceptorAnnotatedList.size = ${interceptorAnnotatedList.size}"
             )
         }
@@ -1139,7 +1139,7 @@ class ModuleProcessor(
             )
             .toList()
         if (logEnable) {
-            logger.info(
+            logger.warn(
                 " $TAG, routerAnnotatedList.size = ${routerAnnotatedList.size}"
             )
         }
@@ -1151,7 +1151,7 @@ class ModuleProcessor(
             )
             .toList()
         if (logEnable) {
-            logger.info(
+            logger.warn(
                 " $TAG, routerDegradeAnnotatedList.size = ${routerDegradeAnnotatedList.size}"
             )
         }
@@ -1237,11 +1237,11 @@ class ModuleProcessor(
         try {
             codeGenerator.generatedFile.apply {
                 if (logEnable) {
-                    logger.info("$TAG 一共有 ${this.size} 个生成的文件")
+                    logger.warn("$TAG 一共有 ${this.size} 个生成的文件")
                 }
             }.forEachIndexed { index, file ->
                 if (logEnable) {
-                    logger.info("$TAG 第${index + 1}个文件：${file.path}")
+                    logger.warn("$TAG 第${index + 1}个文件：${file.path}")
                 }
             }
             codeGenerator.createNewFile(
@@ -1255,7 +1255,7 @@ class ModuleProcessor(
             }
         } catch (e: Exception) {
             if (logEnable) {
-                logger.info("$TAG 生成文件异常啦~~~")
+                logger.warn("$TAG 生成文件异常啦~~~")
                 logger.exception(e)
             }
         }
@@ -1267,14 +1267,14 @@ class ModuleProcessor(
     override fun finish() {
         super.finish()
         if (logEnable) {
-            logger.info("$TAG finish")
+            logger.warn("$TAG finish")
         }
     }
 
     override fun onError() {
         super.onError()
         if (logEnable) {
-            logger.info("$TAG onError")
+            logger.warn("$TAG onError")
         }
     }
 

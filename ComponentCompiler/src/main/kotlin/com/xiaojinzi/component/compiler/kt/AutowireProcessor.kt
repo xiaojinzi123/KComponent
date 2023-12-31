@@ -130,7 +130,7 @@ class AutowireProcessor(
 
                             if (uriAutoWireAnno != null) {
                                 if (logEnable) {
-                                    logger.info(
+                                    logger.warn(
                                         message = "uriAutoWireAnno = $uriAutoWireAnno"
                                     )
                                 }
@@ -141,7 +141,7 @@ class AutowireProcessor(
                             ).firstOrNull()
 
                             if (logEnable) {
-                                logger.info(
+                                logger.warn(
                                     message = "attrAutoWireAnno = $attrAutoWireAnno"
                                 )
                             }
@@ -336,7 +336,7 @@ class AutowireProcessor(
 
         try {
             if (logEnable) {
-                logger.info(
+                logger.warn(
                     message = "classDeclarationKsType1 = $classDeclarationKsType, isSubFragmentActivity = $isSubActivity, isSubFragment = $isSubFragment",
                 )
             }
@@ -350,7 +350,7 @@ class AutowireProcessor(
                 )
             }
             if (logEnable) {
-                logger.info(
+                logger.warn(
                     message = "classDeclarationKsType2 = $classDeclarationKsType, isSubFragmentActivity = $isSubActivity, isSubFragment = $isSubFragment",
                 )
             }
@@ -403,14 +403,14 @@ class AutowireProcessor(
     override fun finish() {
         super.finish()
         if (logEnable) {
-            logger.info("$TAG finish")
+            logger.warn("$TAG finish")
         }
     }
 
     override fun onError() {
         super.onError()
         if (logEnable) {
-            logger.info("$TAG onError")
+            logger.warn("$TAG onError")
         }
     }
 
@@ -420,7 +420,7 @@ class AutowireProcessor(
 class AutowireProcessorProvider : SymbolProcessorProvider {
 
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
-        environment.logger.info(
+        environment.logger.warn(
             "AutowireProcessorProvider.create called"
         )
         return AutowireProcessor(

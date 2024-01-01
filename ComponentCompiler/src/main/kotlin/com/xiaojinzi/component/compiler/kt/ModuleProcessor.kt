@@ -1280,8 +1280,28 @@ class ModuleProcessor(
                     logger.warn("$TAG 第${index + 1}个文件：${file.path}")
                 }
             }
+            /**
+             * moduleAppAnnotatedList.isEmpty()
+             *             && serviceAnnotatedList.isEmpty()
+             *             && serviceDecoratorAnnotatedList.isEmpty()
+             *             && fragmentAnnotatedList.isEmpty()
+             *             && globalInterceptorAnnotatedList.isEmpty()
+             *             && interceptorAnnotatedList.isEmpty()
+             *             && routerAnnotatedList.isEmpty()
+             *             && routerDegradeAnnotatedList.isEmpty()
+             */
             codeGenerator.createNewFile(
-                dependencies = Dependencies.ALL_FILES,
+                // dependencies = Dependencies.ALL_FILES,
+                dependencies = Dependencies(
+                    aggregating = true,
+                    *(moduleAppAnnotatedList + serviceAnnotatedList +
+                            serviceDecoratorAnnotatedList + fragmentAnnotatedList +
+                            globalInterceptorAnnotatedList + interceptorAnnotatedList +
+                            routerAnnotatedList + routerDegradeAnnotatedList
+                            ).mapNotNull {
+                            it.containingFile
+                        }.toTypedArray(),
+                ),
                 packageName = fileSpec.packageName,
                 fileName = fileSpec.name,
             ).use {

@@ -989,16 +989,23 @@ class RouterApiProcessor(
             .build()
 
         try {
-            codeGenerator.createNewFile(
-                dependencies = Dependencies.ALL_FILES,
-                packageName = fileSpec.packageName,
-                fileName = fileSpec.name,
-            ).use {
-                it.write(
-                    fileSpec.toString().toByteArray()
-                )
-                it.flush()
-            }
+            routerApiKSClassDeclaration.containingFile
+                ?.let { containingFile ->
+                    codeGenerator.createNewFile(
+                        // dependencies = Dependencies.ALL_FILES,
+                        dependencies = Dependencies(
+                            aggregating = true,
+                            containingFile,
+                        ),
+                        packageName = fileSpec.packageName,
+                        fileName = fileSpec.name,
+                    ).use {
+                        it.write(
+                            fileSpec.toString().toByteArray()
+                        )
+                        it.flush()
+                    }
+                }
         } catch (e: Exception) {
             if (logEnable) {
                 logger.warn(

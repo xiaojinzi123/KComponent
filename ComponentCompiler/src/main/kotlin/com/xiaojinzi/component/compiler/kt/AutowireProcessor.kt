@@ -342,15 +342,21 @@ class AutowireProcessor(
                     message = "$TAG classDeclarationKsType1 = $classDeclarationKsType, isSubFragmentActivity = $isSubActivity, isSubFragment = $isSubFragment",
                 )
             }
-            codeGenerator.createNewFile(
-                dependencies = Dependencies.ALL_FILES,
-                packageName = fileSpec.packageName,
-                fileName = fileSpec.name,
-            ).use {
-                it.write(
-                    fileSpec.toString().toByteArray()
-                )
-                it.flush()
+            classDeclaration.containingFile?.let { containingFile ->
+                codeGenerator.createNewFile(
+                    // dependencies = Dependencies.ALL_FILES,
+                    dependencies = Dependencies(
+                        aggregating = true,
+                        containingFile,
+                    ),
+                    packageName = fileSpec.packageName,
+                    fileName = fileSpec.name,
+                ).use {
+                    it.write(
+                        fileSpec.toString().toByteArray()
+                    )
+                    it.flush()
+                }
             }
             if (logEnable) {
                 logger.warn(

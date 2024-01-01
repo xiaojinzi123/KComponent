@@ -69,12 +69,12 @@ class TestProcessor(
 
     override fun finish() {
         super.finish()
-        logger.warn("$TAG finish")
+        logger.warn("$TAG $componentModuleName finish")
     }
 
     override fun onError() {
         super.onError()
-        logger.warn("$TAG onError")
+        logger.warn("$TAG $componentModuleName onError")
     }
 
 }

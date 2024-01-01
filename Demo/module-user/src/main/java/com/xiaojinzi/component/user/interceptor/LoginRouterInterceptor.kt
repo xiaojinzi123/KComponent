@@ -9,6 +9,9 @@ import com.xiaojinzi.component.impl.RouterResult
 import com.xiaojinzi.component.impl.service.service
 import kotlinx.coroutines.flow.first
 
+/**
+ * 登录拦截器
+ */
 @InterceptorAnno(value = RouterConfig.INTERCEPTOR_PERMISSION_LOGIN)
 class LoginRouterInterceptor : RouterInterceptor {
 

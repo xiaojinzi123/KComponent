@@ -133,7 +133,7 @@ class AutowireProcessor(
                             if (uriAutoWireAnno != null) {
                                 if (logEnable) {
                                     logger.warn(
-                                        message = "$TAG uriAutoWireAnno = $uriAutoWireAnno"
+                                        message = "$TAG $componentModuleName uriAutoWireAnno = $uriAutoWireAnno"
                                     )
                                 }
                             }
@@ -144,7 +144,7 @@ class AutowireProcessor(
 
                             if (logEnable) {
                                 logger.warn(
-                                    message = "$TAG attrAutoWireAnno = $attrAutoWireAnno"
+                                    message = "$TAG $componentModuleName attrAutoWireAnno = $attrAutoWireAnno"
                                 )
                             }
 
@@ -339,7 +339,7 @@ class AutowireProcessor(
         try {
             if (logEnable) {
                 logger.warn(
-                    message = "$TAG classDeclarationKsType1 = $classDeclarationKsType, isSubFragmentActivity = $isSubActivity, isSubFragment = $isSubFragment",
+                    message = "$TAG $componentModuleName $componentModuleName classDeclarationKsType1 = $classDeclarationKsType, isSubFragmentActivity = $isSubActivity, isSubFragment = $isSubFragment",
                 )
             }
             classDeclaration.containingFile?.let { containingFile ->
@@ -360,7 +360,7 @@ class AutowireProcessor(
             }
             if (logEnable) {
                 logger.warn(
-                    message = "$TAG classDeclarationKsType2 = $classDeclarationKsType, isSubFragmentActivity = $isSubActivity, isSubFragment = $isSubFragment",
+                    message = "$TAG $componentModuleName classDeclarationKsType2 = $classDeclarationKsType, isSubFragmentActivity = $isSubActivity, isSubFragment = $isSubFragment",
                 )
             }
         } catch (e: Exception) {
@@ -412,14 +412,14 @@ class AutowireProcessor(
     override fun finish() {
         super.finish()
         if (logEnable) {
-            logger.warn("$TAG finish")
+            logger.warn("$TAG $componentModuleName finish")
         }
     }
 
     override fun onError() {
         super.onError()
         if (logEnable) {
-            logger.warn("$TAG onError")
+            logger.warn("$TAG $componentModuleName onError")
         }
     }
 

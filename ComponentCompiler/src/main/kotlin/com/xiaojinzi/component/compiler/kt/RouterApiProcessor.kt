@@ -350,7 +350,7 @@ class RouterApiProcessor(
                                                 } catch (e: Exception) {
                                                     if (logEnable) {
                                                         logger.warn(
-                                                            message = "$TAG ksValueParameter = $ksValueParameter"
+                                                            message = "$TAG $componentModuleName ksValueParameter = $ksValueParameter"
                                                         )
                                                     }
                                                     throw e
@@ -368,7 +368,7 @@ class RouterApiProcessor(
 
                                     returnTypePoetTypeName?.let {
                                         if (logEnable) {
-                                            logger.warn(message = "$TAG returnTypePoetTypeName = $returnTypePoetTypeName")
+                                            logger.warn(message = "$TAG $componentModuleName returnTypePoetTypeName = $returnTypePoetTypeName")
                                         }
                                         funSpecBuilder.returns(
                                             returnType = it
@@ -1009,7 +1009,7 @@ class RouterApiProcessor(
         } catch (e: Exception) {
             if (logEnable) {
                 logger.warn(
-                    "$TAG 生成文件失败啦~~~"
+                    "$TAG $componentModuleName 生成文件失败啦~~~"
                 )
                 logger.exception(e = e)
             }
@@ -1028,7 +1028,7 @@ class RouterApiProcessor(
 
         if (logEnable) {
             logger.warn(
-                "$TAG targetList = $targetRouterApiAnnotatedList"
+                "$TAG $componentModuleName targetList = $targetRouterApiAnnotatedList"
             )
         }
 
@@ -1046,14 +1046,14 @@ class RouterApiProcessor(
     override fun finish() {
         super.finish()
         if (logEnable) {
-            logger.warn("$TAG finish")
+            logger.warn("$TAG $componentModuleName finish")
         }
     }
 
     override fun onError() {
         super.onError()
         if (logEnable) {
-            logger.warn("$TAG onError")
+            logger.warn("$TAG $componentModuleName onError")
         }
     }
 

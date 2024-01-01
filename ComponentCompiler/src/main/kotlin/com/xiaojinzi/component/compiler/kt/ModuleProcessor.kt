@@ -1070,7 +1070,7 @@ class ModuleProcessor(
             .onEach {
                 if (logEnable) {
                     logger.warn(
-                        "$TAG moduleAppAnnotatedList item = $it"
+                        "$TAG $componentModuleName moduleAppAnnotatedList item = $it"
                     )
                 }
             }
@@ -1080,13 +1080,13 @@ class ModuleProcessor(
 
         if (logEnable) {
             logger.warn(
-                "$TAG moduleAppAnnotatedList = $moduleAppAnnotatedList"
+                "$TAG $componentModuleName moduleAppAnnotatedList = $moduleAppAnnotatedList"
             )
         }
 
         if (logEnable) {
             logger.warn(
-                "$TAG moduleAppAnnotatedList.size = ${moduleAppAnnotatedList.size}"
+                "$TAG $componentModuleName moduleAppAnnotatedList.size = ${moduleAppAnnotatedList.size}"
             )
         }
 
@@ -1098,7 +1098,7 @@ class ModuleProcessor(
             .toList()
         if (logEnable) {
             logger.warn(
-                "$TAG serviceAnnotatedList.size = ${serviceAnnotatedList.size}"
+                "$TAG $componentModuleName serviceAnnotatedList.size = ${serviceAnnotatedList.size}"
             )
         }
 
@@ -1110,7 +1110,7 @@ class ModuleProcessor(
             .toList()
         if (logEnable) {
             logger.warn(
-                "$TAG serviceDecoratorAnnotatedList.size = ${serviceDecoratorAnnotatedList.size}"
+                "$TAG $componentModuleName serviceDecoratorAnnotatedList.size = ${serviceDecoratorAnnotatedList.size}"
             )
         }
 
@@ -1122,7 +1122,7 @@ class ModuleProcessor(
             .toList()
         if (logEnable) {
             logger.warn(
-                "$TAG fragmentAnnotatedList.size = ${fragmentAnnotatedList.size}"
+                "$TAG $componentModuleName fragmentAnnotatedList.size = ${fragmentAnnotatedList.size}"
             )
         }
 
@@ -1135,7 +1135,7 @@ class ModuleProcessor(
             .toList()
         if (logEnable) {
             logger.warn(
-                "$TAG globalInterceptorAnnotatedList.size = ${globalInterceptorAnnotatedList.size}"
+                "$TAG $componentModuleName globalInterceptorAnnotatedList.size = ${globalInterceptorAnnotatedList.size}"
             )
         }
 
@@ -1148,7 +1148,7 @@ class ModuleProcessor(
             .toList()
         if (logEnable) {
             logger.warn(
-                "$TAG interceptorAnnotatedList.size = ${interceptorAnnotatedList.size}"
+                "$TAG $componentModuleName interceptorAnnotatedList.size = ${interceptorAnnotatedList.size}"
             )
         }
 
@@ -1160,7 +1160,7 @@ class ModuleProcessor(
             .toList()
         if (logEnable) {
             logger.warn(
-                "$TAG routerAnnotatedList.size = ${routerAnnotatedList.size}"
+                "$TAG $componentModuleName routerAnnotatedList.size = ${routerAnnotatedList.size}"
             )
         }
 
@@ -1173,7 +1173,7 @@ class ModuleProcessor(
 
         if (logEnable) {
             logger.warn(
-                "$TAG routerDegradeAnnotatedList.size = ${routerDegradeAnnotatedList.size}"
+                "$TAG $componentModuleName routerDegradeAnnotatedList.size = ${routerDegradeAnnotatedList.size}"
             )
         }
 
@@ -1273,11 +1273,11 @@ class ModuleProcessor(
         try {
             codeGenerator.generatedFile.apply {
                 if (logEnable) {
-                    logger.warn("$TAG 一共有 ${this.size} 个生成的文件")
+                    logger.warn("$TAG $componentModuleName 一共有 ${this.size} 个生成的文件")
                 }
             }.forEachIndexed { index, file ->
                 if (logEnable) {
-                    logger.warn("$TAG 第${index + 1}个文件：${file.path}")
+                    logger.warn("$TAG $componentModuleName 第${index + 1}个文件：${file.path}")
                 }
             }
             /**
@@ -1312,7 +1312,7 @@ class ModuleProcessor(
             }
         } catch (e: Exception) {
             if (logEnable) {
-                logger.warn("$TAG 生成文件异常啦~~~")
+                logger.warn("$TAG $componentModuleName 生成文件异常啦~~~")
                 logger.exception(e)
             }
         }
@@ -1324,14 +1324,14 @@ class ModuleProcessor(
     override fun finish() {
         super.finish()
         if (logEnable) {
-            logger.warn("$TAG finish")
+            logger.warn("$TAG $componentModuleName finish")
         }
     }
 
     override fun onError() {
         super.onError()
         if (logEnable) {
-            logger.warn("$TAG onError")
+            logger.warn("$TAG $componentModuleName onError")
         }
     }
 

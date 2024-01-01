@@ -1,7 +1,7 @@
 package com.xiaojinzi.component.base
 
 /**
- * 写点注释
+ * 写点注释 哈哈哈
  */
 object InterceptorConfig {
 

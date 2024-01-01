@@ -4,6 +4,9 @@ import android.app.Application
 import com.xiaojinzi.component.anno.ModuleAppAnno
 import com.xiaojinzi.component.application.IComponentApplication
 
+/**
+ * Hello
+ */
 @ModuleAppAnno
 class AppModuleApplication : IComponentApplication {
 

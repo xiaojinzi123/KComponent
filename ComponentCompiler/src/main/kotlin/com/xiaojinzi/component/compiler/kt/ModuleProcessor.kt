@@ -12,7 +12,6 @@ import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
-import com.google.devtools.ksp.symbol.FileLocation
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
@@ -1115,11 +1114,6 @@ class ModuleProcessor(
         interceptorAnnotatedList.clear()
         routerAnnotatedList.clear()
         routerDegradeAnnotatedList.clear()
-        if (logEnable) {
-            logger.warn(
-                "$TAG $componentModuleName currentFolder = ${File("./").absoluteFile.path}"
-            )
-        }
     }
 
     override fun roundProcess(
@@ -1272,15 +1266,6 @@ class ModuleProcessor(
                 && interceptorAnnotatedList.isEmpty()
                 && routerAnnotatedList.isEmpty()
                 && routerDegradeAnnotatedList.isEmpty()
-        // 如果都是为空的, 要不就是没有使用注解, 要不就是因为 ksp 的增量更新导致的获取不到
-        /*if (kspOptimize && isAllEmpty) {
-            if (logEnable) {
-                logger.warn("$TAG $componentModuleName 应该抛异常的----------------------------------")
-            }
-            throw ProcessException(
-                message = "可能的原因: \n1. 您没有在 '$componentModuleName' 模块中使用任何一个注解(${annoNames.joinToString()}) \n2. 您使用了 ksp 的增量编译 \n\n解决方式：\n1. 模块中使用任意一个注解(${annoNames.joinToString()}), 如果还出现, 请确认关闭了 ksp 增量编译 \n2. 关闭 ksp 的增量编译 \n3. 模块设置中的 ksp 参数 IncrementalDisable 设置为 false 或者 删除"
-            )
-        }*/
 
         val packageNameStr = "com.xiaojinzi.component.impl"
         val classNameStr = ComponentUtil.transformHostForClass(
@@ -1388,9 +1373,13 @@ class ModuleProcessor(
             targetFileInCache?.parentFile?.mkdirs()
 
             if (logEnable) {
-                logger.warn("$TAG $componentModuleName incrementalDisable = $kspOptimize")
+                logger.warn("$TAG $componentModuleName kspOptimize = $kspOptimize")
                 logger.warn("$TAG $componentModuleName isAllEmpty = $isAllEmpty")
-                logger.warn("$TAG $componentModuleName targetFileInCache = ${targetFileInCache?.path}")
+                logger.warn(
+                    "$TAG $componentModuleName " +
+                            "targetFileInCache.exist = ${targetFileInCache?.exists() == true}, " +
+                            "targetFileInCache.path = ${targetFileInCache?.path}"
+                )
             }
             codeGenerator.createNewFile(
                 // dependencies = Dependencies.ALL_FILES,
@@ -1414,8 +1403,10 @@ class ModuleProcessor(
                             targetFileInCache1.inputStream().use {
                                 it.copyTo(out = outputStream)
                             }
+                        } else {
+                            throw YOU_SHOULD_RERUN_EXCEPTION
                         }
-                    } ?: throw YOU_SHOULD_RERUN_EXCEPTION
+                    } ?: throw YOU_SHOULD_CONFIG_KSP_OPTIMIZE_UNIQUE_NAME_EXCEPTION
                 } else {
                     outputStream.write(
                         fileSpec.toString().toByteArray()

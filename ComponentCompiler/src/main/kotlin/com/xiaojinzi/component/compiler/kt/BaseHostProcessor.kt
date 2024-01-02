@@ -43,7 +43,12 @@ abstract class BaseHostProcessor(
                在 Android Studio 运行的时候, 有时候 ksp 并不能扫描到被标记的类.
                这个属于 ksp 还是 gradle 的问题也不是很清楚. 
                当你看到这个错误的时候, 请 clean 项目重新运行
-               或者尝试添加参数 KspOptimizeUniqueName 参数指定一个唯一的名称, 建议使用时间戳
+            """.trimIndent()
+        )
+
+        val YOU_SHOULD_CONFIG_KSP_OPTIMIZE_UNIQUE_NAME_EXCEPTION = RuntimeException(
+            """
+               尝试添加参数 KspOptimizeUniqueName 参数指定一个唯一的名称, 建议使用时间戳
                比如在网址： https://www.beijing-time.org/shijianchuo 中获取
             """.trimIndent()
         )

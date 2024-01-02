@@ -50,7 +50,7 @@ abstract class BaseHostProcessor(
             """
                尝试添加参数 KspOptimizeUniqueName 参数指定一个唯一的名称, 建议下面的方式
                ksp {
-                    arguments = [ModuleName: "user"]
+                    arguments = [ModuleName: "xxx"]
                     arg("KspOptimize", "true")
                     arg("KspOptimizeUniqueName", project.rootProject.path.md5())
                }

@@ -1420,17 +1420,16 @@ class ModuleProcessor(
                     outputStream.write(
                         fileSpec.toString().toByteArray()
                     )
-                }
-                outputStream.flush()
-            }
-            // 保存到缓存文件夹中
-            runCatching {
-                // targetFileInCache.delete()
-                targetFileInCache?.outputStream()?.use {
-                    it.write(
-                        fileSpec.toString().toByteArray()
-                    )
-                    it.flush()
+                    // 保存到缓存文件夹中
+                    runCatching {
+                        // targetFileInCache.delete()
+                        targetFileInCache?.outputStream()?.use {
+                            it.write(
+                                fileSpec.toString().toByteArray()
+                            )
+                            it.flush()
+                        }
+                    }
                 }
             }
         } catch (e: Exception) {

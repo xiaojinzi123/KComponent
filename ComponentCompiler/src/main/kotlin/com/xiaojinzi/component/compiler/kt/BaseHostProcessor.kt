@@ -20,7 +20,7 @@ abstract class BaseHostProcessor(
     companion object {
 
         val NULL_HOST_EXCEPTION = RuntimeException(
-            """the host must not be null,you must define host in build.gradle file,such as:
+            """host 或者 moduleName 不能为空, 你必须在 build.gradle 中定义, 比如:
             defaultConfig {
                 minSdkVersion 14
                 targetSdkVersion 27
@@ -30,9 +30,18 @@ abstract class BaseHostProcessor(
                 javaCompileOptions {
                     annotationProcessorOptions {
                         arguments = [HOST: "user"]
+                        // 或者
+                        arguments = [ModuleName: "user"]
                     }
                 }
-            }"""
+            }""".trimIndent()
+        )
+
+        val YOU_SHOULD_RERUN_EXCEPTION = RuntimeException(
+            """在 Android Studio 运行的时候, 有时候 ksp 并不能扫描到被标记的类.
+               这个属于 ksp 还是 gradle 的问题也不是很清楚. 
+               当你看到这个错误的时候, 请 clean 项目重新运行即可 
+            """.trimIndent()
         )
 
     }

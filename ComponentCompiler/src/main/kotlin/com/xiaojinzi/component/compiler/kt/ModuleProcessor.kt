@@ -12,6 +12,7 @@ import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
+import com.google.devtools.ksp.symbol.FileLocation
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
@@ -1371,14 +1372,32 @@ class ModuleProcessor(
                     )
                 .mapNotNull { it.containingFile }
                 .toTypedArray()
-            val targetFileInCache = File(
-                tempCacheFolder,
-                "${fileSpec.packageName}.${fileSpec.name}.kt",
-            )
+
+            val targetFileInCache =
+                (sources.firstOrNull()?.location as? FileLocation)?.filePath?.let {
+                    val index = it.indexOf(string = "/src/main/")
+                    if (index > 0) {
+                        it.substring(startIndex = 0, endIndex = index)
+                    } else {
+                        null
+                    }
+                }?.run {
+                    if (logEnable) {
+                        logger.warn("$TAG $componentModuleName projectPath = $this")
+                    }
+                    Utils.getMD5Str(str = this)
+                }?.run {
+                    File(
+                        File(tempCacheFolder, this),
+                        "${fileSpec.packageName}.${fileSpec.name}.kt",
+                    )
+                }
+            targetFileInCache?.parentFile?.mkdirs()
+
             if (logEnable) {
                 logger.warn("$TAG $componentModuleName incrementalDisable = $kspOptimize")
                 logger.warn("$TAG $componentModuleName isAllEmpty = $isAllEmpty")
-                logger.warn("$TAG $componentModuleName targetFileInCache = ${targetFileInCache.path}")
+                logger.warn("$TAG $componentModuleName targetFileInCache = ${targetFileInCache?.path}")
             }
             codeGenerator.createNewFile(
                 // dependencies = Dependencies.ALL_FILES,
@@ -1394,14 +1413,16 @@ class ModuleProcessor(
                 fileName = fileSpec.name,
             ).use { outputStream ->
                 if (kspOptimize && isAllEmpty) {
-                    if (targetFileInCache.exists() && targetFileInCache.isFile) {
-                        if (logEnable) {
-                            logger.warn("$TAG $componentModuleName ksp 出现 bug之后的弥补手段生效!, targetFileInCache= ${targetFileInCache.path}")
+                    targetFileInCache?.let { targetFileInCache1 ->
+                        if (targetFileInCache1.exists() && targetFileInCache1.isFile) {
+                            if (logEnable) {
+                                logger.warn("$TAG $componentModuleName ksp 出现 bug之后的弥补手段生效!, targetFileInCache= ${targetFileInCache1.path}")
+                            }
+                            targetFileInCache1.inputStream().use {
+                                it.copyTo(out = outputStream)
+                            }
                         }
-                        targetFileInCache.inputStream().use {
-                            it.copyTo(out = outputStream)
-                        }
-                    }
+                    } ?: throw YOU_SHOULD_RERUN_EXCEPTION
                 } else {
                     outputStream.write(
                         fileSpec.toString().toByteArray()
@@ -1412,7 +1433,7 @@ class ModuleProcessor(
             // 保存到缓存文件夹中
             runCatching {
                 // targetFileInCache.delete()
-                targetFileInCache.outputStream().use {
+                targetFileInCache?.outputStream()?.use {
                     it.write(
                         fileSpec.toString().toByteArray()
                     )

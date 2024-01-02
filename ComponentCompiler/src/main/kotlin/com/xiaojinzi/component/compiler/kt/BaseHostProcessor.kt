@@ -48,8 +48,12 @@ abstract class BaseHostProcessor(
 
         val YOU_SHOULD_CONFIG_KSP_OPTIMIZE_UNIQUE_NAME_EXCEPTION = RuntimeException(
             """
-               尝试添加参数 KspOptimizeUniqueName 参数指定一个唯一的名称, 建议使用时间戳
-               比如在网址： https://www.beijing-time.org/shijianchuo 中获取
+               尝试添加参数 KspOptimizeUniqueName 参数指定一个唯一的名称, 建议下面的方式
+               ksp {
+                    arguments = [ModuleName: "user"]
+                    arg("KspOptimize", "true")
+                    arg("KspOptimizeUniqueName", project.rootProject.path.md5())
+               }
             """.trimIndent()
         )
 

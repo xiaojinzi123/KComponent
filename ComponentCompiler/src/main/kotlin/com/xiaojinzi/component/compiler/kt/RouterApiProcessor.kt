@@ -1017,7 +1017,10 @@ class RouterApiProcessor(
 
     }
 
-    override fun doProcess(resolver: Resolver): List<KSAnnotated> {
+    override fun roundProcess(
+        resolver: Resolver,
+        round: Int,
+    ): List<KSAnnotated> {
 
         val targetRouterApiAnnotatedList = resolver
             .getSymbolsWithAnnotation(

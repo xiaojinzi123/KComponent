@@ -1,15 +1,9 @@
-/*apply plugin: 'com.android.application'
-apply plugin: 'com.xiaojinzi.component.plugin'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-kapt'*/
-
 plugins {
     id 'com.android.application'
     id 'com.xiaojinzi.kcomponent.plugin'
     id 'kotlin-android'
     id 'com.google.devtools.ksp'
     id 'kotlin-parcelize'
-    id 'kotlin-kapt'
 }
 
 apply from: "../demo_module.gradle"

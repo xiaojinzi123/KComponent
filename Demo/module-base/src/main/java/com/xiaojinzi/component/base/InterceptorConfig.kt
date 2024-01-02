@@ -1,7 +1,8 @@
 package com.xiaojinzi.component.base
 
 /**
- * 写点注释 哈哈哈
+ * 写点注释
+ * 挺好的 123
  */
 object InterceptorConfig {
 

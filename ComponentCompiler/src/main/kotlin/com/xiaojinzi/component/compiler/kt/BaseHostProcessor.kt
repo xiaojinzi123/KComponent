@@ -13,7 +13,8 @@ abstract class BaseHostProcessor(
     val componentModuleName: String = (environment.options["ModuleName"]
         ?: environment.options["HOST"]) ?: throw NULL_HOST_EXCEPTION,
     val logEnable: Boolean = environment.options["LogEnable"]?.toBoolean() ?: false,
-    val incrementalDisable: Boolean = environment.options["IncrementalDisable"]?.toBoolean() ?: false,
+    val kspOptimize: Boolean = environment.options["KspOptimize"]?.toBoolean()
+        ?: false,
 ) : BaseProcessor() {
 
     companion object {
@@ -46,11 +47,24 @@ abstract class BaseHostProcessor(
             )
         }
         if (round == 1) {
-            doProcess(resolver = resolver)
+            initProcess(resolver = resolver)
+            roundProcess(
+                resolver = resolver,
+                round = round,
+            )
         }
         return emptyList()
     }
 
-    abstract fun doProcess(resolver: Resolver): List<KSAnnotated>
+    /**
+     * 初始化
+     */
+    open fun initProcess(resolver: Resolver) {
+    }
+
+    abstract fun roundProcess(
+        resolver: Resolver,
+        round: Int,
+    ): List<KSAnnotated>
 
 }

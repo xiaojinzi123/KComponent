@@ -1,8 +1,6 @@
 package com.xiaojinzi.component.compiler.kt
 
 import com.google.devtools.ksp.getClassDeclarationByName
-import com.google.devtools.ksp.processing.CodeGenerator
-import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
@@ -32,7 +30,10 @@ class TestProcessor(
         }
     }
 
-    override fun doProcess(resolver: Resolver): List<KSAnnotated> {
+    override fun roundProcess(
+        resolver: Resolver,
+        round: Int,
+    ): List<KSAnnotated> {
 
         val testClass =
             resolver.getClassDeclarationByName("com.xiaojinzi.component.demo.TestInterface")

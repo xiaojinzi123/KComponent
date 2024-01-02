@@ -1,22 +1,51 @@
 package com.xiaojinzi.component.compiler.kt
 
 import com.google.auto.service.AutoService
-import com.google.devtools.ksp.*
-import com.google.devtools.ksp.processing.*
+import com.google.devtools.ksp.KSTypeNotPresentException
+import com.google.devtools.ksp.KSTypesNotPresentException
+import com.google.devtools.ksp.KspExperimental
+import com.google.devtools.ksp.containingFile
+import com.google.devtools.ksp.getAnnotationsByType
+import com.google.devtools.ksp.getConstructors
+import com.google.devtools.ksp.processing.Dependencies
+import com.google.devtools.ksp.processing.Resolver
+import com.google.devtools.ksp.processing.SymbolProcessor
+import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
+import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
-import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.CodeBlock
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.PropertySpec
+import com.squareup.kotlinpoet.TypeName
+import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.WildcardTypeName
+import com.squareup.kotlinpoet.asClassName
+import com.squareup.kotlinpoet.asTypeName
 import com.xiaojinzi.component.ComponentConstants
 import com.xiaojinzi.component.ComponentUtil
-import com.xiaojinzi.component.anno.*
+import com.xiaojinzi.component.anno.ConditionalAnno
+import com.xiaojinzi.component.anno.FragmentAnno
+import com.xiaojinzi.component.anno.GlobalInterceptorAnno
+import com.xiaojinzi.component.anno.InterceptorAnno
+import com.xiaojinzi.component.anno.ModuleAppAnno
+import com.xiaojinzi.component.anno.RouterAnno
+import com.xiaojinzi.component.anno.RouterDegradeAnno
+import com.xiaojinzi.component.anno.ServiceAnno
+import com.xiaojinzi.component.anno.ServiceDecoratorAnno
 import com.xiaojinzi.component.anno.support.ComponentGeneratedAnno
 import com.xiaojinzi.component.anno.support.ModuleApplicationAnno
 import com.xiaojinzi.component.compiler.kt.bean.RouterAnnoBean
 import com.xiaojinzi.component.packageName
 import com.xiaojinzi.component.simpleClassName
-import java.util.*
+import java.io.File
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.reflect.KClass
 
@@ -30,6 +59,12 @@ class ModuleProcessor(
 ) : BaseHostProcessor(
     environment = environment,
 ) {
+
+    // 从系统变量中获取临时目录的
+    private val tempCacheFolder = File(
+        System.getProperty("java.io.tmpdir"),
+        "kcomponentKspCacheFolder/${componentModuleName.replace(oldChar = '-', newChar = '_')}",
+    )
 
     private val annoNames = listOf(
         ModuleAppAnno::class,
@@ -1060,23 +1095,49 @@ class ModuleProcessor(
 
     }
 
-    override fun doProcess(resolver: Resolver): List<KSAnnotated> {
+    private val moduleAppAnnotatedList: MutableList<KSClassDeclaration> = mutableListOf()
+    private val serviceAnnotatedList: MutableList<KSAnnotated> = mutableListOf()
+    private val serviceDecoratorAnnotatedList: MutableList<KSAnnotated> = mutableListOf()
+    private val fragmentAnnotatedList: MutableList<KSAnnotated> = mutableListOf()
+    private val globalInterceptorAnnotatedList: MutableList<KSClassDeclaration> = mutableListOf()
+    private val interceptorAnnotatedList: MutableList<KSClassDeclaration> = mutableListOf()
+    private val routerAnnotatedList: MutableList<KSAnnotated> = mutableListOf()
+    private val routerDegradeAnnotatedList: MutableList<KSAnnotated> = mutableListOf()
+
+    override fun initProcess(resolver: Resolver) {
+        super.initProcess(resolver)
+        moduleAppAnnotatedList.clear()
+        serviceAnnotatedList.clear()
+        serviceDecoratorAnnotatedList.clear()
+        fragmentAnnotatedList.clear()
+        globalInterceptorAnnotatedList.clear()
+        interceptorAnnotatedList.clear()
+        routerAnnotatedList.clear()
+        routerDegradeAnnotatedList.clear()
+    }
+
+    override fun roundProcess(
+        resolver: Resolver,
+        round: Int,
+    ): List<KSAnnotated> {
 
         // 模块 Application 的
-        val moduleAppAnnotatedList: List<KSClassDeclaration> = resolver
-            .getSymbolsWithAnnotation(
-                annotationName = ModuleAppAnno::class.qualifiedName!!
-            )
-            .onEach {
-                if (logEnable) {
-                    logger.warn(
-                        "$TAG $componentModuleName moduleAppAnnotatedList item = $it"
-                    )
+        moduleAppAnnotatedList.addAll(
+            elements = resolver
+                .getSymbolsWithAnnotation(
+                    annotationName = ModuleAppAnno::class.qualifiedName!!
+                )
+                .onEach {
+                    if (logEnable) {
+                        logger.warn(
+                            "$TAG $componentModuleName moduleAppAnnotatedList item = $it"
+                        )
+                    }
                 }
-            }
-            .mapNotNull { it as? KSClassDeclaration }
-            .filterNot { it.qualifiedName == null }
-            .toList()
+                .mapNotNull { it as? KSClassDeclaration }
+                .filterNot { it.qualifiedName == null }
+                .toList()
+        )
 
         if (logEnable) {
             logger.warn(
@@ -1091,11 +1152,13 @@ class ModuleProcessor(
         }
 
         // Service 的
-        val serviceAnnotatedList: List<KSAnnotated> = resolver
-            .getSymbolsWithAnnotation(
-                annotationName = ServiceAnno::class.qualifiedName!!
-            )
-            .toList()
+        serviceAnnotatedList.addAll(
+            elements = resolver
+                .getSymbolsWithAnnotation(
+                    annotationName = ServiceAnno::class.qualifiedName!!
+                )
+                .toList(),
+        )
         if (logEnable) {
             logger.warn(
                 "$TAG $componentModuleName serviceAnnotatedList.size = ${serviceAnnotatedList.size}"
@@ -1103,11 +1166,13 @@ class ModuleProcessor(
         }
 
         // ServiceDecorator 的
-        val serviceDecoratorAnnotatedList: List<KSAnnotated> = resolver
-            .getSymbolsWithAnnotation(
-                annotationName = ServiceDecoratorAnno::class.qualifiedName!!
-            )
-            .toList()
+        serviceDecoratorAnnotatedList.addAll(
+            elements = resolver
+                .getSymbolsWithAnnotation(
+                    annotationName = ServiceDecoratorAnno::class.qualifiedName!!
+                )
+                .toList(),
+        )
         if (logEnable) {
             logger.warn(
                 "$TAG $componentModuleName serviceDecoratorAnnotatedList.size = ${serviceDecoratorAnnotatedList.size}"
@@ -1115,11 +1180,13 @@ class ModuleProcessor(
         }
 
         // Fragment 的
-        val fragmentAnnotatedList: List<KSAnnotated> = resolver
-            .getSymbolsWithAnnotation(
-                annotationName = FragmentAnno::class.qualifiedName!!
-            )
-            .toList()
+        fragmentAnnotatedList.addAll(
+            elements = resolver
+                .getSymbolsWithAnnotation(
+                    annotationName = FragmentAnno::class.qualifiedName!!
+                )
+                .toList(),
+        )
         if (logEnable) {
             logger.warn(
                 "$TAG $componentModuleName fragmentAnnotatedList.size = ${fragmentAnnotatedList.size}"
@@ -1127,12 +1194,14 @@ class ModuleProcessor(
         }
 
         // 全局拦截器的
-        val globalInterceptorAnnotatedList: List<KSClassDeclaration> = resolver
-            .getSymbolsWithAnnotation(
-                annotationName = GlobalInterceptorAnno::class.qualifiedName!!
-            )
-            .mapNotNull { it as? KSClassDeclaration }
-            .toList()
+        globalInterceptorAnnotatedList.addAll(
+            elements = resolver
+                .getSymbolsWithAnnotation(
+                    annotationName = GlobalInterceptorAnno::class.qualifiedName!!
+                )
+                .mapNotNull { it as? KSClassDeclaration }
+                .toList(),
+        )
         if (logEnable) {
             logger.warn(
                 "$TAG $componentModuleName globalInterceptorAnnotatedList.size = ${globalInterceptorAnnotatedList.size}"
@@ -1140,12 +1209,14 @@ class ModuleProcessor(
         }
 
         // 拦截器
-        val interceptorAnnotatedList: List<KSClassDeclaration> = resolver
-            .getSymbolsWithAnnotation(
-                annotationName = InterceptorAnno::class.qualifiedName!!
-            )
-            .mapNotNull { it as? KSClassDeclaration }
-            .toList()
+        interceptorAnnotatedList.addAll(
+            elements = resolver
+                .getSymbolsWithAnnotation(
+                    annotationName = InterceptorAnno::class.qualifiedName!!
+                )
+                .mapNotNull { it as? KSClassDeclaration }
+                .toList(),
+        )
         if (logEnable) {
             logger.warn(
                 "$TAG $componentModuleName interceptorAnnotatedList.size = ${interceptorAnnotatedList.size}"
@@ -1153,11 +1224,13 @@ class ModuleProcessor(
         }
 
         // 路由的
-        val routerAnnotatedList: List<KSAnnotated> = resolver
-            .getSymbolsWithAnnotation(
-                annotationName = RouterAnno::class.qualifiedName!!
-            )
-            .toList()
+        routerAnnotatedList.addAll(
+            elements = resolver
+                .getSymbolsWithAnnotation(
+                    annotationName = RouterAnno::class.qualifiedName!!
+                )
+                .toList(),
+        )
         if (logEnable) {
             logger.warn(
                 "$TAG $componentModuleName routerAnnotatedList.size = ${routerAnnotatedList.size}"
@@ -1165,32 +1238,43 @@ class ModuleProcessor(
         }
 
         // 路由降级的
-        val routerDegradeAnnotatedList: List<KSAnnotated> = resolver
-            .getSymbolsWithAnnotation(
-                annotationName = RouterDegradeAnno::class.qualifiedName!!
-            )
-            .toList()
-
+        routerDegradeAnnotatedList.addAll(
+            elements = resolver
+                .getSymbolsWithAnnotation(
+                    annotationName = RouterDegradeAnno::class.qualifiedName!!
+                )
+                .toList(),
+        )
         if (logEnable) {
             logger.warn(
                 "$TAG $componentModuleName routerDegradeAnnotatedList.size = ${routerDegradeAnnotatedList.size}"
             )
         }
 
+        generateFile()
+
+        return emptyList()
+
+    }
+
+    private fun generateFile() {
+        val isAllEmpty = moduleAppAnnotatedList.isEmpty()
+                && serviceAnnotatedList.isEmpty()
+                && serviceDecoratorAnnotatedList.isEmpty()
+                && fragmentAnnotatedList.isEmpty()
+                && globalInterceptorAnnotatedList.isEmpty()
+                && interceptorAnnotatedList.isEmpty()
+                && routerAnnotatedList.isEmpty()
+                && routerDegradeAnnotatedList.isEmpty()
         // 如果都是为空的, 要不就是没有使用注解, 要不就是因为 ksp 的增量更新导致的获取不到
-        if (incrementalDisable && moduleAppAnnotatedList.isEmpty()
-            && serviceAnnotatedList.isEmpty()
-            && serviceDecoratorAnnotatedList.isEmpty()
-            && fragmentAnnotatedList.isEmpty()
-            && globalInterceptorAnnotatedList.isEmpty()
-            && interceptorAnnotatedList.isEmpty()
-            && routerAnnotatedList.isEmpty()
-            && routerDegradeAnnotatedList.isEmpty()
-        ) {
+        /*if (kspOptimize && isAllEmpty) {
+            if (logEnable) {
+                logger.warn("$TAG $componentModuleName 应该抛异常的----------------------------------")
+            }
             throw ProcessException(
                 message = "可能的原因: \n1. 您没有在 '$componentModuleName' 模块中使用任何一个注解(${annoNames.joinToString()}) \n2. 您使用了 ksp 的增量编译 \n\n解决方式：\n1. 模块中使用任意一个注解(${annoNames.joinToString()}), 如果还出现, 请确认关闭了 ksp 增量编译 \n2. 关闭 ksp 的增量编译 \n3. 模块设置中的 ksp 参数 IncrementalDisable 设置为 false 或者 删除"
             )
-        }
+        }*/
 
         val packageNameStr = "com.xiaojinzi.component.impl"
         val classNameStr = ComponentUtil.transformHostForClass(
@@ -1280,35 +1364,60 @@ class ModuleProcessor(
                     logger.warn("$TAG $componentModuleName 第${index + 1}个文件：${file.path}")
                 }
             }
-            /**
-             * moduleAppAnnotatedList.isEmpty()
-             *             && serviceAnnotatedList.isEmpty()
-             *             && serviceDecoratorAnnotatedList.isEmpty()
-             *             && fragmentAnnotatedList.isEmpty()
-             *             && globalInterceptorAnnotatedList.isEmpty()
-             *             && interceptorAnnotatedList.isEmpty()
-             *             && routerAnnotatedList.isEmpty()
-             *             && routerDegradeAnnotatedList.isEmpty()
-             */
+            val sources = (moduleAppAnnotatedList + serviceAnnotatedList +
+                    serviceDecoratorAnnotatedList + fragmentAnnotatedList +
+                    globalInterceptorAnnotatedList + interceptorAnnotatedList +
+                    routerAnnotatedList + routerDegradeAnnotatedList
+                    )
+                .mapNotNull { it.containingFile }
+                .toTypedArray()
+            val targetFileInCache = File(
+                tempCacheFolder,
+                "${fileSpec.packageName}.${fileSpec.name}.kt",
+            )
+            if (logEnable) {
+                logger.warn("$TAG $componentModuleName incrementalDisable = $kspOptimize")
+                logger.warn("$TAG $componentModuleName isAllEmpty = $isAllEmpty")
+                logger.warn("$TAG $componentModuleName targetFileInCache = ${targetFileInCache.path}")
+            }
             codeGenerator.createNewFile(
                 // dependencies = Dependencies.ALL_FILES,
-                dependencies = Dependencies(
-                    aggregating = true,
-                    *(moduleAppAnnotatedList + serviceAnnotatedList +
-                            serviceDecoratorAnnotatedList + fragmentAnnotatedList +
-                            globalInterceptorAnnotatedList + interceptorAnnotatedList +
-                            routerAnnotatedList + routerDegradeAnnotatedList
-                            ).mapNotNull {
-                            it.containingFile
-                        }.toTypedArray(),
-                ),
+                dependencies = if (sources.isEmpty()) {
+                    Dependencies.ALL_FILES
+                } else {
+                    Dependencies(
+                        aggregating = true,
+                        sources = sources,
+                    )
+                },
                 packageName = fileSpec.packageName,
                 fileName = fileSpec.name,
-            ).use {
-                it.write(
-                    fileSpec.toString().toByteArray()
-                )
-                it.flush()
+            ).use { outputStream ->
+                if (kspOptimize && isAllEmpty) {
+                    if (targetFileInCache.exists() && targetFileInCache.isFile) {
+                        if (logEnable) {
+                            logger.warn("$TAG $componentModuleName ksp 出现 bug之后的弥补手段生效!, targetFileInCache= ${targetFileInCache.path}")
+                        }
+                        targetFileInCache.inputStream().use {
+                            it.copyTo(out = outputStream)
+                        }
+                    }
+                } else {
+                    outputStream.write(
+                        fileSpec.toString().toByteArray()
+                    )
+                }
+                outputStream.flush()
+            }
+            // 保存到缓存文件夹中
+            runCatching {
+                // targetFileInCache.delete()
+                targetFileInCache.outputStream().use {
+                    it.write(
+                        fileSpec.toString().toByteArray()
+                    )
+                    it.flush()
+                }
             }
         } catch (e: Exception) {
             if (logEnable) {
@@ -1316,13 +1425,11 @@ class ModuleProcessor(
                 logger.exception(e)
             }
         }
-
-        return emptyList()
-
     }
 
     override fun finish() {
         super.finish()
+        // generateFile()
         if (logEnable) {
             logger.warn("$TAG $componentModuleName finish")
         }

@@ -368,7 +368,10 @@ class AutowireProcessor(
         }
     }
 
-    override fun doProcess(resolver: Resolver): List<KSAnnotated> {
+    override fun roundProcess(
+        resolver: Resolver,
+        round: Int,
+    ): List<KSAnnotated> {
 
         val uriAutoWireAnnotatedList = resolver
             .getSymbolsWithAnnotation(

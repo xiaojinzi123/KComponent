@@ -1115,6 +1115,11 @@ class ModuleProcessor(
         interceptorAnnotatedList.clear()
         routerAnnotatedList.clear()
         routerDegradeAnnotatedList.clear()
+        if (logEnable) {
+            logger.warn(
+                "$TAG $componentModuleName currentFolder = ${File("./").absoluteFile.path}"
+            )
+        }
     }
 
     override fun roundProcess(
@@ -1374,19 +1379,7 @@ class ModuleProcessor(
                 .toTypedArray()
 
             val targetFileInCache =
-                (sources.firstOrNull()?.location as? FileLocation)?.filePath?.let {
-                    val index = it.indexOf(string = "/src/main/")
-                    if (index > 0) {
-                        it.substring(startIndex = 0, endIndex = index)
-                    } else {
-                        null
-                    }
-                }?.run {
-                    if (logEnable) {
-                        logger.warn("$TAG $componentModuleName projectPath = $this")
-                    }
-                    Utils.getMD5Str(str = this)
-                }?.run {
+                kspOptimizeUniqueName?.run {
                     File(
                         File(tempCacheFolder, this),
                         "${fileSpec.packageName}.${fileSpec.name}.kt",

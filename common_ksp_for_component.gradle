@@ -9,6 +9,7 @@ ksp {
 
     arg("ModuleName", name)
     arg("LogEnable", "true")
-    arg("IncrementalDisable", "true")
+    arg("KspOptimize", "true")
+    arg("KspOptimizeUniqueName", "1704198532")
 
 }

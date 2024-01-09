@@ -8,8 +8,8 @@ ksp {
     }
 
     arg("ModuleName", name)
-    arg("LogEnable", "true")
+    arg("LogEnable", "false")
     arg("KspOptimize", "true")
-    arg("KspOptimizeUniqueName", "1704198532")
+    arg("KspOptimizeUniqueName", project.path.md5())
 
 }

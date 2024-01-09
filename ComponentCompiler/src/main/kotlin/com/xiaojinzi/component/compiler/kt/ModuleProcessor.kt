@@ -1114,6 +1114,13 @@ class ModuleProcessor(
         interceptorAnnotatedList.clear()
         routerAnnotatedList.clear()
         routerDegradeAnnotatedList.clear()
+        if (kspOptimize) {
+            val logMessage = """
+                $TAG 因为开启了 ksp 优化, 所以这里输出一个日志
+                ksp 的缓存目录是: ${KspCacheIns.tempKspFolder.path}
+            """.trimIndent()
+            logger.warn(logMessage)
+        }
     }
 
     override fun roundProcess(
@@ -1258,14 +1265,16 @@ class ModuleProcessor(
     }
 
     private fun generateFile() {
-        val isAllEmpty = moduleAppAnnotatedList.isEmpty()
-                && serviceAnnotatedList.isEmpty()
-                && serviceDecoratorAnnotatedList.isEmpty()
-                && fragmentAnnotatedList.isEmpty()
-                && globalInterceptorAnnotatedList.isEmpty()
-                && interceptorAnnotatedList.isEmpty()
-                && routerAnnotatedList.isEmpty()
-                && routerDegradeAnnotatedList.isEmpty()
+
+        val allMarkedList = (moduleAppAnnotatedList + serviceAnnotatedList +
+                serviceDecoratorAnnotatedList + fragmentAnnotatedList +
+                globalInterceptorAnnotatedList + interceptorAnnotatedList +
+                routerAnnotatedList + routerDegradeAnnotatedList
+                )
+
+        val sources = allMarkedList
+            .mapNotNull { it.containingFile }
+            .toTypedArray()
 
         val packageNameStr = "com.xiaojinzi.component.impl"
         val classNameStr = ComponentUtil.transformHostForClass(
@@ -1355,71 +1364,54 @@ class ModuleProcessor(
                     logger.warn("$TAG $componentModuleName 第${index + 1}个文件：${file.path}")
                 }
             }
-            val sources = (moduleAppAnnotatedList + serviceAnnotatedList +
-                    serviceDecoratorAnnotatedList + fragmentAnnotatedList +
-                    globalInterceptorAnnotatedList + interceptorAnnotatedList +
-                    routerAnnotatedList + routerDegradeAnnotatedList
-                    )
-                .mapNotNull { it.containingFile }
-                .toTypedArray()
-
-            val targetFileInCache =
-                kspOptimizeUniqueName?.run {
-                    File(
-                        File(tempCacheFolder, this),
-                        "${fileSpec.packageName}.${fileSpec.name}.kt",
-                    )
-                }
-            targetFileInCache?.parentFile?.mkdirs()
 
             if (logEnable) {
                 logger.warn("$TAG $componentModuleName kspOptimize = $kspOptimize")
-                logger.warn("$TAG $componentModuleName isAllEmpty = $isAllEmpty")
-                logger.warn(
-                    "$TAG $componentModuleName " +
-                            "targetFileInCache.exist = ${targetFileInCache?.exists() == true}, " +
-                            "targetFileInCache.path = ${targetFileInCache?.path}"
-                )
             }
-            codeGenerator.createNewFile(
-                // dependencies = Dependencies.ALL_FILES,
-                dependencies = if (sources.isEmpty()) {
-                    Dependencies.ALL_FILES
-                } else {
-                    Dependencies(
-                        aggregating = true,
-                        sources = sources,
-                    )
-                },
-                packageName = fileSpec.packageName,
-                fileName = fileSpec.name,
-            ).use { outputStream ->
-                if (kspOptimize && isAllEmpty) {
-                    targetFileInCache?.let { targetFileInCache1 ->
-                        if (targetFileInCache1.exists() && targetFileInCache1.isFile) {
-                            if (logEnable) {
-                                logger.warn("$TAG $componentModuleName ksp 出现 bug之后的弥补手段生效!, targetFileInCache= ${targetFileInCache1.path}")
-                            }
-                            targetFileInCache1.inputStream().use {
-                                it.copyTo(out = outputStream)
-                            }
-                        } else {
-                            throw YOU_SHOULD_RERUN_EXCEPTION
-                        }
-                    } ?: throw YOU_SHOULD_CONFIG_KSP_OPTIMIZE_UNIQUE_NAME_EXCEPTION
-                } else {
+
+            if (kspOptimize && sources.isEmpty()) {
+                // 拉出所有的文件进行写入
+                val fileSize = KspCacheIns.readCacheToKspFolder(
+                    logEnable = logEnable,
+                    logger = logger,
+                    processorTag = TAG,
+                    moduleName = componentModuleName,
+                    kspOptimizeUniqueName = kspOptimizeUniqueName,
+                    simpleNameSuffix = ComponentUtil.MODULE,
+                    codeGenerator = codeGenerator,
+                )
+                // 如果开启了 ksp 优化, 并且 sources 是0，而且找到的文件也是 0 个, 抛错误
+                if (fileSize <= 0) {
+                    throw YOU_SHOULD_RERUN_EXCEPTION
+                }
+            } else {
+                val targetDataArray = fileSpec.toString().toByteArray()
+                codeGenerator.createNewFile(
+                    dependencies = if (sources.isEmpty()) {
+                        Dependencies.ALL_FILES
+                    } else {
+                        Dependencies(
+                            aggregating = true,
+                            sources = sources,
+                        )
+                    },
+                    packageName = fileSpec.packageName,
+                    fileName = fileSpec.name,
+                ).use { outputStream ->
                     outputStream.write(
-                        fileSpec.toString().toByteArray()
+                        targetDataArray
                     )
-                    // 保存到缓存文件夹中
-                    runCatching {
-                        // targetFileInCache.delete()
-                        targetFileInCache?.outputStream()?.use {
-                            it.write(
-                                fileSpec.toString().toByteArray()
-                            )
-                            it.flush()
-                        }
+                    kspOptimizeUniqueName?.let {
+                        KspCacheIns.save(
+                            logEnable = logEnable,
+                            logger = logger,
+                            processorTag = TAG,
+                            moduleName = componentModuleName,
+                            kspOptimizeUniqueName = kspOptimizeUniqueName,
+                            packageName = fileSpec.packageName,
+                            fileName = "${fileSpec.name}.kt",
+                            data = targetDataArray,
+                        )
                     }
                 }
             }

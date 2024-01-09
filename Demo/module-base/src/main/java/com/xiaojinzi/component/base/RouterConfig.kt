@@ -2,7 +2,6 @@ package com.xiaojinzi.component.base
 
 /**
  * 写点注释
- * 123
  *
  * @author xiaojinzi
  */

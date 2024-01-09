@@ -63,7 +63,7 @@ class AutowireProcessor(
         // 属性注入的模式
         val attrAutoWireModeClassName = ComponentConstants.ATTRAUTOWIREMODE_CLASS_NAME.toClassName()
 
-        val classSimpleName = targetClassClassName.simpleName + "_Inject"
+        val classSimpleName = targetClassClassName.simpleName + ComponentConstants.INJECT_SUFFIX
 
         val typeSpec = TypeSpec
             .classBuilder(classSimpleName)
@@ -343,6 +343,7 @@ class AutowireProcessor(
                 )
             }
             classDeclaration.containingFile?.let { containingFile ->
+                val targetDataArray = fileSpec.toString().toByteArray()
                 codeGenerator.createNewFile(
                     // dependencies = Dependencies.ALL_FILES,
                     dependencies = Dependencies(
@@ -353,9 +354,20 @@ class AutowireProcessor(
                     fileName = fileSpec.name,
                 ).use {
                     it.write(
-                        fileSpec.toString().toByteArray()
+                        targetDataArray
                     )
-                    it.flush()
+                    kspOptimizeUniqueName?.let {
+                        KspCacheIns.save(
+                            logEnable = logEnable,
+                            logger = logger,
+                            processorTag = TAG,
+                            moduleName = componentModuleName,
+                            kspOptimizeUniqueName = kspOptimizeUniqueName,
+                            packageName = fileSpec.packageName,
+                            fileName = "${fileSpec.name}.kt",
+                            data = targetDataArray,
+                        )
+                    }
                 }
             }
             if (logEnable) {
@@ -394,7 +406,10 @@ class AutowireProcessor(
             .mapNotNull { it as? KSPropertyDeclaration }
             .toList()
 
-        (uriAutoWireAnnotatedList + attrAutoWireAnnotatedList + serviceAutoWireAnnotatedList)
+        val markedList =
+            (uriAutoWireAnnotatedList + attrAutoWireAnnotatedList + serviceAutoWireAnnotatedList)
+
+        markedList
             .groupBy {
                 it.closestClassDeclaration()
             }
@@ -407,6 +422,18 @@ class AutowireProcessor(
                     targetAnnotatedList = mapItem.value
                 )
             }
+
+        if (kspOptimize && markedList.isEmpty()) {
+            KspCacheIns.readCacheToKspFolder(
+                logEnable = logEnable,
+                logger = logger,
+                processorTag = TAG,
+                moduleName = componentModuleName,
+                kspOptimizeUniqueName = kspOptimizeUniqueName,
+                simpleNameSuffix = ComponentConstants.INJECT_SUFFIX,
+                codeGenerator = codeGenerator,
+            )
+        }
 
         return emptyList()
 

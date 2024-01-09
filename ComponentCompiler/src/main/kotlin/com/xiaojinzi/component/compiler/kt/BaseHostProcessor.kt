@@ -52,7 +52,7 @@ abstract class BaseHostProcessor(
                ksp {
                     arguments = [ModuleName: "xxx"]
                     arg("KspOptimize", "true")
-                    arg("KspOptimizeUniqueName", project.rootProject.path.md5())
+                    arg("KspOptimizeUniqueName", project.path.md5())
                }
             """.trimIndent()
         )
@@ -88,5 +88,11 @@ abstract class BaseHostProcessor(
         resolver: Resolver,
         round: Int,
     ): List<KSAnnotated>
+
+    init {
+        if(kspOptimize && kspOptimizeUniqueName.isNullOrEmpty()) {
+            throw YOU_SHOULD_CONFIG_KSP_OPTIMIZE_UNIQUE_NAME_EXCEPTION
+        }
+    }
 
 }

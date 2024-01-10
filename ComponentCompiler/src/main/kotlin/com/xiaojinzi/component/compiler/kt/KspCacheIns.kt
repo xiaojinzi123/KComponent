@@ -80,24 +80,18 @@ object KspCacheIns {
 
         // 深度遍历 tempCacheFolder
         targetFileList.forEach { file ->
-            if (file.isFile) {
-                if (file.nameWithoutExtension.endsWith(
-                        suffix = simpleNameSuffix,
-                    )
-                ) {
-                    val packageName = file.parentFile
-                        .relativeTo(base = tempCacheFolder)
-                        .path
-                        .replace(oldChar = File.separatorChar, newChar = '.')
-                    codeGenerator.createNewFile(
-                        dependencies = Dependencies.ALL_FILES,
-                        packageName = packageName,
-                        fileName = file.name,
-                        extensionName = file.extension,
-                    )
-                }
+            val packageName = file.parentFile
+                .relativeTo(base = tempCacheFolder)
+                .path
+                .replace(oldChar = File.separatorChar, newChar = '.')
+            codeGenerator.createNewFile(
+                dependencies = Dependencies.ALL_FILES,
+                packageName = packageName,
+                fileName = file.name,
+                extensionName = file.extension,
+            ).use {
+                file.inputStream().copyTo(it)
             }
-
         }
 
         if (targetFileList.isNotEmpty()) {

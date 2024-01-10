@@ -100,7 +100,9 @@ object KspCacheIns {
 
         }
 
-        logger.warn("$processorTag $moduleName 总共为您恢复了 ${targetFileList.size} 个文件")
+        if (targetFileList.isNotEmpty()) {
+            logger.warn("$processorTag $moduleName 总共为您恢复了 ${targetFileList.size} 个文件")
+        }
 
         return targetFileList.size
 

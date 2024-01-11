@@ -53,6 +53,7 @@ import kotlin.reflect.KClass
  * - ModuleApplication
  * - Fragment
  * - Service
+ * https://github.com/aasitnikov/ksp-aggregating-issue/blob/master/experiments/processor/src/main/java/com/example/experiments/processor/ExperimentsProcessor.kt
  */
 class ModuleProcessor(
     override val environment: SymbolProcessorEnvironment,

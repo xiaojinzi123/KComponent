@@ -7,6 +7,7 @@ import com.google.devtools.ksp.getAnnotationsByType
 import com.google.devtools.ksp.getClassDeclarationByName
 import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.*
+import com.google.devtools.ksp.validate
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.ksp.toClassName
@@ -27,18 +28,13 @@ class AutowireProcessor(
         const val TAG = "AutowireProcessor"
     }
 
+    private val collectList = mutableListOf<KSPropertyDeclaration>()
+
     @OptIn(KspExperimental::class)
     private fun createFile(
-        resolver: Resolver,
         classDeclaration: KSClassDeclaration,
         targetAnnotatedList: List<KSPropertyDeclaration>,
     ) {
-
-        val activityKsClassDeclaration =
-            resolver.getClassDeclarationByName(name = ComponentConstants.ANDROID_ACTIVITY)
-        val fragmentKsClassDeclaration =
-            resolver.getClassDeclarationByName(name = ComponentConstants.ANDROID_FRAGMENT)
-
         // 目标注入对象的 KsType
         val classDeclarationKsType = classDeclaration.asStarProjectedType()
 
@@ -159,7 +155,6 @@ class AutowireProcessor(
                                         propertyName,
                                         mClassNameParameterSupport,
                                         getMethodNameFromKsType(
-                                            resolver = resolver,
                                             ksType = ksPropertyDeclaration.type.resolve(),
                                             prefix = "get",
                                         ),
@@ -175,7 +170,6 @@ class AutowireProcessor(
                                         propertyName,
                                         mClassNameParameterSupport,
                                         getMethodNameFromKsType(
-                                            resolver = resolver,
                                             ksType = ksPropertyDeclaration.type.resolve(),
                                             prefix = "get",
                                         ),
@@ -367,10 +361,49 @@ class AutowireProcessor(
         }
     }
 
+    private fun createAllFile() {
+        collectList
+            .groupBy {
+                it.closestClassDeclaration()
+            }
+            .forEach { mapItem ->
+                // 对 key 为 null 的不予考虑
+                val classDeclaration = mapItem.key ?: return@forEach
+                createFile(
+                    classDeclaration = classDeclaration,
+                    targetAnnotatedList = mapItem.value
+                )
+            }
+    }
+
     override fun roundProcess(
         resolver: Resolver,
         round: Int,
     ): List<KSAnnotated> {
+
+        val (uriAutoWireValidList, uriAutoWireInValidList) = resolver
+            .getSymbolsWithAnnotation(
+                annotationName = UriAutowiredAnno::class.qualifiedName!!
+            )
+            .partition {
+                it.validate()
+            }
+
+        val (attrValueAutowiredValidList, attrValueAutowiredInValidList) = resolver
+            .getSymbolsWithAnnotation(
+                annotationName = AttrValueAutowiredAnno::class.qualifiedName!!
+            )
+            .partition {
+                it.validate()
+            }
+
+        val (serviceAutowiredValidList, serviceAutowiredInValidList) = resolver
+            .getSymbolsWithAnnotation(
+                annotationName = ServiceAutowiredAnno::class.qualifiedName!!
+            )
+            .partition {
+                it.validate()
+            }
 
         val uriAutoWireAnnotatedList = resolver
             .getSymbolsWithAnnotation(
@@ -393,29 +426,21 @@ class AutowireProcessor(
             .mapNotNull { it as? KSPropertyDeclaration }
             .toList()
 
-        val markedList =
-            (uriAutoWireAnnotatedList + attrAutoWireAnnotatedList + serviceAutoWireAnnotatedList)
+        val eachCollectList =
+            (uriAutoWireValidList + attrValueAutowiredValidList + serviceAutowiredValidList)
+                .filterIsInstance<KSPropertyDeclaration>()
 
-        markedList
-            .groupBy {
-                it.closestClassDeclaration()
-            }
-            .forEach { mapItem ->
-                // 对 key 为 null 的不予考虑
-                val classDeclaration = mapItem.key ?: return@forEach
-                createFile(
-                    resolver = resolver,
-                    classDeclaration = classDeclaration,
-                    targetAnnotatedList = mapItem.value
-                )
-            }
+        collectList.addAll(
+            elements = eachCollectList,
+        )
 
-        return emptyList()
+        return uriAutoWireInValidList + attrValueAutowiredInValidList + serviceAutowiredInValidList
 
     }
 
     override fun finish() {
         super.finish()
+        createAllFile()
         if (logEnable) {
             logger.warn("$TAG $componentModuleName finish")
         }

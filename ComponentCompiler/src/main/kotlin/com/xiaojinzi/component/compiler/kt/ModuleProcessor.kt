@@ -15,6 +15,7 @@ import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
+import com.google.devtools.ksp.validate
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
@@ -1122,20 +1123,16 @@ class ModuleProcessor(
         round: Int,
     ): List<KSAnnotated> {
 
+        val (moduleAppValidList, moduleAppInValidList) = resolver
+            .getSymbolsWithAnnotation(
+                annotationName = ModuleAppAnno::class.qualifiedName!!
+            )
+            .partition { it.validate() }
+
         // 模块 Application 的
         moduleAppAnnotatedList.addAll(
-            elements = resolver
-                .getSymbolsWithAnnotation(
-                    annotationName = ModuleAppAnno::class.qualifiedName!!
-                )
-                .onEach {
-                    if (logEnable) {
-                        logger.warn(
-                            "$TAG $componentModuleName moduleAppAnnotatedList item = $it"
-                        )
-                    }
-                }
-                .mapNotNull { it as? KSClassDeclaration }
+            elements = moduleAppValidList
+                .filterIsInstance<KSClassDeclaration>()
                 .filterNot { it.qualifiedName == null }
                 .toList()
         )
@@ -1152,13 +1149,15 @@ class ModuleProcessor(
             )
         }
 
+        val (serviceValidList, serviceInvalidList) = resolver
+            .getSymbolsWithAnnotation(
+                annotationName = ServiceAnno::class.qualifiedName!!
+            )
+            .partition { it.validate() }
+
         // Service 的
         serviceAnnotatedList.addAll(
-            elements = resolver
-                .getSymbolsWithAnnotation(
-                    annotationName = ServiceAnno::class.qualifiedName!!
-                )
-                .toList(),
+            elements = serviceValidList,
         )
         if (logEnable) {
             logger.warn(
@@ -1166,13 +1165,15 @@ class ModuleProcessor(
             )
         }
 
+        val (serviceDecoratorValidList, serviceDecoratorInvalidList) = resolver
+            .getSymbolsWithAnnotation(
+                annotationName = ServiceDecoratorAnno::class.qualifiedName!!
+            )
+            .partition { it.validate() }
+
         // ServiceDecorator 的
         serviceDecoratorAnnotatedList.addAll(
-            elements = resolver
-                .getSymbolsWithAnnotation(
-                    annotationName = ServiceDecoratorAnno::class.qualifiedName!!
-                )
-                .toList(),
+            elements = serviceDecoratorValidList,
         )
         if (logEnable) {
             logger.warn(
@@ -1180,13 +1181,15 @@ class ModuleProcessor(
             )
         }
 
+        val (fragmentValidList, fragmentInvalidList) = resolver
+            .getSymbolsWithAnnotation(
+                annotationName = FragmentAnno::class.qualifiedName!!
+            )
+            .partition { it.validate() }
+
         // Fragment 的
         fragmentAnnotatedList.addAll(
-            elements = resolver
-                .getSymbolsWithAnnotation(
-                    annotationName = FragmentAnno::class.qualifiedName!!
-                )
-                .toList(),
+            elements = fragmentValidList,
         )
         if (logEnable) {
             logger.warn(
@@ -1194,13 +1197,16 @@ class ModuleProcessor(
             )
         }
 
+        val (globalInterceptorValidList, globalInterceptorInvalidList) = resolver
+            .getSymbolsWithAnnotation(
+                annotationName = GlobalInterceptorAnno::class.qualifiedName!!
+            )
+            .partition { it.validate() }
+
         // 全局拦截器的
         globalInterceptorAnnotatedList.addAll(
-            elements = resolver
-                .getSymbolsWithAnnotation(
-                    annotationName = GlobalInterceptorAnno::class.qualifiedName!!
-                )
-                .mapNotNull { it as? KSClassDeclaration }
+            elements = globalInterceptorValidList
+                .filterIsInstance<KSClassDeclaration>()
                 .toList(),
         )
         if (logEnable) {
@@ -1209,13 +1215,15 @@ class ModuleProcessor(
             )
         }
 
+        val (interceptorValidList, interceptorInvalidList) = resolver
+            .getSymbolsWithAnnotation(
+                annotationName = InterceptorAnno::class.qualifiedName!!
+            )
+            .partition { it.validate() }
         // 拦截器
         interceptorAnnotatedList.addAll(
-            elements = resolver
-                .getSymbolsWithAnnotation(
-                    annotationName = InterceptorAnno::class.qualifiedName!!
-                )
-                .mapNotNull { it as? KSClassDeclaration }
+            elements = interceptorValidList
+                .filterIsInstance<KSClassDeclaration>()
                 .toList(),
         )
         if (logEnable) {
@@ -1224,13 +1232,15 @@ class ModuleProcessor(
             )
         }
 
+        val (routerValidList, routerInvalidList) = resolver
+            .getSymbolsWithAnnotation(
+                annotationName = RouterAnno::class.qualifiedName!!
+            )
+            .partition { it.validate() }
+
         // 路由的
         routerAnnotatedList.addAll(
-            elements = resolver
-                .getSymbolsWithAnnotation(
-                    annotationName = RouterAnno::class.qualifiedName!!
-                )
-                .toList(),
+            elements = routerValidList,
         )
         if (logEnable) {
             logger.warn(
@@ -1238,13 +1248,14 @@ class ModuleProcessor(
             )
         }
 
+        val (routerDegradeValidList, routerDegradeInvalidList) = resolver
+            .getSymbolsWithAnnotation(
+                annotationName = RouterDegradeAnno::class.qualifiedName!!
+            )
+            .partition { it.validate() }
         // 路由降级的
         routerDegradeAnnotatedList.addAll(
-            elements = resolver
-                .getSymbolsWithAnnotation(
-                    annotationName = RouterDegradeAnno::class.qualifiedName!!
-                )
-                .toList(),
+            elements = routerDegradeValidList,
         )
         if (logEnable) {
             logger.warn(
@@ -1252,9 +1263,9 @@ class ModuleProcessor(
             )
         }
 
-        generateFile()
-
-        return emptyList()
+        return moduleAppInValidList + serviceInvalidList + serviceDecoratorInvalidList +
+                fragmentInvalidList + globalInterceptorInvalidList + interceptorInvalidList +
+                routerInvalidList + routerDegradeInvalidList
 
     }
 
@@ -1386,7 +1397,7 @@ class ModuleProcessor(
 
     override fun finish() {
         super.finish()
-        // generateFile()
+        generateFile()
         if (logEnable) {
             logger.warn("$TAG $componentModuleName finish")
         }

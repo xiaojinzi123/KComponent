@@ -23,9 +23,73 @@ class RouterApiProcessor(
 
     private val TAG = "RouterApiProcessor"
 
+    var componentCallbackKSClassDeclaration: KSClassDeclaration? = null
+
+    var componentActivityResultKSClassDeclaration: KSClassDeclaration? = null
+
+    var componentNavigatorKSClassDeclaration: KSClassDeclaration? = null
+
+    var componentCallKSClassDeclaration: KSClassDeclaration? = null
+
+    var componentBiCallbackKSClassDeclaration: KSClassDeclaration? = null
+
+    var androidIntentKSClassDeclaration: KSClassDeclaration? = null
+
+    var androidContextKSClassDeclaration: KSClassDeclaration? = null
+
+    var rxSingleKSClassDeclaration: KSClassDeclaration? = null
+
+    var navigationDisposableKSClassDeclaration: KSClassDeclaration? = null
+
+    var rxCompletableKSClassDeclaration: KSClassDeclaration? = null
+
+    var kotlinFunction0KSClassDeclaration: KSClassDeclaration? = null
+
+    var kotlinFunction1KSClassDeclaration: KSClassDeclaration? = null
+
+    private val collectList = mutableListOf<KSClassDeclaration>()
+
+    override fun initProcess(resolver: Resolver) {
+        super.initProcess(resolver)
+        componentCallbackKSClassDeclaration =
+            resolver.getClassDeclarationByName(name = ComponentConstants.CALLBACK_CLASS_NAME)
+
+        componentActivityResultKSClassDeclaration =
+            resolver.getClassDeclarationByName(name = ComponentConstants.COMPONENT_ACTIVITY_RESULT_CLASS_NAME)
+
+        componentNavigatorKSClassDeclaration =
+            resolver.getClassDeclarationByName(name = ComponentConstants.NAVIGATOR_CLASS_NAME)
+
+        componentCallKSClassDeclaration =
+            resolver.getClassDeclarationByName(name = ComponentConstants.CALL_CLASS_NAME)
+
+        componentBiCallbackKSClassDeclaration =
+            resolver.getClassDeclarationByName(name = ComponentConstants.BICALLBACK_CLASS_NAME)
+
+        androidIntentKSClassDeclaration =
+            resolver.getClassDeclarationByName(name = ComponentConstants.ANDROID_INTENT)
+
+        androidContextKSClassDeclaration =
+            resolver.getClassDeclarationByName(name = ComponentConstants.ANDROID_CONTEXT)
+
+        rxSingleKSClassDeclaration =
+            resolver.getClassDeclarationByName(name = ComponentConstants.RXJAVA_SINGLE)
+
+        navigationDisposableKSClassDeclaration =
+            resolver.getClassDeclarationByName(name = ComponentConstants.NAVIGATIONDISPOSABLE_CLASS_NAME)
+
+        rxCompletableKSClassDeclaration =
+            resolver.getClassDeclarationByName(name = ComponentConstants.RXJAVA_COMPLETABLE)
+
+        kotlinFunction0KSClassDeclaration =
+            resolver.getClassDeclarationByName(name = ComponentConstants.KOTLIN_FUNCTION0)
+
+        kotlinFunction1KSClassDeclaration =
+            resolver.getClassDeclarationByName(name = ComponentConstants.KOTLIN_FUNCTION1)
+    }
+
     @OptIn(KspExperimental::class)
     private fun createFile(
-        resolver: Resolver,
         routerApiKSClassDeclaration: KSClassDeclaration,
     ) {
 
@@ -49,42 +113,6 @@ class RouterApiProcessor(
             annotationKClass = FlagAnno::class
         ).firstOrNull()?.value?.toList() ?: emptyList()
 
-        val componentCallbackKSClassDeclaration: KSClassDeclaration? =
-            resolver.getClassDeclarationByName(name = ComponentConstants.CALLBACK_CLASS_NAME)
-
-        val componentActivityResultKSClassDeclaration: KSClassDeclaration? =
-            resolver.getClassDeclarationByName(name = ComponentConstants.COMPONENT_ACTIVITY_RESULT_CLASS_NAME)
-
-        val componentNavigatorKSClassDeclaration: KSClassDeclaration? =
-            resolver.getClassDeclarationByName(name = ComponentConstants.NAVIGATOR_CLASS_NAME)
-
-        val componentCallKSClassDeclaration: KSClassDeclaration? =
-            resolver.getClassDeclarationByName(name = ComponentConstants.CALL_CLASS_NAME)
-
-        val componentBiCallbackKSClassDeclaration: KSClassDeclaration? =
-            resolver.getClassDeclarationByName(name = ComponentConstants.BICALLBACK_CLASS_NAME)
-
-        val androidIntentKSClassDeclaration: KSClassDeclaration? =
-            resolver.getClassDeclarationByName(name = ComponentConstants.ANDROID_INTENT)
-
-        val androidContextKSClassDeclaration: KSClassDeclaration? =
-            resolver.getClassDeclarationByName(name = ComponentConstants.ANDROID_CONTEXT)
-
-        val rxSingleKSClassDeclaration: KSClassDeclaration? =
-            resolver.getClassDeclarationByName(name = ComponentConstants.RXJAVA_SINGLE)
-
-        val navigationDisposableKSClassDeclaration: KSClassDeclaration? =
-            resolver.getClassDeclarationByName(name = ComponentConstants.NAVIGATIONDISPOSABLE_CLASS_NAME)
-
-        val rxCompletableKSClassDeclaration: KSClassDeclaration? =
-            resolver.getClassDeclarationByName(name = ComponentConstants.RXJAVA_COMPLETABLE)
-
-        val kotlinFunction0KSClassDeclaration: KSClassDeclaration? =
-            resolver.getClassDeclarationByName(name = ComponentConstants.KOTLIN_FUNCTION0)
-
-        val kotlinFunction1KSClassDeclaration: KSClassDeclaration? =
-            resolver.getClassDeclarationByName(name = ComponentConstants.KOTLIN_FUNCTION1)
-
         // 生成的类要实现的接口的 String 全类名
         val fullClassName =
             routerApiKSClassDeclaration.asStarProjectedType().declaration.qualifiedName!!.asString()
@@ -106,6 +134,30 @@ class RouterApiProcessor(
                 routerApiKSClassDeclaration
                     .getDeclaredFunctions()
                     .forEach { ksFunctionDeclaration ->
+
+                        val functionNameStr = ksFunctionDeclaration.simpleName.getShortName()
+
+                        if (logEnable) {
+                            /*logger.warn(
+                                message = "$TAG $componentModuleName functionName = $functionNameStr",
+                            )*/
+                        }
+
+                        val isTest = "toTestActivityResultView1" == functionNameStr
+
+                        if (isTest) {
+                            ksFunctionDeclaration
+                                .parameters
+                                .getOrNull(1)
+                                ?.run {
+                                    val value1 = this.type.resolve().declaration
+                                    val result =
+                                        value1 == componentBiCallbackKSClassDeclaration
+                                    logger.warn(
+                                        message = " value1 = ${value1.qualifiedName?.getShortName()} value2 = ${componentBiCallbackKSClassDeclaration?.qualifiedName?.getShortName()}"
+                                    )
+                                }
+                        }
 
                         // 导航的注解, 默认可以省略
                         val navigateAnno: NavigateAnno? =
@@ -265,6 +317,7 @@ class RouterApiProcessor(
                                     ksFunctionDeclaration
                                         .parameters
                                         .forEach { ksValueParameter ->
+
                                             when {
                                                 ksValueParameter.isAnnotationPresent(
                                                     annotationKClass = OptionsAnno::class
@@ -357,6 +410,13 @@ class RouterApiProcessor(
                                                 },
                                             )
                                         }
+                                }
+                                .apply {
+                                    if (isTest) {
+                                        logger.warn(
+                                            message = "ksValueParameter_biCallback == null? : ${ksValueParameter_biCallback == null}"
+                                        )
+                                    }
                                 }
                                 .also { funSpecBuilder ->
 
@@ -471,7 +531,6 @@ class RouterApiProcessor(
                                                     annotationKClass = ParameterAnno::class,
                                                 ).firstOrNull()?.let { parameterAnno ->
                                                     val methodCallName = getMethodNameFromKsType(
-                                                        resolver = resolver,
                                                         ksType = ksValueParameter.type.resolve(),
                                                         prefix = "put",
                                                     )
@@ -1021,32 +1080,27 @@ class RouterApiProcessor(
         round: Int,
     ): List<KSAnnotated> {
 
-        val targetRouterApiAnnotatedList = resolver
+        val (validList, inValidList) = resolver
             .getSymbolsWithAnnotation(
                 annotationName = RouterApiAnno::class.qualifiedName!!
             )
-            .filterIsInstance<KSClassDeclaration>()
-            .toList()
+            .partition { it.validate() }
 
-        if (logEnable) {
-            logger.warn(
-                "$TAG $componentModuleName targetList = $targetRouterApiAnnotatedList"
-            )
-        }
+        collectList.addAll(
+            elements = validList.filterIsInstance<KSClassDeclaration>()
+        )
 
-        targetRouterApiAnnotatedList.forEach { item ->
-            createFile(
-                resolver = resolver,
-                routerApiKSClassDeclaration = item,
-            )
-        }
-
-        return emptyList()
+        return inValidList
 
     }
 
     override fun finish() {
         super.finish()
+        collectList.forEach { item ->
+            createFile(
+                routerApiKSClassDeclaration = item,
+            )
+        }
         if (logEnable) {
             logger.warn("$TAG $componentModuleName finish")
         }

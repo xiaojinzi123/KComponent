@@ -1114,13 +1114,6 @@ class ModuleProcessor(
         interceptorAnnotatedList.clear()
         routerAnnotatedList.clear()
         routerDegradeAnnotatedList.clear()
-        if (kspOptimize) {
-            val logMessage = """
-                $TAG 因为开启了 ksp 优化, 所以这里输出一个日志
-                ksp 的缓存目录是: ${KspCacheIns.tempKspFolder.path}
-            """.trimIndent()
-            logger.warn(logMessage)
-        }
     }
 
     override fun roundProcess(
@@ -1365,55 +1358,22 @@ class ModuleProcessor(
                 }
             }
 
-            if (logEnable) {
-                logger.warn("$TAG $componentModuleName kspOptimize = $kspOptimize")
-            }
-
-            if (kspOptimize && sources.isEmpty()) {
-                // 拉出所有的文件进行写入
-                val fileSize = KspCacheIns.readCacheToKspFolder(
-                    logEnable = logEnable,
-                    logger = logger,
-                    processorTag = TAG,
-                    moduleName = componentModuleName,
-                    kspOptimizeUniqueName = kspOptimizeUniqueName,
-                    simpleNameSuffix = ComponentUtil.MODULE,
-                    codeGenerator = codeGenerator,
-                )
-                // 如果开启了 ksp 优化, 并且 sources 是0，而且找到的文件也是 0 个, 抛错误
-                if (fileSize <= 0) {
-                    throw YOU_SHOULD_RERUN_EXCEPTION
-                }
-            } else {
-                val targetDataArray = fileSpec.toString().toByteArray()
-                codeGenerator.createNewFile(
-                    dependencies = if (sources.isEmpty()) {
-                        Dependencies.ALL_FILES
-                    } else {
-                        Dependencies(
-                            aggregating = true,
-                            sources = sources,
-                        )
-                    },
-                    packageName = fileSpec.packageName,
-                    fileName = fileSpec.name,
-                ).use { outputStream ->
-                    outputStream.write(
-                        targetDataArray
+            val targetDataArray = fileSpec.toString().toByteArray()
+            codeGenerator.createNewFile(
+                dependencies = if (sources.isEmpty()) {
+                    Dependencies.ALL_FILES
+                } else {
+                    Dependencies(
+                        aggregating = false,
+                        sources = sources,
                     )
-                    kspOptimizeUniqueName?.let {
-                        KspCacheIns.save(
-                            logEnable = logEnable,
-                            logger = logger,
-                            processorTag = TAG,
-                            moduleName = componentModuleName,
-                            kspOptimizeUniqueName = kspOptimizeUniqueName,
-                            packageName = fileSpec.packageName,
-                            fileName = "${fileSpec.name}.kt",
-                            data = targetDataArray,
-                        )
-                    }
-                }
+                },
+                packageName = fileSpec.packageName,
+                fileName = fileSpec.name,
+            ).use { outputStream ->
+                outputStream.write(
+                    targetDataArray
+                )
             }
         } catch (e: Exception) {
             if (logEnable) {

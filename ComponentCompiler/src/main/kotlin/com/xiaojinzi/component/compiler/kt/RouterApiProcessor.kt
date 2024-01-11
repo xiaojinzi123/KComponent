@@ -993,9 +993,8 @@ class RouterApiProcessor(
                 ?.let { containingFile ->
                     val targetDataArray = fileSpec.toString().toByteArray()
                     codeGenerator.createNewFile(
-                        // dependencies = Dependencies.ALL_FILES,
                         dependencies = Dependencies(
-                            aggregating = true,
+                            aggregating = false,
                             containingFile,
                         ),
                         packageName = fileSpec.packageName,
@@ -1004,18 +1003,6 @@ class RouterApiProcessor(
                         it.write(
                             targetDataArray
                         )
-                        kspOptimizeUniqueName?.let {
-                            KspCacheIns.save(
-                                logEnable = logEnable,
-                                logger = logger,
-                                processorTag = TAG,
-                                moduleName = componentModuleName,
-                                kspOptimizeUniqueName = kspOptimizeUniqueName,
-                                packageName = fileSpec.packageName,
-                                fileName = "${fileSpec.name}.kt",
-                                data = targetDataArray,
-                            )
-                        }
                     }
                 }
         } catch (e: Exception) {
@@ -1051,18 +1038,6 @@ class RouterApiProcessor(
             createFile(
                 resolver = resolver,
                 routerApiKSClassDeclaration = item,
-            )
-        }
-
-        if (kspOptimize && targetRouterApiAnnotatedList.isEmpty()) {
-            KspCacheIns.readCacheToKspFolder(
-                logEnable = logEnable,
-                logger = logger,
-                processorTag = TAG,
-                moduleName = componentModuleName,
-                kspOptimizeUniqueName = kspOptimizeUniqueName,
-                simpleNameSuffix = ComponentUtil.UIROUTERAPI,
-                codeGenerator = codeGenerator,
             )
         }
 

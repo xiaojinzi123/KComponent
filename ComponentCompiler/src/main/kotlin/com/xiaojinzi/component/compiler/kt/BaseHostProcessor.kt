@@ -13,9 +13,6 @@ abstract class BaseHostProcessor(
     val componentModuleName: String = (environment.options["ModuleName"]
         ?: environment.options["HOST"]) ?: throw NULL_HOST_EXCEPTION,
     val logEnable: Boolean = environment.options["LogEnable"]?.toBoolean() ?: false,
-    val kspOptimize: Boolean = environment.options["KspOptimize"]?.toBoolean()
-        ?: false,
-    val kspOptimizeUniqueName: String? = environment.options["KspOptimizeUniqueName"],
 ) : BaseProcessor() {
 
     companion object {
@@ -88,11 +85,5 @@ abstract class BaseHostProcessor(
         resolver: Resolver,
         round: Int,
     ): List<KSAnnotated>
-
-    init {
-        if(kspOptimize && kspOptimizeUniqueName.isNullOrEmpty()) {
-            throw YOU_SHOULD_CONFIG_KSP_OPTIMIZE_UNIQUE_NAME_EXCEPTION
-        }
-    }
 
 }

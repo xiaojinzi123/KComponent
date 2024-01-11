@@ -345,9 +345,8 @@ class AutowireProcessor(
             classDeclaration.containingFile?.let { containingFile ->
                 val targetDataArray = fileSpec.toString().toByteArray()
                 codeGenerator.createNewFile(
-                    // dependencies = Dependencies.ALL_FILES,
                     dependencies = Dependencies(
-                        aggregating = true,
+                        aggregating = false,
                         containingFile,
                     ),
                     packageName = fileSpec.packageName,
@@ -356,18 +355,6 @@ class AutowireProcessor(
                     it.write(
                         targetDataArray
                     )
-                    kspOptimizeUniqueName?.let {
-                        KspCacheIns.save(
-                            logEnable = logEnable,
-                            logger = logger,
-                            processorTag = TAG,
-                            moduleName = componentModuleName,
-                            kspOptimizeUniqueName = kspOptimizeUniqueName,
-                            packageName = fileSpec.packageName,
-                            fileName = "${fileSpec.name}.kt",
-                            data = targetDataArray,
-                        )
-                    }
                 }
             }
             if (logEnable) {
@@ -422,18 +409,6 @@ class AutowireProcessor(
                     targetAnnotatedList = mapItem.value
                 )
             }
-
-        if (kspOptimize && markedList.isEmpty()) {
-            KspCacheIns.readCacheToKspFolder(
-                logEnable = logEnable,
-                logger = logger,
-                processorTag = TAG,
-                moduleName = componentModuleName,
-                kspOptimizeUniqueName = kspOptimizeUniqueName,
-                simpleNameSuffix = ComponentConstants.INJECT_SUFFIX,
-                codeGenerator = codeGenerator,
-            )
-        }
 
         return emptyList()
 

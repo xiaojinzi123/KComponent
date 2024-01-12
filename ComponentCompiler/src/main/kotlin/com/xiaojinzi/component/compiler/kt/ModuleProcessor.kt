@@ -1133,7 +1133,7 @@ class ModuleProcessor(
             .getSymbolsWithAnnotation(
                 annotationName = ModuleAppAnno::class.qualifiedName!!
             )
-            .partition { it.validate() }
+            .partition { !validateEnable || it.validate() }
 
         // 模块 Application 的
         moduleAppAnnotatedList.addAll(
@@ -1159,7 +1159,7 @@ class ModuleProcessor(
             .getSymbolsWithAnnotation(
                 annotationName = ServiceAnno::class.qualifiedName!!
             )
-            .partition { it.validate() }
+            .partition { !validateEnable || it.validate() }
 
         // Service 的
         serviceAnnotatedList.addAll(
@@ -1175,7 +1175,7 @@ class ModuleProcessor(
             .getSymbolsWithAnnotation(
                 annotationName = ServiceDecoratorAnno::class.qualifiedName!!
             )
-            .partition { it.validate() }
+            .partition { !validateEnable || it.validate() }
 
         // ServiceDecorator 的
         serviceDecoratorAnnotatedList.addAll(
@@ -1191,7 +1191,7 @@ class ModuleProcessor(
             .getSymbolsWithAnnotation(
                 annotationName = FragmentAnno::class.qualifiedName!!
             )
-            .partition { it.validate() }
+            .partition { !validateEnable || it.validate() }
 
         // Fragment 的
         fragmentAnnotatedList.addAll(
@@ -1207,7 +1207,7 @@ class ModuleProcessor(
             .getSymbolsWithAnnotation(
                 annotationName = GlobalInterceptorAnno::class.qualifiedName!!
             )
-            .partition { it.validate() }
+            .partition { !validateEnable || it.validate() }
 
         // 全局拦截器的
         globalInterceptorAnnotatedList.addAll(
@@ -1225,7 +1225,7 @@ class ModuleProcessor(
             .getSymbolsWithAnnotation(
                 annotationName = InterceptorAnno::class.qualifiedName!!
             )
-            .partition { it.validate() }
+            .partition { !validateEnable || it.validate() }
         // 拦截器
         interceptorAnnotatedList.addAll(
             elements = interceptorValidList
@@ -1242,7 +1242,7 @@ class ModuleProcessor(
             .getSymbolsWithAnnotation(
                 annotationName = RouterAnno::class.qualifiedName!!
             )
-            .partition { it.validate() }
+            .partition { !validateEnable || it.validate() }
 
         // 路由的
         routerAnnotatedList.addAll(
@@ -1258,7 +1258,7 @@ class ModuleProcessor(
             .getSymbolsWithAnnotation(
                 annotationName = RouterDegradeAnno::class.qualifiedName!!
             )
-            .partition { it.validate() }
+            .partition { !validateEnable || it.validate() }
         // 路由降级的
         routerDegradeAnnotatedList.addAll(
             elements = routerDegradeValidList,

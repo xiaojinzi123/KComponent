@@ -1067,7 +1067,7 @@ class RouterApiProcessor(
             .getSymbolsWithAnnotation(
                 annotationName = RouterApiAnno::class.qualifiedName!!
             )
-            .partition { it.validate() }
+            .partition { !validateEnable || it.validate() }
 
         collectList.addAll(
             elements = validList.filterIsInstance<KSClassDeclaration>()

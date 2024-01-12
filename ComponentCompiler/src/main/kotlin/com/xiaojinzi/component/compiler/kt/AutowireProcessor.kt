@@ -384,25 +384,19 @@ class AutowireProcessor(
             .getSymbolsWithAnnotation(
                 annotationName = UriAutowiredAnno::class.qualifiedName!!
             )
-            .partition {
-                it.validate()
-            }
+            .partition { !validateEnable || it.validate() }
 
         val (attrValueAutowiredValidList, attrValueAutowiredInValidList) = resolver
             .getSymbolsWithAnnotation(
                 annotationName = AttrValueAutowiredAnno::class.qualifiedName!!
             )
-            .partition {
-                it.validate()
-            }
+            .partition { !validateEnable || it.validate() }
 
         val (serviceAutowiredValidList, serviceAutowiredInValidList) = resolver
             .getSymbolsWithAnnotation(
                 annotationName = ServiceAutowiredAnno::class.qualifiedName!!
             )
-            .partition {
-                it.validate()
-            }
+            .partition { !validateEnable || it.validate() }
 
         val uriAutoWireAnnotatedList = resolver
             .getSymbolsWithAnnotation(

@@ -82,6 +82,7 @@ abstract class BaseProcessor(
     val componentModuleName: String = (environment.options["ModuleName"]
         ?: environment.options["HOST"]) ?: throw NULL_HOST_EXCEPTION,
     val logEnable: Boolean = environment.options["LogEnable"]?.toBoolean() ?: false,
+    val validateEnable: Boolean = environment.options["ValidateEnable"]?.toBoolean() ?: false,
 ) : SymbolProcessor, DefaultClassDeclare() {
 
     companion object {

@@ -58,7 +58,7 @@ import kotlin.reflect.KClass
  */
 class ModuleProcessor(
     override val environment: SymbolProcessorEnvironment,
-) : BaseHostProcessor(
+) : BaseProcessor(
     environment = environment,
 ) {
 
@@ -1123,6 +1123,12 @@ class ModuleProcessor(
         round: Int,
     ): List<KSAnnotated> {
 
+        if (logEnable) {
+            logger.warn(
+                "$TAG $componentModuleName 第 $round 轮 开始了"
+            )
+        }
+
         val (moduleAppValidList, moduleAppInValidList) = resolver
             .getSymbolsWithAnnotation(
                 annotationName = ModuleAppAnno::class.qualifiedName!!
@@ -1263,9 +1269,15 @@ class ModuleProcessor(
             )
         }
 
-        return moduleAppInValidList + serviceInvalidList + serviceDecoratorInvalidList +
+        return (moduleAppInValidList + serviceInvalidList + serviceDecoratorInvalidList +
                 fragmentInvalidList + globalInterceptorInvalidList + interceptorInvalidList +
-                routerInvalidList + routerDegradeInvalidList
+                routerInvalidList + routerDegradeInvalidList).apply {
+            if (logEnable) {
+                logger.warn(
+                    "$TAG $componentModuleName 第 $round 轮 结束了"
+                )
+            }
+        }
 
     }
 
@@ -1360,16 +1372,6 @@ class ModuleProcessor(
             .build()
 
         try {
-            codeGenerator.generatedFile.apply {
-                if (logEnable) {
-                    logger.warn("$TAG $componentModuleName 一共有 ${this.size} 个生成的文件")
-                }
-            }.forEachIndexed { index, file ->
-                if (logEnable) {
-                    logger.warn("$TAG $componentModuleName 第${index + 1}个文件：${file.path}")
-                }
-            }
-
             val targetDataArray = fileSpec.toString().toByteArray()
             codeGenerator.createNewFile(
                 dependencies = if (sources.isEmpty()) {

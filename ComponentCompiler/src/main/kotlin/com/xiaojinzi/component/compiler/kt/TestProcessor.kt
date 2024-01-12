@@ -16,7 +16,7 @@ import com.squareup.kotlinpoet.ksp.toTypeName
 
 class TestProcessor(
     override val environment: SymbolProcessorEnvironment,
-) : BaseHostProcessor(
+) : BaseProcessor(
     environment = environment,
 ) {
 

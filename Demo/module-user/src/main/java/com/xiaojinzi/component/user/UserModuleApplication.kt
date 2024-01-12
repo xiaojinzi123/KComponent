@@ -8,7 +8,6 @@ import com.xiaojinzi.support.ktx.LogSupport
 
 /**
  * 写点注释
- * 123
  */
 @ModuleAppAnno
 class UserModuleApplication : IComponentApplication, IModuleNotifyChanged {

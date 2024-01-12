@@ -4,7 +4,6 @@ import com.google.auto.service.AutoService
 import com.google.devtools.ksp.KspExperimental
 import com.google.devtools.ksp.closestClassDeclaration
 import com.google.devtools.ksp.getAnnotationsByType
-import com.google.devtools.ksp.getClassDeclarationByName
 import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.*
 import com.google.devtools.ksp.validate
@@ -20,7 +19,7 @@ import com.xiaojinzi.component.support.AttrAutoWireMode
 
 class AutowireProcessor(
     override val environment: SymbolProcessorEnvironment,
-) : BaseHostProcessor(
+) : BaseProcessor(
     environment = environment,
 ) {
 

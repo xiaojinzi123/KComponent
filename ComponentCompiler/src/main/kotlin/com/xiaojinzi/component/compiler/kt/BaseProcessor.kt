@@ -27,9 +27,11 @@ fun KSAnnotated.getDescName(): String {
         is KSClassDeclaration -> {
             qualifiedName?.asString()
         }
+
         is KSFunctionDeclaration -> {
             qualifiedName?.asString()
         }
+
         else -> {
             null
         }
@@ -58,7 +60,7 @@ fun KSClassDeclaration.toClassName(): ClassName {
 
 fun KSFunctionDeclaration.returnTypeToTypeName(): TypeName? {
     return this.returnType?.run {
-        this.resolve().let {  ksType ->
+        this.resolve().let { ksType ->
 
             ksType.toTypeName()
         }
@@ -73,7 +75,7 @@ fun KSValueParameter.typeToClassName(): TypeName {
     // return this.type.resolve().toClassTypeName()!!
 }
 
-abstract class BaseHostProcessor(
+abstract class BaseProcessor(
     open val environment: SymbolProcessorEnvironment,
     val logger: KSPLogger = environment.logger,
     val codeGenerator: CodeGenerator = environment.codeGenerator,
@@ -137,13 +139,21 @@ abstract class BaseHostProcessor(
         }
         if (logEnable) {
             logger.warn(
-                message = "${this.javaClass.simpleName}, round = $round, object is ${this.javaClass.simpleName}, componentModuleName is $componentModuleName",
+                message = "${this.javaClass.simpleName}, componentModuleName is $componentModuleName, round = $round",
             )
         }
         return roundProcess(
             resolver = resolver,
             round = round,
-        )
+        ).apply {
+            if (logEnable) {
+                if (this.isNotEmpty()) {
+                    logger.warn(
+                        message = "${this.javaClass.simpleName}, componentModuleName is $componentModuleName, round = $round, 有不能处理的注解个数：${this.size}",
+                    )
+                }
+            }
+        }
     }
 
     /**

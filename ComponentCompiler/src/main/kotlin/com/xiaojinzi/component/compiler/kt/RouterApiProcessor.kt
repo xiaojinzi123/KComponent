@@ -17,7 +17,7 @@ import com.xiaojinzi.component.simpleClassName
 
 class RouterApiProcessor(
     override val environment: SymbolProcessorEnvironment,
-) : BaseHostProcessor(
+) : BaseProcessor(
     environment = environment,
 ) {
 
@@ -143,20 +143,10 @@ class RouterApiProcessor(
                             )*/
                         }
 
-                        val isTest = "toTestActivityResultView1" == functionNameStr
+                        val isTest = "toTestActivityResultView1111" == functionNameStr
 
                         if (isTest) {
-                            ksFunctionDeclaration
-                                .parameters
-                                .getOrNull(1)
-                                ?.run {
-                                    val value1 = this.type.resolve().declaration
-                                    val result =
-                                        value1 == componentBiCallbackKSClassDeclaration
-                                    logger.warn(
-                                        message = " value1 = ${value1.qualifiedName?.getShortName()} value2 = ${componentBiCallbackKSClassDeclaration?.qualifiedName?.getShortName()}"
-                                    )
-                                }
+
                         }
 
                         // 导航的注解, 默认可以省略
@@ -233,34 +223,34 @@ class RouterApiProcessor(
 
                         // 是否返回 Rx 的 Single
                         val isSingleReturnType =
-                            returnTypeKsDeclaration == rxSingleKSClassDeclaration
+                            returnTypeKsDeclaration?.qualifiedName == rxSingleKSClassDeclaration?.qualifiedName
 
                         // 是否返回 Rx 的 Completable
                         val isCompletableReturnType =
-                            returnTypeKsDeclaration == rxCompletableKSClassDeclaration
+                            returnTypeKsDeclaration?.qualifiedName == rxCompletableKSClassDeclaration?.qualifiedName
 
                         // 是否是返回 Rx
                         val isRxReturnType = isSingleReturnType || isCompletableReturnType
 
                         // 是否需要返回 ActivityResult
                         val isAndroidActivityResultReturnType =
-                            returnTypeKsDeclaration == componentActivityResultKSClassDeclaration
+                            returnTypeKsDeclaration?.qualifiedName == componentActivityResultKSClassDeclaration?.qualifiedName
 
                         // 是否需要返回 Intent
                         val isAndroidIntentReturnType =
-                            returnTypeKsDeclaration == androidIntentKSClassDeclaration
+                            returnTypeKsDeclaration?.qualifiedName == androidIntentKSClassDeclaration?.qualifiedName
 
                         // 是否返回 NavigationDisposable
                         val isComponentNavigationDisposableReturnType =
-                            returnTypeKsDeclaration == navigationDisposableKSClassDeclaration
+                            returnTypeKsDeclaration?.qualifiedName == navigationDisposableKSClassDeclaration?.qualifiedName
 
                         // 是否返回 Navigator
                         val isComponentNavigatorReturnType =
-                            returnTypeKsDeclaration == componentNavigatorKSClassDeclaration
+                            returnTypeKsDeclaration?.qualifiedName == componentNavigatorKSClassDeclaration?.qualifiedName
 
                         // 是否返回 Component 的 Call
                         val isComponentCallReturnType =
-                            returnTypeKsDeclaration == componentCallKSClassDeclaration
+                            returnTypeKsDeclaration?.qualifiedName == componentCallKSClassDeclaration?.qualifiedName
 
                         // 是否需要返回值
                         /*val isNeedReturn =
@@ -374,24 +364,24 @@ class RouterApiProcessor(
                                                     ksValueParameter_bundle = ksValueParameter
                                                 }
                                             }
-                                            when (ksValueParameter.type.resolve().declaration) {
-                                                androidContextKSClassDeclaration -> {
+                                            when (ksValueParameter.type.resolve().declaration.qualifiedName) {
+                                                androidContextKSClassDeclaration?.qualifiedName -> {
                                                     ksValueParameter_context = ksValueParameter
                                                 }
 
-                                                componentCallbackKSClassDeclaration -> {
+                                                componentCallbackKSClassDeclaration?.qualifiedName -> {
                                                     ksValueParameter_callback = ksValueParameter
                                                 }
 
-                                                componentBiCallbackKSClassDeclaration -> {
+                                                componentBiCallbackKSClassDeclaration?.qualifiedName -> {
                                                     ksValueParameter_biCallback = ksValueParameter
                                                 }
 
-                                                kotlinFunction0KSClassDeclaration -> {
+                                                kotlinFunction0KSClassDeclaration?.qualifiedName -> {
                                                     ksValueParameter_kt_function0 = ksValueParameter
                                                 }
 
-                                                kotlinFunction1KSClassDeclaration -> {
+                                                kotlinFunction1KSClassDeclaration?.qualifiedName -> {
                                                     ksValueParameter_kt_function1 = ksValueParameter
                                                 }
                                             }

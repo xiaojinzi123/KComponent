@@ -15,7 +15,7 @@ import com.xiaojinzi.support.init.AppInstance
 import com.xiaojinzi.support.ktx.LogSupport
 
 /**
- * 写点注释啊
+ * 写点注释啊1
  */
 class App1 : Application() {
 

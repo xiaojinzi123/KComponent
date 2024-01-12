@@ -401,13 +401,6 @@ class RouterApiProcessor(
                                             )
                                         }
                                 }
-                                .apply {
-                                    if (isTest) {
-                                        logger.warn(
-                                            message = "ksValueParameter_biCallback == null? : ${ksValueParameter_biCallback == null}"
-                                        )
-                                    }
-                                }
                                 .also { funSpecBuilder ->
 
                                     if (isSuspendMethod) {

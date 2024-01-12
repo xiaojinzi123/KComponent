@@ -15,7 +15,8 @@ import com.xiaojinzi.support.init.AppInstance
 import com.xiaojinzi.support.ktx.LogSupport
 
 /**
- * 写点注释啊1
+ * 写点注释啊
+ * ttt
  */
 class App1 : Application() {
 
@@ -31,7 +32,7 @@ class App1 : Application() {
 
         val userModuleGenerated = kotlin.runCatching {
             Class.forName("com.xiaojinzi.component.impl.UserModuleGenerated")
-        }.getOrNull()?.newInstance() as? IModuleLifecycle
+        }.getOrNull()?.getDeclaredConstructor()?.newInstance() as? IModuleLifecycle
         LogSupport.d(
             tag = "demoApp",
             content = "userModuleGenerated = ${userModuleGenerated?.moduleName}"

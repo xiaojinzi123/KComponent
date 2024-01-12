@@ -1125,7 +1125,7 @@ class ModuleProcessor(
 
         if (logEnable) {
             logger.warn(
-                "$TAG $componentModuleName 第 $round 轮 开始了"
+                "$TAG $componentModuleName ------------- 第 $round 轮 开始了 -------------"
             )
         }
 
@@ -1274,7 +1274,7 @@ class ModuleProcessor(
                 routerInvalidList + routerDegradeInvalidList).apply {
             if (logEnable) {
                 logger.warn(
-                    "$TAG $componentModuleName 第 $round 轮 结束了"
+                    "$TAG $componentModuleName ------------- 第 $round 轮 结束了 -------------"
                 )
             }
         }
@@ -1282,6 +1282,17 @@ class ModuleProcessor(
     }
 
     private fun generateFile() {
+
+        if (logEnable) {
+            logger.warn(
+                "$TAG $componentModuleName 开始生成文件"
+            )
+            for (file in codeGenerator.generatedFile) {
+                logger.warn(
+                    "$TAG $componentModuleName generatedFile.item = ${file.path}"
+                )
+            }
+        }
 
         val allMarkedList = (moduleAppAnnotatedList + serviceAnnotatedList +
                 serviceDecoratorAnnotatedList + fragmentAnnotatedList +

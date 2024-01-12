@@ -1,7 +1,7 @@
 package com.xiaojinzi.component.base
 
 /**
- * 写点注释
+ * 写点注释12
  *
  * @author xiaojinzi
  */
@@ -27,6 +27,7 @@ object RouterConfig {
     const val USER_USER_CENTER = "$HOST_USER/userCenter"
 
     const val HOST_BASE = "base"
+    const val HOST_BASE1 = "base1"
 
     const val HOST_SUPPORT = "support"
     const val SUPPORT_WEB_TEST = "$HOST_SUPPORT/webTest"

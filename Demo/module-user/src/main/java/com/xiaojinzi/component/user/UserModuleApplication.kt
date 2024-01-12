@@ -7,7 +7,7 @@ import com.xiaojinzi.component.application.IModuleNotifyChanged
 import com.xiaojinzi.support.ktx.LogSupport
 
 /**
- * 写点注释
+ * 写点注释123
  */
 @ModuleAppAnno
 class UserModuleApplication : IComponentApplication, IModuleNotifyChanged {

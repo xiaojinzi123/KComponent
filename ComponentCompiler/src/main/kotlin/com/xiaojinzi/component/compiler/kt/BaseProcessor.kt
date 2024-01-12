@@ -150,7 +150,7 @@ abstract class BaseProcessor(
             if (logEnable) {
                 if (this.isNotEmpty()) {
                     logger.warn(
-                        message = "${this.javaClass.simpleName}, componentModuleName is $componentModuleName, round = $round, 有不能处理的注解个数：${this.size}",
+                        message = "${this.javaClass.simpleName}, componentModuleName is $componentModuleName, round = $round, 不能处理的 symbol 个数：${this.size}",
                     )
                 }
             }

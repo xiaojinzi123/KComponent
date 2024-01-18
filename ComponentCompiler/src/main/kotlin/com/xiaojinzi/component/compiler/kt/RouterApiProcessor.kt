@@ -210,6 +210,10 @@ class RouterApiProcessor(
                             annotationKClass = RequestCodeAnno::class,
                         ).firstOrNull()
 
+                        val checkRepeatAnno = ksFunctionDeclaration.getAnnotationsByType(
+                            annotationKClass = CheckRepeatAnno::class,
+                        ).firstOrNull()
+
                         // 方法返回值类型的声明
                         val returnTypeKsDeclaration =
                             ksFunctionDeclaration.returnType?.resolve()?.declaration
@@ -542,8 +546,18 @@ class RouterApiProcessor(
                                         }
                                     }
 
-                                    // requestCode category flag options 等处理
+                                    // routeRepeatCheck requestCode category flag options 等处理
                                     run {
+
+                                        checkRepeatAnno?.let {
+                                            functionCodeStringBuffer.append(
+                                                "\n.useRouteRepeatCheck(useRouteRepeatCheck = %L)",
+                                            )
+
+                                            functionArgList.add(
+                                                element = it.value,
+                                            )
+                                        }
 
                                         // 如果没有参数, 就看看有没有标记方法上的注解
                                         if (ksValueParameter_requestCode == null) {

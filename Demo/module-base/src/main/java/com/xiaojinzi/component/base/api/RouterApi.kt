@@ -14,6 +14,7 @@ import io.reactivex.Single
 interface RouterApi {
 
     @RequestCodeAnno
+    @CheckRepeatAnno(value = false)
     @NavigateAnno(resultCodeMatch = Activity.RESULT_OK)
     @HostAndPathAnno(RouterConfig.SUPPORT_PERMISSION_REQUEST)
     suspend fun requestPermission(

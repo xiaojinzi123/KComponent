@@ -226,7 +226,7 @@ fun MainViewWrap() {
         topBar = {
             AppbarNormal(
                 backIconRsd = null,
-                title = "Component".toStringItemDto(),
+                title = "KComponent".toStringItemDto(),
             )
         }
     ) {

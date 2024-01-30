@@ -89,8 +89,8 @@ class MainAct : BaseAct<MainViewModel>() {
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name: CharSequence = "Component"
-            val description = "ComponentDesc"
+            val name: CharSequence = "KComponent"
+            val description = "KComponentDesc"
             val importance = NotificationManager.IMPORTANCE_DEFAULT
             val channel = NotificationChannel(MainUseCase.CHANNEL_ID, name, importance)
             channel.description = description

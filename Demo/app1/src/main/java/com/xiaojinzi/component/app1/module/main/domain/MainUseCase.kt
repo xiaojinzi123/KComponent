@@ -8,7 +8,7 @@ import com.xiaojinzi.support.architecture.mvvm1.BaseUseCaseImpl
 interface MainUseCase : BaseUseCase {
 
     companion object {
-        const val CHANNEL_ID = "ComponentChannel"
+        const val CHANNEL_ID = "KComponentChannel"
     }
 
 }

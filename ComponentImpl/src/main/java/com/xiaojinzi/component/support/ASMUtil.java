@@ -53,7 +53,7 @@ import java.util.List;
  *
  * @author xiaojinzi
  */
-@CheckClassNameAnno("ComponentPlugin 插件的模块需要关注class 的名称和包名的变化")
+@CheckClassNameAnno("KComponentPlugin 插件的模块需要关注class 的名称和包名的变化")
 public class ASMUtil {
 
     /**

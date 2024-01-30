@@ -36,7 +36,7 @@ object Utils {
     private const val STR_PARAMETER = "parameter '"
     private const val STR_CAN_NOT_BE_NULL = "' can't be null"
     private const val MAIN_THREAD_ERROR_MSG =
-        "Component mainThreadCall method timeout, A deadlock was happened. see: https://github.com/xiaojinzi123/Component/issues/79"
+        "KComponent mainThreadCall method timeout, A deadlock was happened. see: https://github.com/xiaojinzi123/Component/issues/79"
     private const val MAIN_THREAD_TIME_OUT: Long = 3000
 
     // 单线程的线程池

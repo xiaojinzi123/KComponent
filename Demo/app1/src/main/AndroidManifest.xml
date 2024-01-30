@@ -14,7 +14,7 @@
         android:name="com.xiaojinzi.component.app1.App1"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="Component"
+        android:label="KComponent"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppTheme.Demo"

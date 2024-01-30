@@ -86,7 +86,8 @@ class KComponentPlugin : Plugin<Project> {
                 GripFactory.newInstance(Opcodes.ASM9)
                     .create(classPaths + inputs)
 
-            val query = grip
+            // 找到所有满足条件的 class
+            val moduleNameMap = grip
                 .select(classes)
                 .from(inputs)
                 .where(
@@ -96,6 +97,13 @@ class KComponentPlugin : Plugin<Project> {
                         )
                     )
                 )
+                .execute()
+                .classes
+                .associate {
+                    it.name
+                        .removePrefix(prefix = "com.xiaojinzi.component.impl.")
+                        .removeSuffix(suffix = "ModuleGenerated") to "${it.name}.class"
+                }
 
             val targetAllJars = if (isMergeOutputFile) {
                 // 是否 AllJars 中有输出文件
@@ -125,16 +133,6 @@ class KComponentPlugin : Plugin<Project> {
             } else {
                 allJarList
             }
-
-            // 找到所有满足条件的 class
-            val moduleNameMap = query
-                .execute()
-                .classes
-                .associate {
-                    it.name
-                        .removePrefix(prefix = "com.xiaojinzi.component.impl.")
-                        .removeSuffix(suffix = "ModuleGenerated") to "${it.name}.class"
-                }
 
             println("${KComponentPlugin.TAG}, moduleNameMap = $moduleNameMap")
 

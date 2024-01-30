@@ -29,11 +29,11 @@
         {
           "name": "kcomponent-plugin-1.0.0-beta1.jar",
           "url": "kcomponent-plugin-1.0.0-beta1.jar",
-          "size": 25140,
-          "sha512": "014e8a4093d41b24fa8b4215c49b7c40dd31d5527c1a16699e7237f941c2c54c74d51a5cdfdc855da8660cf0e9298126f8b00d90b085e62853e3179f51b0928b",
-          "sha256": "7fb76d97a3b3098dd35bd71e52c1feecffabbde8fe8dc3eea79f15d8a86ae6ed",
-          "sha1": "2e0b8eb31df61dd8a7cc64a2624b7703dd8d5dbe",
-          "md5": "0a403300615426c1e96c009f46e91612"
+          "size": 24984,
+          "sha512": "1054574865bc1a4c7156d0b7cc6dae373352777b794cbac44fed146d67487070ea8d974aee94e3110324ed83b147c65f4b09e160a4b74698f0bb7005eda8b6bf",
+          "sha256": "060e845d6a9b46a2d96a8a02932d05787e96621960ada3140476572d31be5f6b",
+          "sha1": "b5304fba044bb7fa707c4fff749a33bf11ea1d74",
+          "md5": "c8e3816a62b5aaba98c26e645abc5c64"
         }
       ]
     },
@@ -53,14 +53,14 @@
           "group": "org.ow2.asm",
           "module": "asm-commons",
           "version": {
-            "requires": "9.4"
+            "requires": "9.6"
           }
         },
         {
           "group": "org.ow2.asm",
           "module": "asm-util",
           "version": {
-            "requires": "9.4"
+            "requires": "9.6"
           }
         },
         {
@@ -103,11 +103,11 @@
         {
           "name": "kcomponent-plugin-1.0.0-beta1.jar",
           "url": "kcomponent-plugin-1.0.0-beta1.jar",
-          "size": 25140,
-          "sha512": "014e8a4093d41b24fa8b4215c49b7c40dd31d5527c1a16699e7237f941c2c54c74d51a5cdfdc855da8660cf0e9298126f8b00d90b085e62853e3179f51b0928b",
-          "sha256": "7fb76d97a3b3098dd35bd71e52c1feecffabbde8fe8dc3eea79f15d8a86ae6ed",
-          "sha1": "2e0b8eb31df61dd8a7cc64a2624b7703dd8d5dbe",
-          "md5": "0a403300615426c1e96c009f46e91612"
+          "size": 24984,
+          "sha512": "1054574865bc1a4c7156d0b7cc6dae373352777b794cbac44fed146d67487070ea8d974aee94e3110324ed83b147c65f4b09e160a4b74698f0bb7005eda8b6bf",
+          "sha256": "060e845d6a9b46a2d96a8a02932d05787e96621960ada3140476572d31be5f6b",
+          "sha1": "b5304fba044bb7fa707c4fff749a33bf11ea1d74",
+          "md5": "c8e3816a62b5aaba98c26e645abc5c64"
         }
       ]
     },
@@ -123,11 +123,11 @@
         {
           "name": "kcomponent-plugin-1.0.0-beta1-sources.jar",
           "url": "kcomponent-plugin-1.0.0-beta1-sources.jar",
-          "size": 4737,
-          "sha512": "c73ce8712454cc44a03bcae3b32e03075c00eb68d48233d94698ef003696341261e44b804c38cfbb07a939f67832b46c6b8ce0ce78f8c9c5206c4f4e4c7d14a5",
-          "sha256": "57c3b026f2d966c90beef8149456ddd31fa7a3b04d6707a47822f0b194890580",
-          "sha1": "cec3d84849d06d2865beff05e42979ecb500210a",
-          "md5": "ca23452e6f53cfc6849ea7303dccd6e1"
+          "size": 4730,
+          "sha512": "de3b017bb5a8324d84aa28c90068abfada708ab6453350233578bbc9d0461980fe5d30649d43eac7a5d3885734d86133f4b6a515c3bd0d47b1a8d0801f6971c1",
+          "sha256": "5c60c8608ea2c6e74117c1df9db84e3826448693b6277a9178bf7907f466319d",
+          "sha1": "0e1eb5d2c8b699811d8f969b058597defc42d7a6",
+          "md5": "65af103e3441432fae5818a014f8a993"
         }
       ]
     },
@@ -144,10 +144,10 @@
           "name": "kcomponent-plugin-1.0.0-beta1-javadoc.jar",
           "url": "kcomponent-plugin-1.0.0-beta1-javadoc.jar",
           "size": 261,
-          "sha512": "5f57869813269f17ab4855a5cd7ab8ac3d9fe14115b194b6b9e12f1d4df25a7a908092e618ea14a705f4b1a84c07ca9da1bc2f19f566f466566654fb38010eac",
-          "sha256": "a45154de5bb77dfaa36fa0619185cb43fed0a8385d044d4902c32eb91c505fd3",
-          "sha1": "0f57cf9512cd265880e4fb44ed837f3a2e12e63d",
-          "md5": "4fb4a50364d5942703d58fed17cc5840"
+          "sha512": "c90820b964f85d75b990208701ce0a21c40ca346c7a752c5872f92d0f8962d6b085a4cb25e97daab783fc7b1ebfb26e232d66834fcb82660bd3b4f0050ccb221",
+          "sha256": "89c53aaa66125f6ec9d070c057deb80914955b914e8387b1327465ca60319ab2",
+          "sha1": "c47ae57e421ba872aeb19b66262077a079cace62",
+          "md5": "edfa7ba68d77d5a9465c5fddfde6821e"
         }
       ]
     }

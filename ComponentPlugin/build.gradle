@@ -33,8 +33,8 @@ version = "${versions.component_plugin_upload_version}"
 dependencies {
     implementation gradleApi()
     implementation localGroovy()
-    implementation "org.ow2.asm:asm-commons:9.4"
-    implementation "org.ow2.asm:asm-util:9.4"
+    implementation "org.ow2.asm:asm-commons:9.6"
+    implementation "org.ow2.asm:asm-util:9.6"
     implementation 'com.android.tools.build:gradle:8.1.4'
     // implementation 'com.android.tools.build:gradle:8.0.1'
     implementation 'com.google.code.gson:gson:2.10.1'

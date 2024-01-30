@@ -86,25 +86,6 @@ class KComponentPlugin : Plugin<Project> {
                 GripFactory.newInstance(Opcodes.ASM9)
                     .create(classPaths + inputs)
 
-            // 找到所有满足条件的 class
-            val moduleNameMap = grip
-                .select(classes)
-                .from(inputs)
-                .where(
-                    annotatedWith(
-                        annotationType = com.joom.grip.mirrors.getType(
-                            descriptor = "Lcom/xiaojinzi/component/anno/support/ModuleApplicationAnno;",
-                        )
-                    )
-                )
-                .execute()
-                .classes
-                .associate {
-                    it.name
-                        .removePrefix(prefix = "com.xiaojinzi.component.impl.")
-                        .removeSuffix(suffix = "ModuleGenerated") to "${it.name}.class"
-                }
-
             val targetAllJars = if (isMergeOutputFile) {
                 // 是否 AllJars 中有输出文件
                 val isAllJarsContainsOutputFile = allJarList
@@ -133,6 +114,25 @@ class KComponentPlugin : Plugin<Project> {
             } else {
                 allJarList
             }
+
+            // 找到所有满足条件的 class
+            val moduleNameMap = grip
+                .select(classes)
+                .from(inputs)
+                .where(
+                    annotatedWith(
+                        annotationType = com.joom.grip.mirrors.getType(
+                            descriptor = "Lcom/xiaojinzi/component/anno/support/ModuleApplicationAnno;",
+                        )
+                    )
+                )
+                .execute()
+                .classes
+                .associate {
+                    it.name
+                        .removePrefix(prefix = "com.xiaojinzi.component.impl.")
+                        .removeSuffix(suffix = "ModuleGenerated") to "${it.name}.class"
+                }
 
             println("${KComponentPlugin.TAG}, moduleNameMap = $moduleNameMap")
 

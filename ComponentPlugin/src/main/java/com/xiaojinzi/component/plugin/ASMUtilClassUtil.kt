@@ -55,16 +55,6 @@ object ASMUtilClassUtil {
         findModuleApplicationAsmImplMethodBodySb.append("{")
         if (moduleNames.isEmpty()) {
             findModuleApplicationAsmImplMethodBodySb.append("return null;")
-            val tempClass = classPool.makeClass("com.xiaojinzi.component.impl.AppModuleGenerated")
-            tempClass.addConstructor(
-                CtConstructor(
-                    arrayOf(),
-                    tempClass
-                ).apply {
-                    modifiers = javassist.Modifier.PUBLIC
-                }
-            )
-            findModuleApplicationAsmImplMethodBodySb.append("return new com.xiaojinzi.component.impl.AppModuleGenerated();")
         } else {
             moduleNames.forEachIndexed { index, item ->
                 val targetClassFullName = moduleNameMap[item]!!.removeSuffix(

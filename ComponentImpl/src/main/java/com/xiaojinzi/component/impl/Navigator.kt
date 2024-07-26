@@ -608,7 +608,7 @@ class NavigatorImpl<T : INavigator<T>> constructor(
      * 然后你就可以使用[Navigator.proxyBundle] 直接导入跳转到真正目标所需的各种参数, 然后
      * 直接发起跳转, 通过条用 [Navigator.forward] 等方法
      * 示例代码：
-     * <pre class="prettyprint">
+     * ```
      * public class XXXProxyActivity extends Activity {
      *      ...
      *      protected void onCreate(Bundle savedInstanceState) {
@@ -618,7 +618,8 @@ class NavigatorImpl<T : INavigator<T>> constructor(
      *                   .forward();
      *      }
      *      ...
-     * }</pre>
+     * }
+     * ```
      *
      * @see ProxyIntentAct
      */

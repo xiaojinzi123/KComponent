@@ -15,31 +15,31 @@ import kotlin.collections.ArrayList
  * 传递参数是 Android 中的家常便事, 一般我们往 [Intent.putExtra] 各个方法中塞值. 我们称之为基础传值功能
  * 而 [ParameterSupport] 是在上述的 基础传值功能 上增加对 [Uri] 中的 [Uri.getQuery] 的支持
  * 举个例子：
- * <pre>
+ * ```
  *     Router.with(this)
  *           .url("router://xxx/xxx?name=xiaojinzi")
  *           .putInt("age", 11)
  *           .forward();
- * </pre>
+ * ```
  * 上述代码中, 有两个参数：name 和 age
  * 如果你不通过 {@link ParameterSupport} 你获取不到 name 的值. 你只能获取到 age 的值
  * 而你通过 {@link ParameterSupport#getString(Intent, String)} 就可以获取到 name 的值
  * 如果 {@link Uri} 的 query 中和 putXXX 方法的 key 相同呢？
- * <pre>
+ * ```
  *     Router.with(this)
  *           .url("router://xxx/xxx?name=xiaojinzi")
  *           .putInt("name", "hello")
  *           .forward();
- * </pre>
+ * ```
  * 这时候你通过 {@link ParameterSupport#getString(Intent, String)}
  * 根据 key = "name" 获取的话. 会得到 "xiaojinzi". 因为 query 的值的优先级比 Bundle 中的高
  * 如果 query 没有对应的值, 才会用 Bundle 中的, 比如下面的场景：
- * <pre>
+ * ```
  *     Router.with(this)
  *           .url("router://xxx/xxx?age=11")
  *           .putInt("name", "hello")
  *           .forward();
- * </pre>
+ * ```
  * 这时候你通过 {@link ParameterSupport#getString(Intent, String)}
  * 根据 key = "name" 获取的话. 会得到 "hello". 因为 query 中并没有 key = "name" 的值
  * 如果您想单独获取 query 中的值
@@ -81,12 +81,10 @@ object ParameterSupport {
         }
     }
 
-
     fun getUri(intent: Intent): Uri? {
         val uriStr = getUriAsString(intent)
         return if (uriStr == null) null else Uri.parse(uriStr)
     }
-
 
     fun getUriIgnoreError(bundle: Bundle): Uri? {
         return try {

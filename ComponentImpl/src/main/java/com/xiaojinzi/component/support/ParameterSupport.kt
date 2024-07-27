@@ -121,9 +121,14 @@ object ParameterSupport {
     // ============================================================== 查询 query 的方法开始 ==============================================================
 
     // ============================================================== 查询 query 的方法开始 ==============================================================
-    fun <T> getQuerys(
+
+    /**
+     * 本来 Null 是不应该被返回的. 但是此时, Null 表示不存在
+     * 理论上 emptyList 不会出现
+     */
+    private fun <T> getQueries(
         bundle: Bundle?, key: String,
-        function: Function<String, T>
+        function: Function<String, T>,
     ): List<T>? {
         if (bundle == null) {
             return null
@@ -137,7 +142,7 @@ object ParameterSupport {
         } else try {
             val result = ArrayList<T>(values.size)
             for (value in values) {
-                result.add(function.apply(value))
+                result.add(function.invoke(value))
             }
             result
         } catch (ignore: Exception) {
@@ -168,12 +173,9 @@ object ParameterSupport {
 
 
     fun getQueryStrings(bundle: Bundle?, key: String): List<String>? {
-        return getQuerys(bundle = bundle, key, object : Function<String, String> {
-            @Throws(Exception::class)
-            override fun apply(s: String): String {
-                return s
-            }
-        })
+        return getQueries(bundle = bundle, key = key) {
+            it
+        }
     }
 
 
@@ -200,12 +202,9 @@ object ParameterSupport {
 
 
     fun getQueryInts(bundle: Bundle?, key: String): List<Int>? {
-        return getQuerys<Int>(bundle = bundle, key, object : Function<String, Int> {
-            @Throws(Exception::class)
-            override fun apply(s: String): Int {
-                return s.toInt()
-            }
-        })
+        return getQueries(bundle = bundle, key = key) {
+            it.toInt()
+        }
     }
 
 
@@ -231,12 +230,9 @@ object ParameterSupport {
     }
 
     fun getQueryLongs(bundle: Bundle?, key: String): List<Long>? {
-        return getQuerys<Long>(bundle = bundle, key, object : Function<String, Long> {
-            @Throws(Exception::class)
-            override fun apply(s: String): Long {
-                return s.toLong()
-            }
-        })
+        return getQueries(bundle = bundle, key = key) {
+            it.toLong()
+        }
     }
 
 
@@ -262,12 +258,9 @@ object ParameterSupport {
     }
 
     fun getQueryDoubles(bundle: Bundle?, key: String): List<Double>? {
-        return getQuerys<Double>(bundle = bundle, key, object : Function<String, Double> {
-            @Throws(Exception::class)
-            override fun apply(s: String): Double {
-                return s.toDouble()
-            }
-        })
+        return getQueries(bundle = bundle, key = key) {
+            it.toDouble()
+        }
     }
 
 
@@ -293,12 +286,9 @@ object ParameterSupport {
     }
 
     fun getQueryFloats(bundle: Bundle?, key: String): List<Float>? {
-        return getQuerys<Float>(bundle = bundle, key, object : Function<String, Float> {
-            @Throws(Exception::class)
-            override fun apply(s: String): Float {
-                return s.toFloat()
-            }
-        })
+        return getQueries(bundle = bundle, key = key) {
+            it.toFloat()
+        }
     }
 
 
@@ -324,12 +314,9 @@ object ParameterSupport {
     }
 
     fun getQueryBooleans(bundle: Bundle?, key: String): List<Boolean>? {
-        return getQuerys<Boolean>(bundle = bundle, key, object : Function<String, Boolean> {
-            @Throws(Exception::class)
-            override fun apply(s: String): Boolean {
-                return java.lang.Boolean.parseBoolean(s)
-            }
-        })
+        return getQueries(bundle = bundle, key = key) {
+            it.toBoolean()
+        }
     }
 
 
@@ -355,12 +342,9 @@ object ParameterSupport {
     }
 
     fun getQueryShorts(bundle: Bundle?, key: String): List<Short>? {
-        return getQuerys<Short>(bundle = bundle, key, object : Function<String, Short> {
-            @Throws(Exception::class)
-            override fun apply(s: String): Short {
-                return s.toShort()
-            }
-        })
+        return getQueries(bundle = bundle, key = key) {
+            it.toShort()
+        }
     }
 
 
@@ -386,14 +370,10 @@ object ParameterSupport {
     }
 
     fun getQueryBytes(bundle: Bundle?, key: String): List<Byte>? {
-        return getQuerys<Byte>(bundle = bundle, key, object : Function<String, Byte> {
-            @Throws(Exception::class)
-            override fun apply(s: String): Byte {
-                return s.toByte()
-            }
-        })
+        return getQueries(bundle = bundle, key = key) {
+            it.toByte()
+        }
     }
-
 
     fun getQueryChar(
         intent: Intent, key: String,
@@ -417,16 +397,13 @@ object ParameterSupport {
     }
 
     fun getQueryChars(bundle: Bundle?, key: String): List<Char>? {
-        return getQuerys<Char>(bundle = bundle, key, object : Function<String, Char> {
-            @Throws(Exception::class)
-            override fun apply(s: String): Char {
-                return if (s.length == 1) {
-                    s[0]
-                } else {
-                    throw IllegalArgumentException("$s is not a Character")
-                }
+        return getQueries<Char>(bundle = bundle, key = key) {
+            if (it.length == 1) {
+                it[0]
+            } else {
+                throw IllegalArgumentException("$it is not a Character")
             }
-        })
+        }
     }
 
     // ============================================================== 上面都是查询 query 的方法 ==============================================================

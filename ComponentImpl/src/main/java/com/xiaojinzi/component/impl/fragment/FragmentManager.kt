@@ -1,12 +1,12 @@
 package com.xiaojinzi.component.impl.fragment
 
-import com.xiaojinzi.component.anno.support.CheckClassNameAnno
 import android.os.Bundle
 import androidx.annotation.AnyThread
 import androidx.fragment.app.Fragment
+import com.xiaojinzi.component.anno.support.CheckClassNameAnno
 import com.xiaojinzi.component.support.Function1
 import com.xiaojinzi.component.support.Utils
-import java.util.*
+import java.util.Collections
 
 /**
  * Fragment 的容器
@@ -19,7 +19,8 @@ object FragmentManager {
     /**
      * Service 的集合, 线程安全
      */
-    private val map = Collections.synchronizedMap(HashMap<String, Function1<Bundle?, out Fragment>>())
+    private val map =
+        Collections.synchronizedMap(HashMap<String, Function1<Bundle?, out Fragment>>())
 
     /**
      * 你可以注册一个服务,服务的初始化可以是 懒加载的
@@ -28,8 +29,10 @@ object FragmentManager {
      * @param function function
      */
     @AnyThread
-    fun register(flag: String,
-                 function: Function1<Bundle?, out Fragment>) {
+    fun register(
+        flag: String,
+        function: Function1<Bundle?, out Fragment>,
+    ) {
         Utils.checkNullPointer(flag, "flag")
         Utils.checkNullPointer(function, "function")
         map[flag] = function

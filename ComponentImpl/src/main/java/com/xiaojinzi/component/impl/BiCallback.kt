@@ -3,9 +3,9 @@ package com.xiaojinzi.component.impl
 import androidx.annotation.CallSuper
 import androidx.annotation.UiThread
 import com.xiaojinzi.component.anno.support.CheckClassNameAnno
-import com.xiaojinzi.component.support.Function
 import com.xiaojinzi.component.support.OnRouterCancel
 import com.xiaojinzi.component.support.OnRouterError
+import com.xiaojinzi.component.support.Function
 
 /**
  * 在 [Callback] 这个基础上, 表示可以携带一个参数的回调
@@ -40,7 +40,7 @@ interface BiCallback<T> : OnRouterError, OnRouterCancel {
 
         override fun onSuccess(result: RouterResult, targetValue: T) {
             try {
-                targetBiCallback.onSuccess(result, apply(t = targetValue))
+                targetBiCallback.onSuccess(result, invoke(targetValue))
             } catch (e: Exception) {
                 targetBiCallback.onError(
                     RouterErrorResult(

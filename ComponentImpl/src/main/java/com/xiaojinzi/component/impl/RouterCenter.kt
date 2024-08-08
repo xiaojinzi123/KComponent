@@ -124,14 +124,16 @@ object RouterCenter {
             message = "is your fragment or Activity is Destroyed?".trimIndent()
         )
         // 如果 Context 和 Fragment 中的 Context 都是 null
-        var intent: Intent? = null
-        if (target.targetClass != null) {
-            intent = Intent(rawContext, target.targetClass!!.java)
-        } else if (target.customerIntentCall != null) {
-            intent = target.customerIntentCall!!.get(request = request)
-        }
-        if (intent == null) {
-            throw TargetActivityNotFoundException(uriString)
+        val intent = when {
+            target.targetClass != null -> {
+                Intent(rawContext, target.targetClass!!.java)
+            }
+            target.customerIntentCall != null -> {
+                target.customerIntentCall!!.get(request = request)
+            }
+            else -> {
+                throw TargetActivityNotFoundException(uriString)
+            }
         }
         return doStartIntent(request, intent)
     }

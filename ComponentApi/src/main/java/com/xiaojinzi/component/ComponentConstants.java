@@ -89,6 +89,7 @@ public class ComponentConstants {
     public static final String JAVA_CHARSEQUENCE = "java.lang.CharSequence";
 
     public static final String KOTLIN_METADATA = "kotlin.Metadata";
+    public static final String KOTLIN_CLASS = "kotlin.reflect.KClass";
     public static final String KOTLIN_JVMFIELD = "kotlin.jvm.JvmField";
     public static final String KOTLIN_CONTINUATION = "kotlin.coroutines.Continuation";
     public static final String KOTLIN_ROUTEREXTENDSKT = "com.xiaojinzi.component.RouterExtendsKt";

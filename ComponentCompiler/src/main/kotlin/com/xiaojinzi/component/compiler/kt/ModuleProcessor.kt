@@ -789,7 +789,10 @@ class ModuleProcessor(
             )
     }
 
-    private fun toRouterAnnoBean(element: KSAnnotated, routerAnno: RouterAnno): RouterAnnoBean {
+    private fun toRouterAnnoBean(
+        element: KSAnnotated,
+        routerAnno: RouterAnno,
+    ): RouterAnnoBean {
 
         // 如果有host那就必须满足规范
         if (routerAnno.host.isNotEmpty() && routerAnno.host.contains("/")) {
@@ -835,7 +838,7 @@ class ModuleProcessor(
             // 一定 '/' 开头的
             path = path,
             desc = routerAnno.desc,
-            rawType = element,
+            ksAnnotated = element,
             // 拦截器的顺序
             interceptorPriorities = routerAnno.interceptorPriorities.toList(),
             interceptorNamePriorities = routerAnno.interceptorNamePriorities.toList(),
@@ -863,7 +866,7 @@ class ModuleProcessor(
                     toRouterAnnoBean(
                         element = item1.first,
                         routerAnno = item2,
-                    ) to item1.first
+                    )
                 }
             }
 
@@ -883,8 +886,7 @@ class ModuleProcessor(
         )
 
         val routerStr = targetAnnotatedList
-            .joinToString { item ->
-                val routeAnnoBean = item.first
+            .joinToString { routeAnnoBean ->
                 StringBuffer()
                     .append("%T(")
                     .append("\nregex = %S,")
@@ -898,26 +900,40 @@ class ModuleProcessor(
                     .append("\ndesc = %S,")
                     .apply {
                         this.append("\npageInterceptors = listOf(")
-                        routeAnnoBean.interceptors.forEach {
+                        routeAnnoBean.interceptors.forEach { _ ->
                             this.append("\n%T(priority = %L, interceptorClass = %T::class,),")
                         }
-                        routeAnnoBean.interceptorNames.forEach {
+                        routeAnnoBean.interceptorNames.forEach { _ ->
                             this.append("\n%T(priority = %L, interceptorName = %S,),")
                         }
                         this.append("),")
                     }
                     .apply {
-                        when (item.second) {
+                        when (val element = routeAnnoBean.ksAnnotated) {
                             is KSClassDeclaration -> {
                                 this.append("\ntargetClass = %L::class,")
                             }
 
                             is KSFunctionDeclaration -> {
-                                this.append("\ncustomerIntentCall = object : %T {")
-                                this.append("\n\toverride fun get(request: RouterRequest): %T {")
-                                this.append("\n\t\t\treturn %L(\n\t\t\t\t%N = request\n\t\t\t)")
-                                this.append("\n\t}")
-                                this.append("\n}")
+                                when (
+                                    element.returnType?.resolve()?.declaration?.qualifiedName?.asString()
+                                ) {
+                                    ComponentConstants.KOTLIN_CLASS -> {
+                                        this.append("\ntargetClass = %L::class,")
+                                    }
+
+                                    ComponentConstants.ANDROID_INTENT -> {
+                                        this.append("\ncustomerIntentCall = object : %T {")
+                                        this.append("\n\toverride fun get(request: RouterRequest): %T {")
+                                        this.append("\n\t\t\treturn %L(\n\t\t\t\t%N = request\n\t\t\t)")
+                                        this.append("\n\t}")
+                                        this.append("\n}")
+                                    }
+
+                                    else -> throw ProcessException(
+                                        message = "not support"
+                                    )
+                                }
                             }
 
                             else -> throw ProcessException(
@@ -930,18 +946,18 @@ class ModuleProcessor(
             }
 
         val routerArgList = targetAnnotatedList
-            .map { item ->
-                val routeAnnoBean = item.first
+            .map { routeAnnoBean ->
                 listOfNotNull(
                     routerBeanClassName,
-                    item.first.regex,
-                    if (item.first.scheme.isNullOrEmpty()) {
-                        "://${item.first.hostAndPath()}"
+                    routeAnnoBean.regex,
+                    if (routeAnnoBean.scheme.isNullOrEmpty()) {
+                        "://${routeAnnoBean.hostAndPath()}"
                     } else {
-                        "${item.first.scheme}://${item.first.hostAndPath()}"
+                        "${routeAnnoBean.scheme}://${routeAnnoBean.hostAndPath()}"
                     },
-                    item.first.desc ?: "",
-                ) + routeAnnoBean.interceptors
+                    routeAnnoBean.desc ?: "",
+                ) + routeAnnoBean
+                    .interceptors
                     .mapIndexed { index, interceptorClassPathStr ->
                         interceptorClassPathStr to
                                 (routeAnnoBean.interceptorPriorities.getOrNull(
@@ -967,7 +983,7 @@ class ModuleProcessor(
                             it.second,
                             it.first,
                         )
-                    }.flatten() + when (val element = item.second) {
+                    }.flatten() + when (val element = routeAnnoBean.ksAnnotated) {
                     is KSClassDeclaration -> {
                         listOf(element.qualifiedName!!.asString())
                     }
@@ -976,12 +992,25 @@ class ModuleProcessor(
                         if (logEnable) {
                             logger.warn("element.qualifiedName = ${element.qualifiedName?.asString()}")
                         }
-                        listOf(
-                            customerIntentCallClassName,
-                            mClassNameIntent,
-                            element.qualifiedName!!.asString(),
-                            element.parameters.first().name!!.asString(),
-                        )
+                        when (
+                            val returnTypeQualifiedNameStr = element.returnType?.resolve()?.declaration?.qualifiedName?.asString()
+                        ) {
+                            ComponentConstants.KOTLIN_CLASS -> {
+                                listOf(returnTypeQualifiedNameStr)
+                            }
+
+                            ComponentConstants.ANDROID_INTENT -> {
+                                listOf(
+                                    customerIntentCallClassName,
+                                    mClassNameIntent,
+                                    element.qualifiedName!!.asString(),
+                                    element.parameters.first().name!!.asString(),
+                                )
+                            }
+                            else -> throw ProcessException(
+                                message = "not support"
+                            )
+                        }
                     }
 
                     else -> throw ProcessException(

@@ -26,9 +26,9 @@ class RouterAnnoBean(
     val interceptorNames: List<String> = emptyList(),
 
     // 可是是一个Activity 类或者是一个静态方法
-    val rawType: KSAnnotated,
+    val ksAnnotated: KSAnnotated,
 
-) {
+    ) {
 
     /**
      * host 和 path 之间一定有 /

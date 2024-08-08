@@ -20,6 +20,18 @@ import kotlin.reflect.KClass
  * ParameterSupport 类, 这样可以支持获取到 query 中的值, 当然你也可以使用自动注入功能
  * Component.inject(this) 即可, 不过这样要配合注解使用:
  * [AttrValueAutowiredAnno] 和 [ServiceAutowiredAnno]
+ *
+ * 使用范例：
+ * ```kotlin
+ * @RouterAnno(
+ *     hostAndPath = "system/appDetail",
+ * )
+ * fun toAppDetail(request: RouterRequest): Intent {
+ *     val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+ *     intent.data = Uri.parse("package:" + request.rawContext!!.packageName)
+ *     return intent
+ * }
+ * ```
  */
 @Retention(AnnotationRetention.BINARY)
 @Target(

@@ -13,10 +13,10 @@ import androidx.core.view.WindowCompat
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.xiaojinzi.component.anno.RouterAnno
 import com.xiaojinzi.component.anno.ServiceAutowiredAnno
+import com.xiaojinzi.component.app1.module.main.domain.MainUseCase
 import com.xiaojinzi.component.base.RouterConfig
 import com.xiaojinzi.component.base.spi.UserSpi
 import com.xiaojinzi.component.base.theme.CommonTheme
-import com.xiaojinzi.component.app1.module.main.domain.MainUseCase
 import com.xiaojinzi.component.impl.Router
 import com.xiaojinzi.support.annotation.ViewLayer
 import com.xiaojinzi.support.architecture.mvvm1.BaseAct

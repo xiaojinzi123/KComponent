@@ -8,6 +8,7 @@ import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.KSValueParameter
@@ -24,11 +25,7 @@ fun notSupport(
 
 fun KSAnnotated.getDescName(): String {
     return when (this) {
-        is KSClassDeclaration -> {
-            qualifiedName?.asString()
-        }
-
-        is KSFunctionDeclaration -> {
+        is KSDeclaration -> {
             qualifiedName?.asString()
         }
 
@@ -60,10 +57,7 @@ fun KSClassDeclaration.toClassName(): ClassName {
 
 fun KSFunctionDeclaration.returnTypeToTypeName(): TypeName? {
     return this.returnType?.run {
-        this.resolve().let { ksType ->
-
-            ksType.toTypeName()
-        }
+        this.resolve().toTypeName()
     }
 }
 

@@ -270,8 +270,7 @@ interface Call {
     fun navigateForIntent(callback: BiCallback<Intent>): NavigationDisposable {
         return navigateForResult(object :
             BiCallback.Map<ActivityResult, Intent>(targetBiCallback = callback) {
-            @Throws(Exception::class)
-            override fun apply(t: ActivityResult): Intent {
+            override fun invoke(t: ActivityResult): Intent {
                 return t.intentCheckAndGet()
             }
         })
@@ -338,8 +337,7 @@ interface Call {
     @CheckResult
     fun navigateForResultCode(callback: BiCallback<Int>): NavigationDisposable {
         return navigateForResult(object : BiCallback.Map<ActivityResult, Int>(callback) {
-            @Throws(Exception::class)
-            override fun apply(t: ActivityResult): Int {
+            override fun invoke(t: ActivityResult): Int {
                 return t.resultCode
             }
         })
@@ -413,8 +411,7 @@ interface Call {
         callback: BiCallback<Intent>
     ): NavigationDisposable {
         return navigateForResult(object : BiCallback.Map<ActivityResult, Intent>(callback) {
-            @Throws(Exception::class)
-            override fun apply(t: ActivityResult): Intent {
+            override fun invoke(t: ActivityResult): Intent {
                 return t.intentWithResultCodeCheckAndGet(expectedResultCode)
             }
         })
@@ -590,8 +587,7 @@ interface Call {
     fun navigateForTargetIntent(callback: BiCallback<Intent>): NavigationDisposable {
         return navigateForResult(
             callback = object : BiCallback.Map<ActivityResult, Intent>(callback) {
-                @Throws(Exception::class)
-                override fun apply(t: ActivityResult): Intent {
+                override fun invoke(t: ActivityResult): Intent {
                     return t.intentCheckAndGet()
                 }
             }

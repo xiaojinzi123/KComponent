@@ -41,10 +41,14 @@ android {
 }
 
 dependencies {
+
+    testImplementation libs.junit
+
     api libs.appcompat
     api libs.lifecycle.runtime.ktx
     api libs.kotlin.reflect
     api project(':ComponentApi')
+
 }
 
 tasks.register('androidSourcesJar', Jar) {

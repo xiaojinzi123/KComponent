@@ -19,8 +19,10 @@ coil = "2.5.0"
 emoji2 = "1.5.0"
 component = "1.0.0-beta1"
 component_plugin_upload = "1.0.0-beta1"
+junit = "4.13.2"
 
 [libraries]
+junit = { group = "junit", name = "junit", version.ref = "junit" }
 gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
 kotlin_reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
 kotlin_stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }

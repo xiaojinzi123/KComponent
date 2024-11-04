@@ -6,12 +6,9 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
-import androidx.compose.material.ripple.RippleAlpha
-import androidx.compose.material.ripple.RippleTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
-import com.xiaojinzi.component.base.theme.CommonShapes
 
 private val LightThemeColors = lightColors(
     primary = Blue500,
@@ -52,14 +49,4 @@ fun CommonTheme(
             content = content,
         )
     }
-}
-
-object NoRippleTheme : RippleTheme {
-
-    @Composable
-    override fun defaultColor() = Color.Unspecified
-
-    @Composable
-    override fun rippleAlpha(): RippleAlpha = RippleAlpha(0.0f,0.0f,0.0f,0.0f)
-
 }

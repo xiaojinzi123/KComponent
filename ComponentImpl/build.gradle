@@ -9,10 +9,10 @@ android {
 
     namespace 'com.xiaojinzi.component.impl'
 
-    compileSdkVersion versions.android_compile_sdk
+    compileSdkVersion libs.versions.android.compile.sdk.get().toInteger()
     defaultConfig {
-        minSdkVersion versions.android_min_sdk
-        targetSdkVersion versions.android_target_sdk
+        minSdkVersion libs.versions.android.min.sdk.get().toInteger()
+        targetSdkVersion libs.versions.android.target.sdk.get().toInteger()
     }
 
     buildTypes {
@@ -42,8 +42,8 @@ android {
 
 dependencies {
     api libs.appcompat
-    api libs.lifecycle_runtime_ktx
-    api libs.kotlin_reflect
+    api libs.lifecycle.runtime.ktx
+    api libs.kotlin.reflect
     api project(':ComponentApi')
 }
 

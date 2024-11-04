@@ -11,5 +11,5 @@ android {
 apply from: project.getRootProjectPath() + "/common_android_lib.gradle"
 
 dependencies {
-    api libs.support_annotation
+    api libs.support.annotation
 }

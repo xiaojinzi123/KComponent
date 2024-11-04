@@ -1,9 +1,9 @@
 android {
-    compileSdkVersion versions.android_compile_sdk
+    compileSdkVersion libs.versions.android.compile.sdk.get().toInteger()
 
     defaultConfig {
-        minSdkVersion versions.android_min_sdk
-        targetSdkVersion versions.android_target_sdk
+        minSdkVersion libs.versions.android.min.sdk.get().toInteger()
+        targetSdkVersion libs.versions.android.target.sdk.get().toInteger()
         versionCode 1
         versionName "1.0.0"
         consumerProguardFiles "consumer-rules.pro"

@@ -19,19 +19,19 @@ dependencies {
     api project(':ComponentRxImpl')
     ksp project(':ComponentCompiler')
 
-    api libs.support_logger
-    api libs.support_ktx
-    api libs.support_compose
-    api libs.support_architecture
+    api libs.support.logger
+    api libs.support.ktx
+    api libs.support.compose
+    api libs.support.architecture
 
-    api libs.accompanist_pager
-    api libs.accompanist_swiperefresh
-    api libs.accompanist_sysuicontrol
-    api libs.accompanist_flowlayout
-    api libs.accompanist_placeholder
-    api libs.accompanist_permissions
-    api libs.accompanist_webview
+    api libs.accompanist.pager
+    api libs.accompanist.swiperefresh
+    api libs.accompanist.sysuicontrol
+    api libs.accompanist.flowlayout
+    api libs.accompanist.placeholder
+    api libs.accompanist.permissions
+    api libs.accompanist.webview
 
-    api libs.lottie_compose
+    api libs.lottie.compose
 
 }

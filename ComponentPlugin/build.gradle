@@ -15,7 +15,7 @@ java {
 
 group = 'com.xiaojinzi.kcomponent'
 archivesBaseName = 'kcomponent-plugin'
-version = "${versions.component_plugin_upload_version}"
+version = libs.versions.component.plugin.upload.get()
 
 // 配置模块的 freeCompilerArgs 参数
 /*tasks.withType(KotlinCompile).configureEach {

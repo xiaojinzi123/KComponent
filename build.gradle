@@ -1,14 +1,14 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
 
-    ext.kotlin_version = "1.9.0"
-    ext.kotlin_coroutines_version = "1.7.3"
+    ext.kotlin_version = "1.9.25"
+    ext.kotlin_coroutines_version = "1.9.0"
 
     apply from: "common_support.gradle"
     apply from: "dependencies.gradle"
 
     ext {
-        compose_version = '1.5.1'
+        compose_version = '1.5.15'
         kcomponent_isMergeOutputFile = true
     }
 
@@ -28,7 +28,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.5.1'
+        classpath 'com.android.tools.build:gradle:8.7.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "com.xiaojinzi.kcomponent:kcomponent-plugin:${versions.component_version}"
     }
@@ -36,11 +36,11 @@ buildscript {
 }
 
 plugins {
-    id 'com.android.application' version '8.5.1' apply false
-    id 'com.android.library' version '8.5.1' apply false
+    id 'com.android.application' version '8.7.2' apply false
+    id 'com.android.library' version '8.7.2' apply false
     id 'org.jetbrains.kotlin.jvm' version "$kotlin_version" apply false
     id 'org.jetbrains.kotlin.android' version "$kotlin_version" apply false
-    id 'com.google.devtools.ksp' version "$kotlin_version-1.0.13" apply false
+    id 'com.google.devtools.ksp' version "$kotlin_version-1.0.20" apply false
 }
 
 tasks.register('clean', Delete) {

@@ -10,7 +10,7 @@ ext.versions = [
         rxandroid                           : "2.1.1",
         android_support_version             : "v1.0-alpha196",
         android_module_version              : "v1.0-alpha40",
-        compose_version                     : "1.5.4",
+        compose_version                     : "1.7.0",
         accompanist_version                 : "0.34.0",
         page3                               : "3.2.1",
         coil                                : "2.5.0",

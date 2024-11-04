@@ -18,19 +18,18 @@ import io.reactivex.Single
 object RxFragmentManager {
 
     /**
-     * 这里最主要的实现就是把出现的错误转化为 [ServiceInvokeException]
+     * 这里最主要的实现就是把出现的错误转化为 [com.xiaojinzi.component.error.ServiceInvokeException]
      * 然后就可以当用户不想处理RxJava的错误的时候 [com.xiaojinzi.component.support.RxErrorConsumer] 进行忽略了
      * 获取实现类,这个方法实现了哪些这里罗列一下：
      * 1. 保证在找不到 Fragment 的时候不会有异常, 你只管写正确情况的逻辑代码
      * 2. 保证 Fragment 在主线程上被创建
      * 3. 在保证了第一点的情况下保证不改变 RxJava 的执行线程
-     * 4. 保证调用任何一个服务实现类的时候出现的错误用 [ServiceInvokeException]
-     * 代替,当然了,真实的错误在 [Throwable.getCause] 中可以获取到
+     * 4. 保证调用任何一个服务实现类的时候出现的错误用 [com.xiaojinzi.component.error.ServiceInvokeException]
+     * 代替,当然了,真实的错误在 [Throwable.cause] 中可以获取到
      */
     fun with(fragmentFlag: String, bundle: Bundle?): Single<Fragment> {
         return Single.fromCallable {
-            var tempImpl: Fragment? = null
-            tempImpl = if (isMainThread()) {
+            val tempImpl: Fragment? = if (isMainThread()) {
                 get(fragmentFlag, bundle)
             } else {
                 // 这段代码如何为空的话会直接抛出异常

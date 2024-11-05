@@ -17,6 +17,7 @@ import com.xiaojinzi.component.error.ignore.InterceptorNotFoundException
 import com.xiaojinzi.component.error.ignore.NavigationCancelException
 import com.xiaojinzi.component.error.ignore.NavigationException
 import com.xiaojinzi.component.error.ignore.TargetActivityNotFoundException
+import com.xiaojinzi.component.impl.RouterCenter.isMatchUri
 import com.xiaojinzi.component.impl.interceptor.InterceptorCenter
 import com.xiaojinzi.component.support.*
 import java.util.*
@@ -31,8 +32,7 @@ data class ModuleRouterBean(
  * 请注意:
  * 请勿在项目中使用此类, 此类的 Api 不供项目使用, 仅供框架内部使用.
  * 即使你在项目中能引用到此类并且调用到 Api, 也不是你想要的效果. 所以请不要使用.
- * 尤其是方法 [.isMatchUri]
- *
+ * 尤其是方法 [isMatchUri]
  *
  * 中央路由,挂载着多个子路由表,这里有总路由表
  * 实际的跳转也是这里实现的,当有模块的注册和反注册发生的时候
@@ -62,17 +62,20 @@ object RouterCenter {
 
     @Synchronized
     fun isMatchUri(uri: Uri): Boolean {
-        return getTarget(uri) != null
+        return getTarget(uri = uri) != null
     }
 
+    /**
+     * 是否是同一个目标
+     */
     fun isSameTarget(uri1: Uri, uri2: Uri): Boolean {
-        return getTarget(uri1) === getTarget(uri2)
+        return getTarget(uri = uri1) === getTarget(uri = uri2)
     }
 
     @UiThread
     @Throws(TargetActivityNotFoundException::class)
     fun openUri(routerRequest: RouterRequest): Intent? {
-        return doOpenUri(routerRequest)
+        return doOpenUri(request = routerRequest)
     }
 
     /**
@@ -81,15 +84,14 @@ object RouterCenter {
      */
     @UiThread
     @Throws(Exception::class)
-    fun routerDegrade(request: RouterRequest, routerDegradeIntent: Intent?): Intent? {
+    fun routerDegrade(request: RouterRequest, routerDegradeIntent: Intent): Intent? {
         if (!Utils.isMainThread()) {
             throw NavigationException("routerDegrade must run on main thread")
         }
-        val uriString = request.uri.toString()
-        if (routerDegradeIntent == null) {
-            throw TargetActivityNotFoundException(uriString)
-        }
-        return doStartIntent(request, routerDegradeIntent)
+        return doStartIntent(
+            request = request,
+            intent = routerDegradeIntent,
+        )
     }
 
     /**
@@ -133,7 +135,10 @@ object RouterCenter {
         if (intent == null) {
             throw TargetActivityNotFoundException(uriString)
         }
-        return doStartIntent(request, intent)
+        return doStartIntent(
+            request = request,
+            intent = intent,
+        )
     }
 
     /**
@@ -147,7 +152,7 @@ object RouterCenter {
     @Throws(Exception::class)
     private fun doStartIntent(
         request: RouterRequest,
-        intent: Intent
+        intent: Intent,
     ): Intent? {
         // 前置工作
         intent.putExtras(request.bundle)
@@ -302,7 +307,7 @@ object RouterCenter {
     }
 
     private fun getTarget(uri: Uri): RouterBean? {
-        val targetKey: String = getTargetRouterKey(uri)
+        val targetKey: String = getTargetRouterKey(uri = uri)
         for ((key, value) in routerRegExMap) {
             if (Pattern.matches(key, targetKey)) {
                 return value
@@ -316,7 +321,7 @@ object RouterCenter {
      */
     private fun getTargetRouterKey(uri: Uri): String {
         // "/component1/test" 不含host
-        var targetPath = uri.path
+        /*var targetPath = uri.path
         return if (!targetPath.isNullOrEmpty()) {
             if (targetPath[0] != '/') {
                 targetPath = ComponentConstants.SEPARATOR + targetPath
@@ -324,7 +329,8 @@ object RouterCenter {
             uri.scheme + "://" + uri.host + targetPath
         } else {
             uri.scheme + "://" + uri.host
-        }
+        }*/
+        return uri.toString()
     }
 
     /**
@@ -379,6 +385,7 @@ object RouterCenter {
 
     /**
      * 路由表重复的检查工作
+     * 主要是检测多个模块有没有重复的路由
      */
     fun check() {
         val routerSet: MutableSet<String> = HashSet()
@@ -395,4 +402,5 @@ object RouterCenter {
             }
         }
     }
+
 }

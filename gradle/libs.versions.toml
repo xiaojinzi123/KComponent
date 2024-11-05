@@ -3,6 +3,7 @@ android_compile_sdk = "34"
 android_min_sdk = "21"
 android_target_sdk = "34"
 gradle = "8.7.2"
+mockkVersion = "1.13.13"
 version_code = "1000"
 version_name = "1.0"
 agp = "8.7.2"
@@ -20,9 +21,13 @@ emoji2 = "1.5.0"
 component = "1.0.0-beta1"
 component_plugin_upload = "1.0.0-beta1"
 junit = "4.13.2"
+androidx_junit = "1.2.1"
+espressoCore = "3.6.1"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx_junit" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
 kotlin_reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
 kotlin_stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
@@ -34,6 +39,7 @@ emoji2_views = { group = "androidx.emoji2", name = "emoji2-views", version.ref =
 emoji2_views_helper = { group = "androidx.emoji2", name = "emoji2-views-helper", version.ref = "emoji2" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version = "1.7.0" }
 core_ktx = { group = "androidx.core", name = "core-ktx", version = "1.15.0" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockkVersion" }
 swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version = "1.1.0" }
 fragment_ktx = { group = "androidx.fragment", name = "fragment-ktx", version = "1.8.5" }
 material = { group = "com.google.android.material", name = "material", version = "1.12.0" }

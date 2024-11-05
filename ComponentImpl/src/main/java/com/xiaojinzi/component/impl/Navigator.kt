@@ -359,7 +359,7 @@ class NavigatorImpl<T : INavigator<T>> constructor(
             }
             val currentUri = chain.request().uri
             val isSameTarget = if (mBeforePageInterceptorUri != null) {
-                RouterCenter.isSameTarget(mBeforePageInterceptorUri, currentUri)
+                RouterCenter.isSameTarget(uri1 = mBeforePageInterceptorUri, uri2 = currentUri)
             } else {
                 false
             }
@@ -443,8 +443,10 @@ class NavigatorImpl<T : INavigator<T>> constructor(
                     // 降级跳转
                     val targetDegradeIntent: Intent? = withContext(context = Dispatchers.Main) {
                         RouterCenter.routerDegrade(
-                            finalRequest,
-                            routerDegrade.onDegrade(request = finalRequest)
+                            request = finalRequest,
+                            routerDegradeIntent = routerDegrade.onDegrade(
+                                request = finalRequest,
+                            ),
                         )
                     }
                     // 成功的回调

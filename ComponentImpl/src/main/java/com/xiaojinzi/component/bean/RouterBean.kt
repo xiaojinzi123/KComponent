@@ -20,7 +20,9 @@ data class RouterBean(
     val regex: String? = null,
 
     /**
-     * 路由目标的正则
+     * 路由目标 Uri 比如：
+     * https://module1/index
+     * yourApp://user/login
      */
     val uri: String? = null,
 

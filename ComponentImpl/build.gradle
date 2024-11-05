@@ -13,6 +13,7 @@ android {
     defaultConfig {
         minSdkVersion libs.versions.android.min.sdk.get().toInteger()
         targetSdkVersion libs.versions.android.target.sdk.get().toInteger()
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -43,11 +44,15 @@ android {
 dependencies {
 
     testImplementation libs.junit
+    androidTestImplementation libs.androidx.junit
+    androidTestImplementation(libs.androidx.espresso.core)
+    // androidTestImplementation(libs.mockk)
 
     api libs.appcompat
     api libs.lifecycle.runtime.ktx
     api libs.kotlin.reflect
     api project(':ComponentApi')
+
 
 }
 

@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'com.xiaojinzi.kcomponent.plugin'
+    alias(libs.plugins.compose.compiler)
     id 'kotlin-android'
     id 'com.google.devtools.ksp'
     id 'kotlin-parcelize'

@@ -94,7 +94,6 @@ object ModuleManager {
                     fragmentModule = module,
                 )
                 // 对一个模块中没有标记任何注解的情况进行 debug 报错
-
                 notifyModuleChanged()
             }
             // 路由是否异步初始化

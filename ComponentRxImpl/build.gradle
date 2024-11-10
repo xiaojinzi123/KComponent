@@ -10,7 +10,6 @@ archivesBaseName = "kcomponent-rx"
 android {
 
     namespace 'com.xiaojinzi.component.impl.rx'
-    compileSdkVersion libs.versions.android.compile.sdk.get().toInteger()
     defaultConfig {
         minSdkVersion libs.versions.android.min.sdk.get().toInteger()
         targetSdkVersion libs.versions.android.target.sdk.get().toInteger()

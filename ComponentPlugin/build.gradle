@@ -33,13 +33,12 @@ version = libs.versions.component.plugin.upload.get()
 dependencies {
     implementation gradleApi()
     implementation localGroovy()
-    implementation "org.ow2.asm:asm-commons:9.7.1"
-    implementation "org.ow2.asm:asm-util:9.7.1"
-    implementation 'com.android.tools.build:gradle:8.7.2'
-    // implementation 'com.android.tools.build:gradle:8.0.1'
-    implementation 'com.google.code.gson:gson:2.11.0'
-    implementation "com.joom.grip:grip:0.9.1"
-    implementation "org.javassist:javassist:3.26.0-GA"
+    implementation libs.asm.commons
+    implementation libs.asm.util
+    implementation libs.gradle
+    implementation libs.gson
+    implementation libs.grip
+    implementation libs.javassist
 }
 
 java {

@@ -2,8 +2,11 @@
 android-compile-sdk = "35"
 android-min-sdk = "21"
 android-target-sdk = "35"
+asmCommonsVersion = "9.7.1"
 autoServiceVersion = "1.1.1"
 gradle = "8.7.2"
+gripVersion = "0.9.1"
+javassistVersion = "3.26.0-GA"
 kotlinpoetVersion = "1.18.1"
 mockkVersion = "1.13.13"
 version-code = "1000"
@@ -29,6 +32,11 @@ espressoCore = "3.6.1"
 mockito = "5.14.2"
 
 [libraries]
+gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
+asm-commons = { module = "org.ow2.asm:asm-commons", version.ref = "asmCommonsVersion" }
+asm-util = { module = "org.ow2.asm:asm-util", version.ref = "asmCommonsVersion" }
+grip = { module = "com.joom.grip:grip", version.ref = "gripVersion" }
+javassist = { module = "org.javassist:javassist", version.ref = "javassistVersion" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 auto-service = { module = "com.google.auto.service:auto-service", version.ref = "autoServiceVersion" }
 auto-service-annotations = { module = "com.google.auto.service:auto-service-annotations", version.ref = "autoServiceVersion" }
@@ -38,7 +46,6 @@ mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mo
 mockito-android = { group = "org.mockito", name = "mockito-android", version.ref = "mockito" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-junit" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
-gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
 kotlin-ksp = {group = "com.google.devtools.ksp", name = "symbol-processing-api", version.ref = "kotlin-ksp"}
 kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
 kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }

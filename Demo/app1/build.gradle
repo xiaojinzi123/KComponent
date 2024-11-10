@@ -37,7 +37,7 @@ android {
     buildTypes {
         debug {
             minifyEnabled = false
-            signingConfig signingConfigs.release
+            signingConfig signingConfigs.debug
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             if (Boolean.parseBoolean(project.findProperty("support.isIncludeKspFolder"))) {
                 kotlin {
@@ -54,7 +54,7 @@ android {
         }
         release {
             minifyEnabled true
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }

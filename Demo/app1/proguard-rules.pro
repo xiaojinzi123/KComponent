@@ -20,6 +20,8 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
+-dontwarn javax.annotation.Nullable
+
 -dontwarn org.reactivestreams.FlowAdapters
 -dontwarn org.reactivestreams.**
 -dontwarn java.util.concurrent.flow.**

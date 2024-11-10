@@ -2,7 +2,7 @@ package com.xiaojinzi.component
 
 import android.app.Activity
 import com.xiaojinzi.component.support.Utils
-import java.util.*
+import java.util.Stack
 
 /**
  * Component 的 Activity 栈
@@ -10,6 +10,7 @@ import java.util.*
  * @author xiaojinzi
  */
 object ComponentActivityStack {
+
     /**
      * the stack will be save all reference of Activity
      */

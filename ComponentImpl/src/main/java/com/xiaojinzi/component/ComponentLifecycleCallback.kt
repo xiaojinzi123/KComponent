@@ -3,8 +3,6 @@ package com.xiaojinzi.component
 import android.app.Activity
 import android.app.Application.ActivityLifecycleCallbacks
 import android.os.Bundle
-import com.xiaojinzi.component.ComponentActivityStack.pushActivity
-import com.xiaojinzi.component.ComponentActivityStack.removeActivity
 
 /**
  * 注册的声明周期回调,用于取消一些调用,这些调用在界面销毁之后
@@ -12,7 +10,7 @@ import com.xiaojinzi.component.ComponentActivityStack.removeActivity
 internal class ComponentLifecycleCallback : ActivityLifecycleCallbacks {
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-        pushActivity(activity)
+        ComponentActivityStack.pushActivity(activity)
     }
 
     override fun onActivityStarted(activity: Activity) {
@@ -36,7 +34,7 @@ internal class ComponentLifecycleCallback : ActivityLifecycleCallbacks {
     }
 
     override fun onActivityDestroyed(activity: Activity) {
-        removeActivity(activity = activity)
+        ComponentActivityStack.removeActivity(activity = activity)
     }
 
 }

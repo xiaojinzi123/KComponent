@@ -11,7 +11,7 @@ android {
 
     namespace 'com.xiaojinzi.component.impl'
 
-    compileSdkVersion libs.versions.android.compile.sdk.get()
+    compileSdkVersion libs.versions.android.compile.sdk.get().toInteger()
     defaultConfig {
         minSdkVersion libs.versions.android.min.sdk.get().toInteger()
         targetSdkVersion libs.versions.android.target.sdk.get().toInteger()

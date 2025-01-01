@@ -67,14 +67,15 @@ object RouterInterceptorCache {
         // 这里为什么使用 for 循环而不是直接获取空参数的构造函数或者以下有某个参数的构造函数
         // 是因为你获取的时候会有异常抛出,三种情况你得 try{}catch{}三次
         for (constructor in constructors) {
-            val parameterTypes = constructor.typeParameters
-            if (parameterTypes.isEmpty()) {
+            val parameterClassifiers = constructor.parameters.map { it.type.classifier }
+            if (parameterClassifiers.isEmpty()) {
                 return constructor.call()
             }
-            if (parameterTypes.size == 1 && parameterTypes[0] == Application::class) {
-                return constructor.call(getApplication())
-            }
-            if (parameterTypes.size == 1 && parameterTypes[0] == Context::class.java) {
+            if (parameterClassifiers.size == 1 && (
+                        parameterClassifiers[0] == Application::class ||
+                                parameterClassifiers[0] == Context::class
+                        )
+            ) {
                 return constructor.call(getApplication())
             }
         }

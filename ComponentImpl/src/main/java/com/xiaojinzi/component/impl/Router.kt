@@ -47,7 +47,7 @@ object Router {
     /**
      * 类的标志
      */
-    const val TAG = "-------- Router --------"
+    const val TAG = "---Router---"
 
     /**
      * 路由的监听器

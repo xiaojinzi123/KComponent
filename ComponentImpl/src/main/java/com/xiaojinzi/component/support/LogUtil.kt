@@ -13,7 +13,7 @@ import com.xiaojinzi.component.support.LogUtil
  */
 object LogUtil {
 
-    private const val TAG = "-------- Component --------"
+    private const val TAG = "---Component---"
 
     @AnyThread
     fun loge(message: String) {

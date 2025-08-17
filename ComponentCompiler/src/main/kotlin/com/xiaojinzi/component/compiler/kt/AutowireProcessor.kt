@@ -196,7 +196,7 @@ class AutowireProcessor(
 
                             }
 
-                            attrAutoWireAnno?.let {
+                            attrAutoWireAnno?.let { attrAutoWireAnno ->
 
                                 val oneNameOfPropertyCall: (Int, String) -> Unit =
                                     { index, attrAutoWireAnnoItemName ->

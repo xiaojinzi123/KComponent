@@ -320,8 +320,8 @@ object RouterCenter {
      * scheme + "://" + host + path
      */
     private fun getTargetRouterKey(uri: Uri): String {
-        // "/component1/test" 不含host
-        /*var targetPath = uri.path
+        // path： "/component1/test" 不含host
+        var targetPath = uri.path
         return if (!targetPath.isNullOrEmpty()) {
             if (targetPath[0] != '/') {
                 targetPath = ComponentConstants.SEPARATOR + targetPath
@@ -329,8 +329,9 @@ object RouterCenter {
             uri.scheme + "://" + uri.host + targetPath
         } else {
             uri.scheme + "://" + uri.host
-        }*/
-        return uri.toString()
+        }
+        // 这个 toString 不满足, 是因为可能有 userInfo, fragment, query 等信息
+        // return uri.toString()
     }
 
     /**

@@ -4,14 +4,14 @@ android-min-sdk = "21"
 android-target-sdk = "35"
 asmCommonsVersion = "9.8"
 autoServiceVersion = "1.1.1"
-gradle = "8.12.0"
 gripVersion = "0.9.1"
 javassistVersion = "3.26.0-GA"
 kotlinpoetVersion = "2.2.0"
 mockkVersion = "1.14.5"
 version-code = "1000"
 version-name = "1.0"
-agp = "8.7.2"
+# 作为开源库, 不能升级过高
+agp = "8.11.0"
 kotlin = "2.2.10"
 kotlin-ksp = "2.2.10-2.0.2"
 kotlin-coroutines = "1.10.2"
@@ -32,7 +32,7 @@ espressoCore = "3.7.0"
 mockito = "5.19.0"
 
 [libraries]
-gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
+gradle = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 asm-commons = { module = "org.ow2.asm:asm-commons", version.ref = "asmCommonsVersion" }
 asm-util = { module = "org.ow2.asm:asm-util", version.ref = "asmCommonsVersion" }
 grip = { module = "com.joom.grip:grip", version.ref = "gripVersion" }
@@ -124,8 +124,8 @@ compose-ui-foundation = { group = "androidx.ui", name = "ui-foundation", version
 compose-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version = "1.1.1" }
 
 [plugins]
-android-application = {id = "com.android.application", version.ref = "gradle" }
-android-library = {id = "com.android.library", version.ref = "gradle" }
+android-application = {id = "com.android.application", version.ref = "agp" }
+android-library = {id = "com.android.library", version.ref = "agp" }
 kotlin-jvm = {id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin"}
 kotlin-android = {id = "org.jetbrains.kotlin.android", version.ref = "kotlin"}
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }

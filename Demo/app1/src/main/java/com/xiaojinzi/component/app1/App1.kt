@@ -101,8 +101,6 @@ class App1 : Application() {
             }
         )
 
-        Component.check()
-
     }
 
 }

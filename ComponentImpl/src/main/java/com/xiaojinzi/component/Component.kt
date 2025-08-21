@@ -151,7 +151,7 @@ object Component {
      * 2.服务在不同模块中的声明是否也有重复的名称
      */
     @NotAppUseAnno
-    fun check() {
+    internal fun check() {
         if (isDebug && requiredConfig().isErrorCheck) {
             RouterCenter.check()
             InterceptorCenter.check()

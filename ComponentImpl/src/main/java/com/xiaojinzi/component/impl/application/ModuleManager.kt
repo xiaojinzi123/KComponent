@@ -3,12 +3,10 @@ package com.xiaojinzi.component.impl.application
 import android.app.Application
 import androidx.annotation.AnyThread
 import androidx.annotation.UiThread
-import com.xiaojinzi.component.Component
 import com.xiaojinzi.component.Component.check
 import com.xiaojinzi.component.Component.getApplication
 import com.xiaojinzi.component.Component.requiredConfig
 import com.xiaojinzi.component.ComponentUtil
-import com.xiaojinzi.component.application.IModuleNotifyChanged
 import com.xiaojinzi.component.cache.ClassCache
 import com.xiaojinzi.component.impl.IModuleLifecycle
 import com.xiaojinzi.component.impl.RouterCenter

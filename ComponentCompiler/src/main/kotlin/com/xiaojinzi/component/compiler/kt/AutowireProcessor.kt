@@ -30,23 +30,49 @@ import com.xiaojinzi.component.anno.UriAutowiredAnno
 import com.xiaojinzi.component.anno.support.ComponentGeneratedAnno
 import com.xiaojinzi.component.support.AttrAutoWireMode
 
+/**
+ * 一个 [InjectFileInfo] 对象表示一个要生成注入类
+ */
 private data class InjectFileInfo(
     val ksFile: KSFile,
+    val targetClassQualifiedNameStr: String,
     val targetClassClassName: ClassName,
     val isSubActivity: Boolean,
     val isSubFragment: Boolean,
-    val propertyInfoList: List<PropertyInfo>,
-) {
+) //
+{
 
     data class PropertyInfo(
         val isPropertyLateInit: Boolean,
         val isPropertyNullable: Boolean,
         val propertyName: String,
         val propertyType: KSType,
+        val propertyClassName: ClassName = propertyType.toClassName(),
         val uriAutoWireAnno: UriAutowiredAnno?,
         val attrAutoWireAnno: AttrValueAutowiredAnno?,
         val serviceAutoWireAnno: ServiceAutowiredAnno?,
-    )
+    ) {
+
+        override fun hashCode(): Int {
+            var result = isPropertyLateInit.hashCode()
+            result = 31 * result + isPropertyNullable.hashCode()
+            result = 31 * result + propertyName.hashCode()
+            result = 31 * result + propertyType.hashCode()
+            return result
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other !is PropertyInfo) return false
+
+            if (isPropertyLateInit != other.isPropertyLateInit) return false
+            if (isPropertyNullable != other.isPropertyNullable) return false
+            if (propertyName != other.propertyName) return false
+            if (propertyType != other.propertyType) return false
+            return true
+        }
+
+    }
 
 }
 
@@ -60,11 +86,12 @@ class AutowireProcessor(
         const val TAG = "AutowireProcessor"
     }
 
-    private val collectList = mutableListOf<KSPropertyDeclaration>()
+    private val collectInfoMap = mutableMapOf<InjectFileInfo, Set<InjectFileInfo.PropertyInfo>>()
 
     @OptIn(KspExperimental::class)
     private fun createFile(
         injectFileInfo: InjectFileInfo,
+        propertyInfoSet: Set<InjectFileInfo.PropertyInfo>,
     ) {
 
         if (injectFileInfo.isSubActivity.not() && injectFileInfo.isSubFragment.not()) {
@@ -129,7 +156,7 @@ class AutowireProcessor(
                     )
                     .also { funSpec ->
 
-                        injectFileInfo.propertyInfoList.forEach { propertyInfo ->
+                        propertyInfoSet.forEach { propertyInfo ->
 
                             if (propertyInfo.uriAutoWireAnno != null) {
                                 if (logEnable) {
@@ -304,7 +331,7 @@ class AutowireProcessor(
                                     } else {
                                         "requiredGet"
                                     },
-                                    propertyInfo.propertyType.toClassName(),
+                                    propertyInfo.propertyClassName,
                                 )
 
                             }
@@ -387,12 +414,14 @@ class AutowireProcessor(
     }
 
     private fun KSClassDeclaration.convertToInjectFileInfo(
-        propertyDeclarations: List<KSPropertyDeclaration>,
     ): InjectFileInfo? {
+        this.qualifiedName?.getQualifier()
         val containingFile = this.containingFile ?: return null
+        val targetClassQualifiedNameStr = this.qualifiedName?.getQualifier() ?: return null
         val classDeclarationKsType = this.asStarProjectedType()
         return InjectFileInfo(
             ksFile = containingFile,
+            targetClassQualifiedNameStr = targetClassQualifiedNameStr,
             targetClassClassName = classDeclarationKsType.toClassName(),
             isSubActivity = activityKsClassDeclaration
                 .asStarProjectedType()
@@ -400,25 +429,15 @@ class AutowireProcessor(
             isSubFragment = fragmentKsClassDeclaration
                 .asStarProjectedType()
                 .isAssignableFrom(that = classDeclarationKsType),
-            propertyInfoList = propertyDeclarations.mapNotNull {
-                it.convertToPropertyInfo()
-            },
         )
     }
 
     private fun createAllFile() {
-        collectList
-            .groupBy {
-                it.closestClassDeclaration()
-            }
-            .forEach { mapItem ->
-                // 对 key 为 null 的不予考虑
-                val classDeclaration = mapItem.key ?: return@forEach
-                val injectFileInfo = classDeclaration.convertToInjectFileInfo(
-                    propertyDeclarations = mapItem.value,
-                ) ?: return@forEach
+        collectInfoMap
+            .forEach { (injectFileInfo, propertyInfoSet) ->
                 createFile(
                     injectFileInfo = injectFileInfo,
+                    propertyInfoSet = propertyInfoSet,
                 )
             }
     }
@@ -471,9 +490,18 @@ class AutowireProcessor(
             (uriAutoWireValidList + attrValueAutowiredValidList + serviceAutowiredValidList)
                 .filterIsInstance<KSPropertyDeclaration>()
 
-        collectList.addAll(
-            elements = eachCollectList,
-        )
+        eachCollectList.groupBy {
+            it.closestClassDeclaration()?.convertToInjectFileInfo()
+        }.mapNotNull { (key, value) ->
+            key?.let {
+                key to value.mapNotNull {
+                    it.convertToPropertyInfo()
+                }
+            }
+        }.forEach { (key, value) ->
+            val newValue = (collectInfoMap[key] ?: emptySet()) + value.toSet()
+            collectInfoMap[key] = newValue
+        }
 
         return uriAutoWireInValidList + attrValueAutowiredInValidList + serviceAutowiredInValidList
 

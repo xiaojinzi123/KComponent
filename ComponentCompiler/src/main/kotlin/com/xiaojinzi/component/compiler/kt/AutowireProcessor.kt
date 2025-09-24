@@ -13,7 +13,6 @@ import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFile
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
-import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.Modifier
 import com.google.devtools.ksp.validate
 import com.squareup.kotlinpoet.ClassName
@@ -34,8 +33,7 @@ import com.xiaojinzi.component.support.AttrAutoWireMode
  * 一个 [InjectFileInfo] 对象表示一个要生成注入类
  */
 private data class InjectFileInfo(
-    val ksFile: KSFile,
-    val targetClassQualifiedNameStr: String,
+    val targetClassContainingFile: KSFile,
     val targetClassClassName: ClassName,
     val isSubActivity: Boolean,
     val isSubFragment: Boolean,
@@ -46,8 +44,8 @@ private data class InjectFileInfo(
         val isPropertyLateInit: Boolean,
         val isPropertyNullable: Boolean,
         val propertyName: String,
-        val propertyType: KSType,
-        val propertyClassName: ClassName = propertyType.toClassName(),
+        val propertyClassName: ClassName,
+        val propertyGetMethodName: String?,
         val uriAutoWireAnno: UriAutowiredAnno?,
         val attrAutoWireAnno: AttrValueAutowiredAnno?,
         val serviceAutoWireAnno: ServiceAutowiredAnno?,
@@ -57,7 +55,6 @@ private data class InjectFileInfo(
             var result = isPropertyLateInit.hashCode()
             result = 31 * result + isPropertyNullable.hashCode()
             result = 31 * result + propertyName.hashCode()
-            result = 31 * result + propertyType.hashCode()
             return result
         }
 
@@ -68,7 +65,6 @@ private data class InjectFileInfo(
             if (isPropertyLateInit != other.isPropertyLateInit) return false
             if (isPropertyNullable != other.isPropertyNullable) return false
             if (propertyName != other.propertyName) return false
-            if (propertyType != other.propertyType) return false
             return true
         }
 
@@ -180,9 +176,8 @@ class AutowireProcessor(
                                         format = "target.%N = %T.%N(bundle = bundle, key = %S)?: target.%N",
                                         propertyInfo.propertyName,
                                         mClassNameParameterSupport,
-                                        getMethodNameFromKsType(
-                                            ksType = propertyInfo.propertyType,
-                                            prefix = "get",
+                                        checkNotNull(
+                                            value = propertyInfo.propertyGetMethodName,
                                         ),
                                         attrAutoWireAnnoItemName,
                                         propertyInfo.propertyName,
@@ -195,9 +190,8 @@ class AutowireProcessor(
                                         format = "target.%N = %T.%N(bundle = bundle, key = %S)${if (isNullable) "" else "!!"}",
                                         propertyInfo.propertyName,
                                         mClassNameParameterSupport,
-                                        getMethodNameFromKsType(
-                                            ksType = propertyInfo.propertyType,
-                                            prefix = "get",
+                                        checkNotNull(
+                                            value = propertyInfo.propertyGetMethodName,
                                         ),
                                         attrAutoWireAnnoItemName,
                                     )
@@ -366,20 +360,18 @@ class AutowireProcessor(
                     message = "$TAG $componentModuleName $componentModuleName, isSubFragmentActivity = ${injectFileInfo.isSubActivity}, isSubFragment = ${injectFileInfo.isSubFragment}",
                 )
             }
-            injectFileInfo.ksFile.let { containingFile ->
-                val targetDataArray = fileSpec.toString().toByteArray()
-                codeGenerator.createNewFile(
-                    dependencies = Dependencies(
-                        aggregating = false,
-                        containingFile,
-                    ),
-                    packageName = fileSpec.packageName,
-                    fileName = fileSpec.name,
-                ).use {
-                    it.write(
-                        targetDataArray
-                    )
-                }
+            val targetDataArray = fileSpec.toString().toByteArray()
+            codeGenerator.createNewFile(
+                dependencies = Dependencies(
+                    aggregating = false,
+                    injectFileInfo.targetClassContainingFile,
+                ),
+                packageName = fileSpec.packageName,
+                fileName = fileSpec.name,
+            ).use {
+                it.write(
+                    targetDataArray
+                )
             }
             if (logEnable) {
                 logger.warn(
@@ -395,12 +387,19 @@ class AutowireProcessor(
     private fun KSPropertyDeclaration.convertToPropertyInfo(
     ): InjectFileInfo.PropertyInfo? {
         val ksPropertyDeclaration = this
+        val propertyType = ksPropertyDeclaration.type.resolve()
         return InjectFileInfo.PropertyInfo(
             isPropertyLateInit = ksPropertyDeclaration.modifiers.contains(element = Modifier.LATEINIT),
             isPropertyNullable =
                 ksPropertyDeclaration.type.resolve().isMarkedNullable,
             propertyName = ksPropertyDeclaration.simpleName.asString(),
-            propertyType = ksPropertyDeclaration.type.resolve(),
+            propertyClassName = propertyType.toClassName(),
+            propertyGetMethodName = runCatching {
+                getMethodNameFromKsType(
+                    ksType = propertyType,
+                    prefix = "get",
+                )
+            }.getOrNull(),
             uriAutoWireAnno = ksPropertyDeclaration.getAnnotationsByType(
                 annotationKClass = UriAutowiredAnno::class
             ).firstOrNull(),
@@ -417,11 +416,9 @@ class AutowireProcessor(
     ): InjectFileInfo? {
         this.qualifiedName?.getQualifier()
         val containingFile = this.containingFile ?: return null
-        val targetClassQualifiedNameStr = this.qualifiedName?.getQualifier() ?: return null
         val classDeclarationKsType = this.asStarProjectedType()
         return InjectFileInfo(
-            ksFile = containingFile,
-            targetClassQualifiedNameStr = targetClassQualifiedNameStr,
+            targetClassContainingFile = containingFile,
             targetClassClassName = classDeclarationKsType.toClassName(),
             isSubActivity = activityKsClassDeclaration
                 .asStarProjectedType()

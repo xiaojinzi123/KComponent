@@ -178,8 +178,14 @@ private data class GlobalInterceptorInfo(
     val containingFile: KSFile?,
     val descName: String,
     val qualifiedNameStr: String,
-    val globalInterceptorAnno: GlobalInterceptorAnno,
-)
+    val globalInterceptorAnnoInfo: GlobalInterceptorAnnoInfo,
+) {
+
+    data class GlobalInterceptorAnnoInfo(
+        val priority: Int,
+    )
+
+}
 
 private data class InterceptorInfo(
     val containingFile: KSFile?,
@@ -811,7 +817,7 @@ private class ModuleProcessor(
 
         val globalInterceptorListStr = globalInterceptorInfoList
             .joinToString { item ->
-                "%T(interceptor = ${item.qualifiedNameStr}::class," + "priority = ${item.globalInterceptorAnno.priority})"
+                "%T(interceptor = ${item.qualifiedNameStr}::class," + "priority = ${item.globalInterceptorAnnoInfo.priority})"
             }
 
         val globalInterceptorArgList = globalInterceptorInfoList
@@ -1417,9 +1423,13 @@ private class ModuleProcessor(
                         containingFile = containingFile,
                         descName = descName,
                         qualifiedNameStr = item.qualifiedName!!.asString(),
-                        globalInterceptorAnno = item
+                        globalInterceptorAnnoInfo = item
                             .getAnnotationsByType(annotationKClass = GlobalInterceptorAnno::class)
-                            .first(),
+                            .first().let { anno ->
+                                GlobalInterceptorInfo.GlobalInterceptorAnnoInfo(
+                                    priority = anno.priority,
+                                )
+                            },
                     )
                 },
         )

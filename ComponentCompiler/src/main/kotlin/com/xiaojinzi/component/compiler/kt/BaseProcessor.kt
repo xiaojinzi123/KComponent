@@ -60,10 +60,7 @@ fun KSClassDeclaration.toClassName(): ClassName {
 
 fun KSFunctionDeclaration.returnTypeToTypeName(): TypeName? {
     return this.returnType?.run {
-        this.resolve().let { ksType ->
-
-            ksType.toTypeName()
-        }
+        this.resolve().toTypeName()
     }
 }
 
@@ -178,6 +175,10 @@ abstract class BaseProcessor(
         round: Int,
     ): List<KSAnnotated>
 
+    /**
+     * 获取某个类型的属性的获取或者设置的 string
+     * 比如 getUser setUser
+     */
     fun getMethodNameFromKsType(
         // 属性的类型, 可能是泛型那种, 也可能可null
         ksType: KSType,

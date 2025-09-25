@@ -18,8 +18,11 @@ dependencies {
     api project(':Demo:lib-resource')
     api project(':ComponentImpl')
     api project(':ComponentRxImpl')
-    ksp project(':ComponentCompiler')
 
+    ksp project(':ComponentCompiler')
+    ksp libs.room.compiler
+
+    api libs.room.ktx
     api libs.support.logger
     api libs.support.ktx
     api libs.support.compose

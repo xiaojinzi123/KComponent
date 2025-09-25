@@ -39,6 +39,7 @@ object RouterConfig {
 
     const val FRAGMENT_USER1 = "user1"
     const val FRAGMENT_USER2 = "user2"
+    const val FRAGMENT_USER3 = "user3"
 
     const val INTERCEPTOR_PERMISSION_LOGIN = "login"
     const val INTERCEPTOR_PERMISSION_CALL_PHONE = "permissionCallPhone"

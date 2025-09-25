@@ -14,6 +14,7 @@ import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSFile
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.validate
 import com.squareup.kotlinpoet.ClassName
@@ -50,13 +51,209 @@ import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.reflect.KClass
 
+private data class ConditionalAnnoInfo(
+    val conditionClassPathList: List<String>,
+)
+
+private data class ApplicationInfo(
+    val containingFile: KSFile?,
+    val qualifiedNameOfClass: String,
+)
+
+private sealed class ServiceInfo(
+    open val containingFile: KSFile?,
+    open val descName: String,
+    open val serviceAnnoInfo: ServiceAnnoInfo,
+    // 被 ServiceAnno 标记的类的 class 类型 或者 方法返回值的 class 类型
+    open val classTypeName: TypeName,
+) //
+{
+
+    data class ServiceAnnoInfo(
+        val serviceClassPathList: List<String>,
+        val name: List<String>,
+        val singleTon: Boolean,
+        val autoInit: Boolean,
+    )
+
+    data class ServiceClass(
+        override val containingFile: KSFile?,
+        override val descName: String,
+        override val serviceAnnoInfo: ServiceAnnoInfo,
+        override val classTypeName: TypeName,
+        val applicationParameterName: String?,
+    ) : ServiceInfo(
+        containingFile = containingFile,
+        descName = descName,
+        serviceAnnoInfo = serviceAnnoInfo,
+        classTypeName = classTypeName,
+    )
+
+    data class ServiceMethod(
+        override val containingFile: KSFile?,
+        override val descName: String,
+        override val serviceAnnoInfo: ServiceAnnoInfo,
+        override val classTypeName: TypeName,
+        val applicationParameterName: String?,
+        // @ServiceAnno 标记的方法的 com.xxx.xxx.testName
+        val qualifiedName: String,
+    ) : ServiceInfo(
+        containingFile = containingFile,
+        descName = descName,
+        serviceAnnoInfo = serviceAnnoInfo,
+        classTypeName = classTypeName,
+    )
+
+}
+
+private data class ServiceDecoratorInfo(
+    val uuid: String,
+    val containingFile: KSFile?,
+    val descName: String,
+    val classClassName: ClassName,
+    val serviceDecoratorAnnoInfo: ServiceDecoratorAnnoInfo,
+    val conditionalAnnoInfo: ConditionalAnnoInfo?,
+    // 装饰的目标接口
+    val decorateTargetClassName: ClassName,
+    // 被 @ServiceDecoratorAnno 标记的类的 class 类型的构造函数的参数名.
+    // 被标记的只有一个构造函数, 并且参数只有一个
+    val constructorParameterName: String,
+) {
+
+    data class ServiceDecoratorAnnoInfo(
+        val priority: Int,
+        val valueClassPath: String,
+    )
+
+    override fun toString(): String {
+        return "ServiceDecoratorInfo(uuid='$uuid', descName='$descName', classClassName=$classClassName, constructorParameterName='$constructorParameterName')"
+    }
+
+}
+
+private sealed class FragmentInfo(
+    open val containingFile: KSFile?,
+    open val descName: String,
+    // 目标 Fragment 的全路径
+    open val targetClassNameStr: String,
+    open val fragmentAnnoInfo: FragmentAnnoInfo,
+) //
+{
+
+    data class FragmentAnnoInfo(
+        val value: List<String>,
+    )
+
+    data class ServiceClass(
+        override val containingFile: KSFile?,
+        override val descName: String,
+        override val targetClassNameStr: String,
+        override val fragmentAnnoInfo: FragmentAnnoInfo,
+    ) : FragmentInfo(
+        containingFile = containingFile,
+        descName = descName,
+        targetClassNameStr = targetClassNameStr,
+        fragmentAnnoInfo = fragmentAnnoInfo,
+    )
+
+    data class ServiceMethod(
+        override val containingFile: KSFile?,
+        override val descName: String,
+        override val targetClassNameStr: String,
+        override val fragmentAnnoInfo: FragmentAnnoInfo,
+        // com.xxx.xxx.testName
+        val methodQualifiedName: String,
+        // 只能有一个参数类型, xxx: Bundle
+        val parameterName: String?,
+    ) : FragmentInfo(
+        containingFile = containingFile,
+        descName = descName,
+        targetClassNameStr = targetClassNameStr,
+        fragmentAnnoInfo = fragmentAnnoInfo,
+    )
+
+}
+
+private data class GlobalInterceptorInfo(
+    val containingFile: KSFile?,
+    val descName: String,
+    val qualifiedNameStr: String,
+    val globalInterceptorAnnoInfo: GlobalInterceptorAnnoInfo,
+) {
+
+    data class GlobalInterceptorAnnoInfo(
+        val priority: Int,
+    )
+
+}
+
+private data class InterceptorInfo(
+    val containingFile: KSFile?,
+    val descName: String,
+    val qualifiedNameStr: String,
+    val interceptorAnnoInfo: InterceptorAnnoInfo,
+) //
+{
+
+    data class InterceptorAnnoInfo(
+        val value: String,
+    )
+
+}
+
+private sealed class RouterInfo(
+    open val containingFile: KSFile?,
+    open val descName: String,
+    open val qualifiedNameStr: String,
+    open val routerAnnoBean: RouterAnnoBean,
+) //
+{
+
+    data class ServiceClass(
+        override val containingFile: KSFile?,
+        override val descName: String,
+        override val qualifiedNameStr: String,
+        override val routerAnnoBean: RouterAnnoBean,
+    ) : RouterInfo(
+        containingFile = containingFile,
+        descName = descName,
+        qualifiedNameStr = qualifiedNameStr,
+        routerAnnoBean = routerAnnoBean,
+    )
+
+    data class ServiceMethod(
+        override val containingFile: KSFile?,
+        override val descName: String,
+        override val qualifiedNameStr: String,
+        override val routerAnnoBean: RouterAnnoBean,
+        val firstParameterName: String,
+    ) : RouterInfo(
+        containingFile = containingFile,
+        descName = descName,
+        qualifiedNameStr = qualifiedNameStr,
+        routerAnnoBean = routerAnnoBean,
+    )
+
+}
+
+private data class RouterDegradeInfo(
+    val containingFile: KSFile?,
+    val descName: String,
+    val classClassName: ClassName,
+    val routerDegradeAnnoInfo: RouterDegradeAnnoInfo,
+) {
+    data class RouterDegradeAnnoInfo(
+        val priority: Int,
+    )
+}
+
 /**
  * - ModuleApplication
  * - Fragment
  * - Service
  * https://github.com/aasitnikov/ksp-aggregating-issue/blob/master/experiments/processor/src/main/java/com/example/experiments/processor/ExperimentsProcessor.kt
  */
-class ModuleProcessor(
+private class ModuleProcessor(
     override val environment: SymbolProcessorEnvironment,
 ) : BaseProcessor(
     environment = environment,
@@ -100,11 +297,11 @@ class ModuleProcessor(
 
     private fun addConditionIfCodeToFunction(
         funSpecBuilder: FunSpec.Builder,
-        condition: ConditionalAnno?,
+        conditionalAnnoInfo: ConditionalAnnoInfo?,
         block: (funSpecBuilder: FunSpec.Builder) -> Unit,
     ) {
 
-        val targetCondition = condition ?: return block(funSpecBuilder)
+        val targetCondition = conditionalAnnoInfo ?: return block(funSpecBuilder)
         val conditionClassPathList = targetCondition.conditionClassPathList
 
         if (conditionClassPathList.isNotEmpty()) {
@@ -134,12 +331,12 @@ class ModuleProcessor(
 
     private fun initApplication(
         typeSpecBuilder: TypeSpec.Builder,
-        moduleAppAnnotatedList: List<KSClassDeclaration>,
+        moduleAppInfoList: List<ApplicationInfo>,
     ) {
 
-        val tempStr = moduleAppAnnotatedList
+        val tempStr = moduleAppInfoList
             .joinToString { item ->
-                "${item.qualifiedName!!.asString()}()"
+                "${item.qualifiedNameOfClass}()"
             }
 
         typeSpecBuilder
@@ -165,15 +362,13 @@ class ModuleProcessor(
     @OptIn(KspExperimental::class)
     private fun aboutService(
         typeSpecBuilder: TypeSpec.Builder,
-        serviceAnnotatedList: List<KSAnnotated>,
-        serviceDecoratorAnnotatedList: List<KSAnnotated>,
+        serviceInfoList: List<ServiceInfo>,
+        serviceDecoratorInfoList: List<ServiceDecoratorInfo>,
     ) {
 
-        val serviceDecoratorAnnotatedListMap = serviceDecoratorAnnotatedList
-            .filterIsInstance<KSClassDeclaration>()
-            .associateWith {
-                UUID.randomUUID().toString()
-            }
+        if (logEnable) {
+            logger.warn("aboutService serviceDecoratorInfoList = ${serviceDecoratorInfoList.joinToString()}")
+        }
 
         val classNameServiceManager: ClassName = ClassName(
             packageName = ComponentConstants.SERVICE_MANAGER_CLASS_NAME.packageName(),
@@ -203,263 +398,217 @@ class ModuleProcessor(
                             .build()
                     )
                     .also { funSpec ->
-                        serviceAnnotatedList
-                            .forEach { item ->
+                        serviceInfoList.forEach { serviceInfo ->
 
-                                funSpec.addComment("-------------- ${item.getDescName()} -------------- ")
+                            funSpec.addComment("-------------- ${serviceInfo.descName} -------------- ")
 
-                                val implName = "implName${counter.incrementAndGet()}"
-                                val serviceAnno = item
-                                    .getAnnotationsByType(annotationKClass = ServiceAnno::class)
-                                    .first()
+                            val implName = "implName${counter.incrementAndGet()}"
 
-                                val stateCode = "val %N = %L"
-                                val args = mutableListOf<Any>()
+                            val stateCode = "val %N = %L"
+                            val args = mutableListOf<Any>()
 
-                                // 参数名
-                                args.add(implName)
+                            // 参数名
+                            args.add(implName)
 
-                                val targetClass: TypeName = when (item) {
-                                    is KSClassDeclaration -> {
-                                        item.toClassName()
-                                    }
-
-                                    is KSFunctionDeclaration -> {
-                                        item.returnTypeToTypeName()!!
-                                    }
-
-                                    else -> notSupport()
-                                }
-
-                                val getImplCallback: (KSAnnotated, FunSpec.Builder) -> Unit =
-                                    { item, funSpec ->
-                                        when (item) {
-                                            is KSClassDeclaration -> {
-                                                val targetApplicationConstructor =
-                                                    item.getConstructors()
-                                                        .find {
-                                                            it.parameters.size == 1 && it.parameters[0].typeToClassName() == mClassNameAndroidApplication
-                                                        }
-                                                if (targetApplicationConstructor == null
-                                                ) {
-                                                    funSpec.addStatement(
-                                                        format = "return %T()",
-                                                        targetClass,
-                                                    )
-                                                } else {
-                                                    funSpec.addStatement(
-                                                        format = "return %T(${targetApplicationConstructor.parameters[0].name!!.asString()} = application)",
-                                                        targetClass,
-                                                    )
-                                                }
+                            val getImplCallback: (ServiceInfo, FunSpec.Builder) -> Unit =
+                                { innerServiceInfo, funSpec ->
+                                    when (innerServiceInfo) {
+                                        is ServiceInfo.ServiceClass -> {
+                                            if (
+                                                innerServiceInfo.applicationParameterName.isNullOrEmpty()
+                                            ) {
+                                                funSpec.addStatement(
+                                                    format = "return %T()",
+                                                    innerServiceInfo.classTypeName,
+                                                )
+                                            } else {
+                                                funSpec.addStatement(
+                                                    format = "return %T(${innerServiceInfo.applicationParameterName} = application)",
+                                                    innerServiceInfo.classTypeName,
+                                                )
                                             }
+                                        }
 
-                                            is KSFunctionDeclaration -> {
-                                                if (item.parameters.size > 1) {
-                                                    notSupport()
-                                                }
-                                                item.parameters.firstOrNull()?.let {
-                                                    if (it.typeToClassName() != mClassNameAndroidApplication) {
-                                                        notSupport()
-                                                    }
-                                                }
-                                                if (item.parameters.size == 1) {
-                                                    val applicationParameter = item.parameters[0]
-                                                    funSpec.addStatement(
-                                                        format = "return ${item.qualifiedName!!.asString()}(${applicationParameter.name!!.asString()} = application)",
-                                                        targetClass,
-                                                    )
-                                                } else {
-                                                    funSpec.addStatement(
-                                                        format = "return ${item.qualifiedName!!.asString()}()",
-                                                    )
-                                                }
+                                        is ServiceInfo.ServiceMethod -> {
+                                            if (innerServiceInfo.applicationParameterName.isNullOrEmpty()) {
+                                                funSpec.addStatement(
+                                                    format = "return ${innerServiceInfo.qualifiedName}()",
+                                                )
+                                            } else {
+                                                funSpec.addStatement(
+                                                    format = "return ${innerServiceInfo.qualifiedName}(${innerServiceInfo.applicationParameterName} = application)",
+                                                    innerServiceInfo.classTypeName,
+                                                )
                                             }
-
-                                            else -> notSupport()
                                         }
                                     }
-
-                                // 如果是单利
-                                if (serviceAnno.singleTon) {
-                                    args.add(
-                                        element = TypeSpec
-                                            .anonymousClassBuilder()
-                                            .superclass(
-                                                superclass = mClassNameSupportSingletonCallable.parameterizedBy(
-                                                    targetClass,
-                                                )
-                                            )
-                                            .addProperty(
-                                                propertySpec = PropertySpec
-                                                    .builder(name = "raw", type = targetClass)
-                                                    .addModifiers(
-                                                        KModifier.OVERRIDE,
-                                                    )
-                                                    .getter(
-                                                        getter = FunSpec
-                                                            .getterBuilder()
-                                                            .also { funcSpec_get ->
-                                                                getImplCallback.invoke(
-                                                                    item, funcSpec_get
-                                                                )
-                                                            }
-                                                            .build()
-                                                    )
-                                                    .build()
-                                            )
-                                            .build()
-                                    )
-                                } else // 占位
-                                {
-                                    args.add(
-                                        element = TypeSpec
-                                            .anonymousClassBuilder()
-                                            .addSuperinterface(
-                                                superinterface = mClassNameSupportCallable.parameterizedBy(
-                                                    targetClass,
-                                                )
-                                            )
-                                            .addFunction(
-                                                funSpec = FunSpec
-                                                    .builder("get")
-                                                    .addModifiers(
-                                                        KModifier.OVERRIDE,
-                                                    )
-                                                    .returns(
-                                                        returnType = targetClass,
-                                                    )
-                                                    .also { funcSpec_get ->
-                                                        getImplCallback.invoke(
-                                                            item, funcSpec_get
-                                                        )
-                                                    }
-                                                    .build()
-                                            )
-                                            .build()
-                                    )
                                 }
 
-                                funSpec.addStatement(stateCode, *args.toTypedArray())
-                                val serviceClassPathList = serviceAnno.serviceClassPathList
-                                if (serviceClassPathList.isEmpty()) {
-                                    throw ProcessException(
-                                        message = "${item.getDescName()} 的 @ServiceAnno 注解, value 不可以为空"
-                                    )
-                                }
-                                val nameList = serviceAnno.name
-                                if (nameList.isNotEmpty() || serviceClassPathList.size > 1) {
-                                    if (serviceClassPathList.size != nameList.size) {
-                                        throw ProcessException(
-                                            message = "${item.getDescName()} 的 @ServiceAnno 注解, name 属性可以为空数组, 如果不为空, name 属性和 value 属性的个数必须是相等的"
+                            // 如果是单利
+                            if (serviceInfo.serviceAnnoInfo.singleTon) {
+                                args.add(
+                                    element = TypeSpec
+                                        .anonymousClassBuilder()
+                                        .superclass(
+                                            superclass = mClassNameSupportSingletonCallable.parameterizedBy(
+                                                serviceInfo.classTypeName,
+                                            )
                                         )
-                                    }
-                                }
+                                        .addProperty(
+                                            propertySpec = PropertySpec
+                                                .builder(
+                                                    name = "raw",
+                                                    type = serviceInfo.classTypeName
+                                                )
+                                                .addModifiers(
+                                                    KModifier.OVERRIDE,
+                                                )
+                                                .getter(
+                                                    getter = FunSpec
+                                                        .getterBuilder()
+                                                        .also { funcSpec_get ->
+                                                            getImplCallback.invoke(
+                                                                serviceInfo, funcSpec_get
+                                                            )
+                                                        }
+                                                        .build()
+                                                )
+                                                .build()
+                                        )
+                                        .build()
+                                )
+                            } else // 占位
+                            {
+                                args.add(
+                                    element = TypeSpec
+                                        .anonymousClassBuilder()
+                                        .addSuperinterface(
+                                            superinterface = mClassNameSupportCallable.parameterizedBy(
+                                                serviceInfo.classTypeName,
+                                            )
+                                        )
+                                        .addFunction(
+                                            funSpec = FunSpec
+                                                .builder("get")
+                                                .addModifiers(
+                                                    KModifier.OVERRIDE,
+                                                )
+                                                .returns(
+                                                    returnType = serviceInfo.classTypeName,
+                                                )
+                                                .also { funcSpec_get ->
+                                                    getImplCallback.invoke(
+                                                        serviceInfo, funcSpec_get
+                                                    )
+                                                }
+                                                .build()
+                                        )
+                                        .build()
+                                )
+                            }
 
-                                serviceClassPathList.forEachIndexed { index, interfaceClassPath ->
-                                    val targetName = nameList.getOrNull(index)
+                            funSpec.addStatement(stateCode, *args.toTypedArray())
+                            val serviceClassPathList =
+                                serviceInfo.serviceAnnoInfo.serviceClassPathList
+                            if (serviceClassPathList.isEmpty()) {
+                                throw ProcessException(
+                                    message = "${serviceInfo.descName} 的 @ServiceAnno 注解, value 不可以为空"
+                                )
+                            }
+                            val nameList = serviceInfo.serviceAnnoInfo.name
+                            if (nameList.isNotEmpty() || serviceClassPathList.size > 1) {
+                                if (serviceClassPathList.size != nameList.size) {
+                                    throw ProcessException(
+                                        message = "${serviceInfo.descName} 的 @ServiceAnno 注解, name 属性可以为空数组, 如果不为空, name 属性和 value 属性的个数必须是相等的"
+                                    )
+                                }
+                            }
+
+                            serviceClassPathList.forEachIndexed { index, interfaceClassPath ->
+                                val targetName = nameList.getOrNull(index)
+                                funSpec.addStatement(
+                                    "%T.register(tClass = %T::class, name = ${if (targetName == null) "%T.DEFAULT_NAME" else "%S"}, callable = %L)",
+                                    classNameServiceManager,
+                                    interfaceClassPath.toClassName(),
+                                    targetName ?: classNameServiceManager,
+                                    implName,
+                                )
+                                if (serviceInfo.serviceAnnoInfo.autoInit) {
                                     funSpec.addStatement(
-                                        "%T.register(tClass = %T::class, name = ${if (targetName == null) "%T.DEFAULT_NAME" else "%S"}, callable = %L)",
+                                        "%T.registerAutoInit(tClass = %T::class, name = ${if (targetName == null) "%T.DEFAULT_NAME" else "%S"})",
                                         classNameServiceManager,
                                         interfaceClassPath.toClassName(),
                                         targetName ?: classNameServiceManager,
-                                        implName,
                                     )
-                                    if (serviceAnno.autoInit) {
-                                        funSpec.addStatement(
-                                            "%T.registerAutoInit(tClass = %T::class, name = ${if (targetName == null) "%T.DEFAULT_NAME" else "%S"})",
-                                            classNameServiceManager,
-                                            interfaceClassPath.toClassName(),
-                                            targetName ?: classNameServiceManager,
-                                        )
-                                    }
                                 }
-
                             }
+
+                        }
                     }
                     // 处理服务发现装饰者的问题
                     .also { funSpec ->
-                        serviceDecoratorAnnotatedListMap
-                            .forEach { serviceDecoratorAnnotatedItem ->
+                        serviceDecoratorInfoList.forEach { serviceDecoratorInfo ->
 
-                                val ksClassDeclaration = serviceDecoratorAnnotatedItem.key
-                                val uuid = serviceDecoratorAnnotatedItem.value
+                            addConditionIfCodeToFunction(
+                                funSpecBuilder = funSpec,
+                                conditionalAnnoInfo = serviceDecoratorInfo.conditionalAnnoInfo,
+                            ) {
 
-                                val serviceDecoratorAnno = ksClassDeclaration
-                                    .getAnnotationsByType(annotationKClass = ServiceDecoratorAnno::class)
-                                    .first()
+                                val implName = "implName${counter.incrementAndGet()}"
 
-                                // 装饰的目标接口
-                                val decorateTargetClassName =
-                                    serviceDecoratorAnno.valueClassPath.toClassName()
-
-                                val parameterName = ksClassDeclaration.getConstructors()
-                                    .first().parameters.first().name!!.asString()
-
-                                val condition = ksClassDeclaration.getAnnotationsByType(
-                                    annotationKClass = ConditionalAnno::class,
-                                ).firstOrNull()
-
-                                addConditionIfCodeToFunction(
-                                    funSpecBuilder = funSpec,
-                                    condition = condition,
-                                ) {
-
-                                    val implName = "implName${counter.incrementAndGet()}"
-
-                                    funSpec.addStatement(
-                                        format = "val %N = %L",
-                                        implName,
-                                        TypeSpec
-                                            .anonymousClassBuilder()
-                                            .addSuperinterface(
-                                                superinterface = classNameServiceDecoratorCallable.parameterizedBy(
-                                                    decorateTargetClassName,
+                                funSpec.addStatement(
+                                    format = "val %N = %L",
+                                    implName,
+                                    TypeSpec
+                                        .anonymousClassBuilder()
+                                        .addSuperinterface(
+                                            superinterface = classNameServiceDecoratorCallable.parameterizedBy(
+                                                serviceDecoratorInfo.decorateTargetClassName,
+                                            )
+                                        )
+                                        .addFunction(
+                                            funSpec = FunSpec
+                                                .builder("get")
+                                                .addModifiers(KModifier.OVERRIDE)
+                                                .addParameter(
+                                                    name = "target",
+                                                    type = serviceDecoratorInfo.decorateTargetClassName,
                                                 )
-                                            )
-                                            .addFunction(
-                                                funSpec = FunSpec
-                                                    .builder("get")
-                                                    .addModifiers(KModifier.OVERRIDE)
-                                                    .addParameter(
-                                                        name = "target",
-                                                        type = decorateTargetClassName,
-                                                    )
-                                                    .returns(
-                                                        returnType = decorateTargetClassName,
-                                                    )
-                                                    .addStatement(
-                                                        format = "return %T($parameterName = target)",
-                                                        ksClassDeclaration.toClassName(),
-                                                    )
-                                                    .build()
-                                            )
-                                            .addFunction(
-                                                funSpec = FunSpec
-                                                    .builder("priority")
-                                                    .addModifiers(KModifier.OVERRIDE)
-                                                    .returns(
-                                                        returnType = Int::class,
-                                                    )
-                                                    .addStatement(
-                                                        format = "return ${serviceDecoratorAnno.priority}"
-                                                    )
-                                                    .build()
-                                            )
-                                            .build()
-                                    )
+                                                .returns(
+                                                    returnType = serviceDecoratorInfo.decorateTargetClassName,
+                                                )
+                                                .addStatement(
+                                                    format = "return %T(${serviceDecoratorInfo.constructorParameterName} = target)",
+                                                    serviceDecoratorInfo.classClassName,
+                                                )
+                                                .build()
+                                        )
+                                        .addFunction(
+                                            funSpec = FunSpec
+                                                .builder("priority")
+                                                .addModifiers(KModifier.OVERRIDE)
+                                                .returns(
+                                                    returnType = Int::class,
+                                                )
+                                                .addStatement(
+                                                    format = "return ${serviceDecoratorInfo.serviceDecoratorAnnoInfo.priority}"
+                                                )
+                                                .build()
+                                        )
+                                        .build()
+                                )
 
-                                    funSpec.addStatement(
-                                        format = "%T.registerDecorator(tClass = %T::class, uid = %S, %N)",
-                                        classNameServiceManager,
-                                        decorateTargetClassName,
-                                        uuid,
-                                        implName,
-                                    )
-
-                                }
+                                funSpec.addStatement(
+                                    format = "%T.registerDecorator(tClass = %T::class, uid = %S, %N)",
+                                    classNameServiceManager,
+                                    serviceDecoratorInfo.decorateTargetClassName,
+                                    serviceDecoratorInfo.uuid,
+                                    implName,
+                                )
 
                             }
+
+                        }
                     }
                     .build()
             )
@@ -470,13 +619,11 @@ class ModuleProcessor(
                         KModifier.OVERRIDE,
                     )
                     .also { funSpec ->
-                        serviceAnnotatedList.forEach { item ->
-                            val serviceAnno = item
-                                .getAnnotationsByType(annotationKClass = ServiceAnno::class)
-                                .first()
-                            val serviceClassPathList = serviceAnno.serviceClassPathList
+                        serviceInfoList.forEach { serviceInfo ->
+                            val serviceClassPathList =
+                                serviceInfo.serviceAnnoInfo.serviceClassPathList
                             serviceClassPathList.forEachIndexed { index, interfaceClassPath ->
-                                val serviceName = serviceAnno.name.getOrNull(index)
+                                val serviceName = serviceInfo.serviceAnnoInfo.name.getOrNull(index)
                                 if (serviceName == null) {
                                     funSpec.addStatement(
                                         format = "%T.unregister(tClass = %T::class, name = %T.DEFAULT_NAME)",
@@ -492,7 +639,7 @@ class ModuleProcessor(
                                         serviceName,
                                     )
                                 }
-                                if (serviceAnno.autoInit) {
+                                if (serviceInfo.serviceAnnoInfo.autoInit) {
                                     if (serviceName == null) {
                                         funSpec.addStatement(
                                             format = "%T.registerAutoInit(tClass = %T::class)",
@@ -514,21 +661,16 @@ class ModuleProcessor(
                     }
                     // 处理服务发现装饰者的问题
                     .also { funSpec ->
-                        serviceDecoratorAnnotatedListMap
-                            .forEach { serviceDecoratorAnnotatedItem ->
-                                val uuid = serviceDecoratorAnnotatedItem.value
-                                val ksClassDeclaration = serviceDecoratorAnnotatedItem.key
-                                val serviceDecoratorAnno = ksClassDeclaration
-                                    .getAnnotationsByType(annotationKClass = ServiceDecoratorAnno::class)
-                                    .first()
+                        serviceDecoratorInfoList
+                            .forEach { serviceDecoratorInfo ->
                                 // 装饰的目标接口
                                 val decorateTargetClassName =
-                                    serviceDecoratorAnno.valueClassPath.toClassName()
+                                    serviceDecoratorInfo.serviceDecoratorAnnoInfo.valueClassPath.toClassName()
                                 funSpec.addStatement(
                                     format = "%T.unregisterDecorator(tClass = %T::class, uid = %S)",
                                     classNameServiceManager,
                                     decorateTargetClassName,
-                                    uuid,
+                                    serviceDecoratorInfo.uuid,
                                 )
                             }
                     }
@@ -539,7 +681,7 @@ class ModuleProcessor(
     @OptIn(KspExperimental::class)
     private fun aboutFragment(
         typeSpecBuilder: TypeSpec.Builder,
-        fragmentAnnotatedList: List<KSAnnotated>,
+        fragmentInfoList: List<FragmentInfo>,
     ) {
         typeSpecBuilder
             .addFunction(
@@ -550,40 +692,14 @@ class ModuleProcessor(
                     )
                     .also { funSpec ->
                         val counter = AtomicInteger()
-                        TypeName
-                        fragmentAnnotatedList.forEach { item ->
-                            // 目标 Fragment 的全路径
-                            val targetClassNameStr: String = when (item) {
-                                is KSFunctionDeclaration -> {
-                                    item.returnType
-                                        ?.resolve()
-                                        ?.declaration
-                                        ?.qualifiedName
-                                        ?.asString()
-                                        ?: ""
-                                }
+                        fragmentInfoList.forEach { fragmentInfo ->
 
-                                is KSClassDeclaration -> {
-                                    item.qualifiedName?.asString() ?: ""
-                                }
-
-                                else -> throw RuntimeException("Unsupported type")
-                            }
-                            val fragmentAnno: FragmentAnno = when (item) {
-                                is KSFunctionDeclaration, is KSClassDeclaration -> {
-                                    item.getAnnotationsByType(
-                                        annotationKClass = FragmentAnno::class,
-                                    ).first()
-                                }
-
-                                else -> throw RuntimeException("Unsupported type")
-                            }
-                            if (fragmentAnno.value.isEmpty()) {
-                                throw ProcessException(message = "FragmentAnno.value can't be empty: ${item.getDescName()} ")
+                            if (fragmentInfo.fragmentAnnoInfo.value.isEmpty()) {
+                                throw ProcessException(message = "FragmentAnno.value can't be empty: ${fragmentInfo.descName} ")
                             }
                             val targetClassName = ClassName(
-                                packageName = targetClassNameStr.packageName(),
-                                targetClassNameStr.simpleClassName(),
+                                packageName = fragmentInfo.targetClassNameStr.packageName(),
+                                fragmentInfo.targetClassNameStr.simpleClassName(),
                             )
                             val implName = "implName${counter.getAndIncrement()}"
                             funSpec.addStatement(
@@ -622,25 +738,20 @@ class ModuleProcessor(
                                                 format = "val targetBundle = t?: Bundle()",
                                             )
                                             .also {
-                                                when (item) {
-                                                    is KSFunctionDeclaration -> {
+                                                when (fragmentInfo) {
+                                                    is FragmentInfo.ServiceMethod -> {
                                                         if (logEnable) {
                                                             logger.warn(
-                                                                message = "fragment KSFunctionDeclaration = ${item.qualifiedName?.asString()}"
-                                                            )
-                                                        }
-                                                        if (item.parameters.size != 1) {
-                                                            throw RuntimeException(
-                                                                "FragmentAnno 注解的方法必须只有一个参数, ${item.qualifiedName}"
+                                                                message = "fragment KSFunctionDeclaration = ${fragmentInfo.descName}"
                                                             )
                                                         }
                                                         it.addStatement(
-                                                            format = "val fragment = ${item.qualifiedName?.asString()}(${item.parameters.first().name?.asString()} = targetBundle)",
+                                                            format = "val fragment = ${fragmentInfo.methodQualifiedName}(${fragmentInfo.parameterName} = targetBundle)",
                                                             targetClassName,
                                                         )
                                                     }
 
-                                                    is KSClassDeclaration -> {
+                                                    is FragmentInfo.ServiceClass -> {
                                                         it.addStatement(
                                                             format = "val fragment = %T()",
                                                             targetClassName,
@@ -649,8 +760,6 @@ class ModuleProcessor(
                                                             format = "fragment.arguments = targetBundle"
                                                         )
                                                     }
-
-                                                    else -> throw RuntimeException("Unsupported type")
                                                 }
                                             }
                                             .addStatement(
@@ -661,7 +770,7 @@ class ModuleProcessor(
                                     .build()
                             )
 
-                            fragmentAnno.value.forEach { fragmentName ->
+                            fragmentInfo.fragmentAnnoInfo.value.forEach { fragmentName ->
                                 funSpec.addStatement(
                                     format = "%T.register(flag = %S, function = %N)",
                                     mClassNameFragmentManager,
@@ -681,17 +790,8 @@ class ModuleProcessor(
                         KModifier.OVERRIDE,
                     )
                     .also { funSpec ->
-                        fragmentAnnotatedList.forEach { item ->
-                            val fragmentAnno: FragmentAnno = when (item) {
-                                is KSFunctionDeclaration, is KSClassDeclaration -> {
-                                    item.getAnnotationsByType(
-                                        annotationKClass = FragmentAnno::class,
-                                    ).first()
-                                }
-
-                                else -> throw RuntimeException("Unsupported type")
-                            }
-                            fragmentAnno.value.forEach { fragmentName ->
+                        fragmentInfoList.forEach { fragmentInfo ->
+                            fragmentInfo.fragmentAnnoInfo.value.forEach { fragmentName ->
                                 funSpec.addStatement(
                                     format = "%T.unregister(flag = %S)",
                                     mClassNameFragmentManager,
@@ -708,8 +808,8 @@ class ModuleProcessor(
     @OptIn(KspExperimental::class)
     private fun aboutInterceptor(
         typeSpecBuilder: TypeSpec.Builder,
-        globalInterceptorAnnotatedList: List<KSClassDeclaration>,
-        interceptorAnnotatedList: List<KSClassDeclaration>,
+        globalInterceptorInfoList: List<GlobalInterceptorInfo>,
+        interceptorInfoList: List<InterceptorInfo>,
     ) {
 
         val interceptorBeanClassName = ClassName(
@@ -722,28 +822,23 @@ class ModuleProcessor(
             ComponentConstants.INTERCEPTOR_INTERFACE_CLASS_NAME.simpleClassName(),
         )
 
-        val globalInterceptorListStr = globalInterceptorAnnotatedList
+        val globalInterceptorListStr = globalInterceptorInfoList
             .joinToString { item ->
-                val anno =
-                    item.getAnnotationsByType(annotationKClass = GlobalInterceptorAnno::class)
-                        .first()
-                "%T(interceptor = ${item.qualifiedName!!.asString()}::class," + "priority = ${anno.priority})"
+                "%T(interceptor = ${item.qualifiedNameStr}::class," + "priority = ${item.globalInterceptorAnnoInfo.priority})"
             }
 
-        val globalInterceptorArgList = globalInterceptorAnnotatedList
+        val globalInterceptorArgList = globalInterceptorInfoList
             .map {
                 interceptorBeanClassName
             }.toTypedArray()
 
-        val interceptorListStr = interceptorAnnotatedList
+        val interceptorListStr = interceptorInfoList
             .joinToString { item ->
-                val anno =
-                    item.getAnnotationsByType(annotationKClass = InterceptorAnno::class).first()
-                "\"${anno.value}\" to %L::class"
+                "\"${item.interceptorAnnoInfo.value}\" to %L::class"
             }
 
-        val interceptorArgList = interceptorAnnotatedList.map { item ->
-            item.qualifiedName!!.asString()
+        val interceptorArgList = interceptorInfoList.map { item ->
+            item.qualifiedNameStr
         }.toTypedArray()
 
         typeSpecBuilder
@@ -850,22 +945,8 @@ class ModuleProcessor(
     private fun aboutRouter(
         typeSpecBuilder: TypeSpec.Builder,
         // 可能是标记在静态方法上或者类上的
-        routerAnnotatedList: List<KSAnnotated>,
+        routerInfoList: List<RouterInfo>,
     ) {
-
-        val targetAnnotatedList = routerAnnotatedList
-            .map { item ->
-                item to item.getAnnotationsByType(
-                    annotationKClass = RouterAnno::class,
-                )
-            }.flatMap { item1 ->
-                item1.second.map { item2 ->
-                    toRouterAnnoBean(
-                        element = item1.first,
-                        routerAnno = item2,
-                    ) to item1.first
-                }
-            }
 
         val routerBeanClassName = ClassName(
             packageName = ComponentConstants.ROUTER_BEAN_CLASS_NAME.packageName(),
@@ -882,14 +963,13 @@ class ModuleProcessor(
             ComponentConstants.PAGEINTERCEPTOR_BEAN_CLASS_NAME.simpleClassName(),
         )
 
-        val routerStr = targetAnnotatedList
+        val routerStr = routerInfoList
             .joinToString { item ->
-                val routeAnnoBean = item.first
                 StringBuffer()
                     .append("%T(")
                     .append("\nregex = %S,")
                     .apply {
-                        if (routeAnnoBean.scheme.isNullOrEmpty()) {
+                        if (item.routerAnnoBean.scheme.isNullOrEmpty()) {
                             this.append("\nuri = defaultScheme + %S,")
                         } else {
                             this.append("\nuri = %S,")
@@ -898,53 +978,48 @@ class ModuleProcessor(
                     .append("\ndesc = %S,")
                     .apply {
                         this.append("\npageInterceptors = listOf(")
-                        routeAnnoBean.interceptors.forEach {
+                        item.routerAnnoBean.interceptors.forEach { _ ->
                             this.append("\n%T(priority = %L, interceptorClass = %T::class,),")
                         }
-                        routeAnnoBean.interceptorNames.forEach {
+                        item.routerAnnoBean.interceptorNames.forEach { _ ->
                             this.append("\n%T(priority = %L, interceptorName = %S,),")
                         }
                         this.append("),")
                     }
                     .apply {
-                        when (item.second) {
-                            is KSClassDeclaration -> {
+                        when (item) {
+                            is RouterInfo.ServiceClass -> {
                                 this.append("\ntargetClass = %L::class,")
                             }
 
-                            is KSFunctionDeclaration -> {
+                            is RouterInfo.ServiceMethod -> {
                                 this.append("\ncustomerIntentCall = object : %T {")
                                 this.append("\n\toverride fun get(request: RouterRequest): %T {")
                                 this.append("\n\t\t\treturn %L(\n\t\t\t\t%N = request\n\t\t\t)")
                                 this.append("\n\t}")
                                 this.append("\n}")
                             }
-
-                            else -> throw ProcessException(
-                                message = "not support"
-                            )
                         }
                     }
                     .append("\n)")
                     .toString()
             }
 
-        val routerArgList = targetAnnotatedList
-            .map { item ->
-                val routeAnnoBean = item.first
+        val routerArgList = routerInfoList
+            .map { routerInfo ->
                 listOfNotNull(
                     routerBeanClassName,
-                    item.first.regex,
-                    if (item.first.scheme.isNullOrEmpty()) {
-                        "://${item.first.hostAndPath()}"
+                    routerInfo.routerAnnoBean.regex,
+                    if (routerInfo.routerAnnoBean.scheme.isNullOrEmpty()) {
+                        "://${routerInfo.routerAnnoBean.hostAndPath()}"
                     } else {
-                        "${item.first.scheme}://${item.first.hostAndPath()}"
+                        "${routerInfo.routerAnnoBean.scheme}://${routerInfo.routerAnnoBean.hostAndPath()}"
                     },
-                    item.first.desc ?: "",
-                ) + routeAnnoBean.interceptors
+                    routerInfo.routerAnnoBean.desc ?: "",
+                ) + routerInfo.routerAnnoBean.interceptors
                     .mapIndexed { index, interceptorClassPathStr ->
                         interceptorClassPathStr to
-                                (routeAnnoBean.interceptorPriorities.getOrNull(
+                                (routerInfo.routerAnnoBean.interceptorPriorities.getOrNull(
                                     index
                                 ) ?: 0)
                     }
@@ -954,10 +1029,10 @@ class ModuleProcessor(
                             it.second,
                             it.first.toClassName(),
                         )
-                    }.flatten() + routeAnnoBean.interceptorNames
+                    }.flatten() + routerInfo.routerAnnoBean.interceptorNames
                     .mapIndexed { index, interceptorName ->
                         interceptorName to
-                                (routeAnnoBean.interceptorNamePriorities.getOrNull(
+                                (routerInfo.routerAnnoBean.interceptorNamePriorities.getOrNull(
                                     index
                                 ) ?: 0)
                     }
@@ -967,26 +1042,22 @@ class ModuleProcessor(
                             it.second,
                             it.first,
                         )
-                    }.flatten() + when (val element = item.second) {
-                    is KSClassDeclaration -> {
-                        listOf(element.qualifiedName!!.asString())
+                    }.flatten() + when (routerInfo) {
+                    is RouterInfo.ServiceClass -> {
+                        listOf(routerInfo.qualifiedNameStr)
                     }
 
-                    is KSFunctionDeclaration -> {
+                    is RouterInfo.ServiceMethod -> {
                         if (logEnable) {
-                            logger.warn("element.qualifiedName = ${element.qualifiedName?.asString()}")
+                            logger.warn("routerInfo.descName = ${routerInfo.descName}")
                         }
                         listOf(
                             customerIntentCallClassName,
                             mClassNameIntent,
-                            element.qualifiedName!!.asString(),
-                            element.parameters.first().name!!.asString(),
+                            routerInfo.qualifiedNameStr,
+                            routerInfo.firstParameterName,
                         )
                     }
-
-                    else -> throw ProcessException(
-                        message = "not support"
-                    )
                 }
 
             }
@@ -1042,8 +1113,9 @@ class ModuleProcessor(
     private fun aboutRouterDegrade(
         typeSpecBuilder: TypeSpec.Builder,
         // 标记类上的
-        routerDegradeAnnotatedList: List<KSAnnotated>,
-    ) {
+        routerDegradeInfoList: List<RouterDegradeInfo>,
+    ) //
+    {
 
         val classNameRouterDegradeBean =
             ComponentConstants.ROUTER_DEGRADE_BEAN_CLASS_NAME.toClassName()
@@ -1064,16 +1136,11 @@ class ModuleProcessor(
 
                         val args = mutableListOf<Any>()
 
-                        routerDegradeAnnotatedList
-                            .filterIsInstance<KSClassDeclaration>()
-                            .forEach { ksClassDeclaration ->
-
-                                val routerDegradeAnno = ksClassDeclaration.getAnnotationsByType(
-                                    annotationKClass = RouterDegradeAnno::class
-                                ).first()
+                        routerDegradeInfoList
+                            .forEach { routerDegradeInfo ->
 
                                 codeList.add(
-                                    element = "%T(priority = ${routerDegradeAnno.priority}, targetClass = %T::class)",
+                                    element = "%T(priority = ${routerDegradeInfo.routerDegradeAnnoInfo.priority}, targetClass = %T::class)",
                                 )
 
                                 args.add(
@@ -1081,7 +1148,7 @@ class ModuleProcessor(
                                 )
 
                                 args.add(
-                                    element = ksClassDeclaration.toClassName(),
+                                    element = routerDegradeInfo.classClassName,
                                 )
 
                             }
@@ -1097,27 +1164,28 @@ class ModuleProcessor(
 
     }
 
-    private val moduleAppAnnotatedList: MutableList<KSClassDeclaration> = mutableListOf()
-    private val serviceAnnotatedList: MutableList<KSAnnotated> = mutableListOf()
-    private val serviceDecoratorAnnotatedList: MutableList<KSAnnotated> = mutableListOf()
-    private val fragmentAnnotatedList: MutableList<KSAnnotated> = mutableListOf()
-    private val globalInterceptorAnnotatedList: MutableList<KSClassDeclaration> = mutableListOf()
-    private val interceptorAnnotatedList: MutableList<KSClassDeclaration> = mutableListOf()
-    private val routerAnnotatedList: MutableList<KSAnnotated> = mutableListOf()
-    private val routerDegradeAnnotatedList: MutableList<KSAnnotated> = mutableListOf()
+    private val moduleAppInfoList: MutableList<ApplicationInfo> = mutableListOf()
+    private val serviceInfoList: MutableList<ServiceInfo> = mutableListOf()
+    private val serviceDecoratorInfoList: MutableList<ServiceDecoratorInfo> = mutableListOf()
+    private val fragmentInfoList: MutableList<FragmentInfo> = mutableListOf()
+    private val globalInterceptorInfoList: MutableList<GlobalInterceptorInfo> = mutableListOf()
+    private val interceptorInfoList: MutableList<InterceptorInfo> = mutableListOf()
+    private val routerInfoList: MutableList<RouterInfo> = mutableListOf()
+    private val routerDegradeInfoList: MutableList<RouterDegradeInfo> = mutableListOf()
 
     override fun initProcess(resolver: Resolver) {
         super.initProcess(resolver)
-        moduleAppAnnotatedList.clear()
-        serviceAnnotatedList.clear()
-        serviceDecoratorAnnotatedList.clear()
-        fragmentAnnotatedList.clear()
-        globalInterceptorAnnotatedList.clear()
-        interceptorAnnotatedList.clear()
-        routerAnnotatedList.clear()
-        routerDegradeAnnotatedList.clear()
+        moduleAppInfoList.clear()
+        serviceInfoList.clear()
+        serviceDecoratorInfoList.clear()
+        fragmentInfoList.clear()
+        globalInterceptorInfoList.clear()
+        interceptorInfoList.clear()
+        routerInfoList.clear()
+        routerDegradeInfoList.clear()
     }
 
+    @OptIn(KspExperimental::class)
     override fun roundProcess(
         resolver: Resolver,
         round: Int,
@@ -1136,22 +1204,28 @@ class ModuleProcessor(
             .partition { !validateEnable || it.validate() }
 
         // 模块 Application 的
-        moduleAppAnnotatedList.addAll(
-            elements = moduleAppValidList
+        moduleAppInfoList.addAll(
+            moduleAppValidList
                 .filterIsInstance<KSClassDeclaration>()
-                .filterNot { it.qualifiedName == null }
-                .toList()
+                .mapNotNull { item ->
+                    item.qualifiedName?.asString()?.let { qualifiedNameOfClass ->
+                        ApplicationInfo(
+                            containingFile = item.containingFile,
+                            qualifiedNameOfClass = qualifiedNameOfClass,
+                        )
+                    }
+                }
         )
 
         if (logEnable) {
             logger.warn(
-                "$TAG $componentModuleName moduleAppAnnotatedList = $moduleAppAnnotatedList"
+                "$TAG $componentModuleName moduleAppInfoList = $moduleAppInfoList"
             )
         }
 
         if (logEnable) {
             logger.warn(
-                "$TAG $componentModuleName moduleAppAnnotatedList.size = ${moduleAppAnnotatedList.size}"
+                "$TAG $componentModuleName moduleAppInfoList.size = ${moduleAppInfoList.size}"
             )
         }
 
@@ -1162,12 +1236,71 @@ class ModuleProcessor(
             .partition { !validateEnable || it.validate() }
 
         // Service 的
-        serviceAnnotatedList.addAll(
-            elements = serviceValidList,
+        serviceInfoList.addAll(
+            serviceValidList.map { item ->
+                val containingFile = item.containingFile
+                val descName = item.getDescName()
+                val serviceAnno = item
+                    .getAnnotationsByType(annotationKClass = ServiceAnno::class)
+                    .first()
+                val serviceAnnoInfo = ServiceInfo.ServiceAnnoInfo(
+                    serviceClassPathList = serviceAnno.serviceClassPathList,
+                    name = serviceAnno.name.toList(),
+                    singleTon = serviceAnno.singleTon,
+                    autoInit = serviceAnno.autoInit,
+                )
+                when (item) {
+                    is KSClassDeclaration -> {
+                        val targetApplicationConstructor =
+                            item.getConstructors()
+                                .find {
+                                    it.parameters.size == 1 && it.parameters[0].typeToClassName() == mClassNameAndroidApplication
+                                }
+
+                        ServiceInfo.ServiceClass(
+                            containingFile = containingFile,
+                            descName = descName,
+                            serviceAnnoInfo = serviceAnnoInfo,
+                            classTypeName = item.toClassName(),
+                            applicationParameterName = if (
+                                targetApplicationConstructor == null
+                            ) {
+                                null
+                            } else {
+                                targetApplicationConstructor.parameters[0].name!!.asString()
+                            },
+                        )
+                    }
+
+                    is KSFunctionDeclaration -> {
+                        val classTypeName = item.returnTypeToTypeName()!!
+                        if (item.parameters.size > 1) {
+                            notSupport(
+                                message = "$classTypeName can not have more than one parameter",
+                            )
+                        }
+                        item.parameters.firstOrNull()?.let {
+                            if (it.typeToClassName() != mClassNameAndroidApplication) {
+                                notSupport()
+                            }
+                        }
+                        ServiceInfo.ServiceMethod(
+                            containingFile = containingFile,
+                            descName = descName,
+                            serviceAnnoInfo = serviceAnnoInfo,
+                            classTypeName = classTypeName,
+                            applicationParameterName = item.parameters.getOrNull(0)?.name?.asString(),
+                            qualifiedName = item.qualifiedName!!.asString(),
+                        )
+                    }
+
+                    else -> notSupport()
+                }
+            }
         )
         if (logEnable) {
             logger.warn(
-                "$TAG $componentModuleName serviceAnnotatedList.size = ${serviceAnnotatedList.size}"
+                "$TAG $componentModuleName serviceInfoList.size = ${serviceInfoList.size}"
             )
         }
 
@@ -1178,12 +1311,45 @@ class ModuleProcessor(
             .partition { !validateEnable || it.validate() }
 
         // ServiceDecorator 的
-        serviceDecoratorAnnotatedList.addAll(
-            elements = serviceDecoratorValidList,
+        serviceDecoratorInfoList.addAll(
+            elements = serviceDecoratorValidList
+                .filterIsInstance<KSClassDeclaration>()
+                .map { item ->
+                    val uuid = UUID.randomUUID().toString()
+                    val containingFile = item.containingFile
+                    val descName = item.getDescName()
+                    val serviceDecoratorAnno = item
+                        .getAnnotationsByType(annotationKClass = ServiceDecoratorAnno::class)
+                        .first()
+                    serviceDecoratorAnno.valueClassPath
+                    ServiceDecoratorInfo(
+                        uuid = uuid,
+                        containingFile = containingFile,
+                        descName = descName,
+                        classClassName = item.toClassName(),
+                        serviceDecoratorAnnoInfo = ServiceDecoratorInfo.ServiceDecoratorAnnoInfo(
+                            priority = serviceDecoratorAnno.priority,
+                            valueClassPath = serviceDecoratorAnno.valueClassPath,
+                        ),
+                        conditionalAnnoInfo = item
+                            .getAnnotationsByType(annotationKClass = ConditionalAnno::class)
+                            .firstOrNull()?.let { anno ->
+                                ConditionalAnnoInfo(
+                                    conditionClassPathList = anno.conditionClassPathList,
+                                )
+                            },
+                        decorateTargetClassName = serviceDecoratorAnno.valueClassPath.toClassName(),
+                        constructorParameterName = checkNotNull(
+                            value = item.getConstructors()
+                                .firstOrNull()?.parameters?.firstOrNull()?.name?.asString(),
+                            lazyMessage = {},
+                        ),
+                    )
+                },
         )
         if (logEnable) {
             logger.warn(
-                "$TAG $componentModuleName serviceDecoratorAnnotatedList.size = ${serviceDecoratorAnnotatedList.size}"
+                "$TAG $componentModuleName serviceDecoratorInfoList.size = ${serviceDecoratorInfoList.size}"
             )
         }
 
@@ -1194,12 +1360,56 @@ class ModuleProcessor(
             .partition { !validateEnable || it.validate() }
 
         // Fragment 的
-        fragmentAnnotatedList.addAll(
-            elements = fragmentValidList,
+        fragmentInfoList.addAll(
+            elements = fragmentValidList
+                .filter { it is KSClassDeclaration || it is KSFunctionDeclaration }
+                .map { item ->
+                    val containingFile = item.containingFile
+                    val descName = item.getDescName()
+                    val fragmentAnno = item.getAnnotationsByType(
+                        annotationKClass = FragmentAnno::class,
+                    ).first()
+                    val fragmentAnnoInfo = FragmentInfo.FragmentAnnoInfo(
+                        value = fragmentAnno.value.toList(),
+                    )
+                    when (item) {
+                        is KSFunctionDeclaration -> {
+                            if (item.parameters.size != 1) {
+                                throw RuntimeException(
+                                    "FragmentAnno 注解的方法必须只有一个参数, $descName"
+                                )
+                            }
+                            FragmentInfo.ServiceMethod(
+                                containingFile = containingFile,
+                                descName = descName,
+                                targetClassNameStr = item.returnType
+                                    ?.resolve()
+                                    ?.declaration
+                                    ?.qualifiedName
+                                    ?.asString()
+                                    ?: "",
+                                fragmentAnnoInfo = fragmentAnnoInfo,
+                                methodQualifiedName = item.qualifiedName!!.asString(),
+                                parameterName = item.parameters.first().name?.asString(),
+                            )
+                        }
+
+                        is KSClassDeclaration -> {
+                            FragmentInfo.ServiceClass(
+                                containingFile = containingFile,
+                                descName = descName,
+                                targetClassNameStr = item.qualifiedName?.asString() ?: "",
+                                fragmentAnnoInfo = fragmentAnnoInfo,
+                            )
+                        }
+
+                        else -> throw RuntimeException("Unsupported type: $descName")
+                    }
+                },
         )
         if (logEnable) {
             logger.warn(
-                "$TAG $componentModuleName fragmentAnnotatedList.size = ${fragmentAnnotatedList.size}"
+                "$TAG $componentModuleName fragmentInfoList.size = ${fragmentInfoList.size}"
             )
         }
 
@@ -1210,14 +1420,29 @@ class ModuleProcessor(
             .partition { !validateEnable || it.validate() }
 
         // 全局拦截器的
-        globalInterceptorAnnotatedList.addAll(
+        globalInterceptorInfoList.addAll(
             elements = globalInterceptorValidList
                 .filterIsInstance<KSClassDeclaration>()
-                .toList(),
+                .map { item ->
+                    val containingFile = item.containingFile
+                    val descName = item.getDescName()
+                    GlobalInterceptorInfo(
+                        containingFile = containingFile,
+                        descName = descName,
+                        qualifiedNameStr = item.qualifiedName!!.asString(),
+                        globalInterceptorAnnoInfo = item
+                            .getAnnotationsByType(annotationKClass = GlobalInterceptorAnno::class)
+                            .first().let { anno ->
+                                GlobalInterceptorInfo.GlobalInterceptorAnnoInfo(
+                                    priority = anno.priority,
+                                )
+                            },
+                    )
+                },
         )
         if (logEnable) {
             logger.warn(
-                "$TAG $componentModuleName globalInterceptorAnnotatedList.size = ${globalInterceptorAnnotatedList.size}"
+                "$TAG $componentModuleName globalInterceptorInfoList.size = ${globalInterceptorInfoList.size}"
             )
         }
 
@@ -1227,14 +1452,29 @@ class ModuleProcessor(
             )
             .partition { !validateEnable || it.validate() }
         // 拦截器
-        interceptorAnnotatedList.addAll(
+        interceptorInfoList.addAll(
             elements = interceptorValidList
                 .filterIsInstance<KSClassDeclaration>()
-                .toList(),
+                .map { item ->
+                    val containingFile = item.containingFile
+                    val descName = item.getDescName()
+                    InterceptorInfo(
+                        containingFile = containingFile,
+                        descName = descName,
+                        qualifiedNameStr = item.qualifiedName!!.asString(),
+                        interceptorAnnoInfo = item
+                            .getAnnotationsByType(annotationKClass = InterceptorAnno::class)
+                            .first().let {
+                                InterceptorInfo.InterceptorAnnoInfo(
+                                    value = it.value
+                                )
+                            },
+                    )
+                },
         )
         if (logEnable) {
             logger.warn(
-                "$TAG $componentModuleName interceptorAnnotatedList.size = ${interceptorAnnotatedList.size}"
+                "$TAG $componentModuleName interceptorInfoList.size = ${interceptorInfoList.size}"
             )
         }
 
@@ -1245,12 +1485,48 @@ class ModuleProcessor(
             .partition { !validateEnable || it.validate() }
 
         // 路由的
-        routerAnnotatedList.addAll(
-            elements = routerValidList,
+        routerInfoList.addAll(
+            elements = routerValidList
+                .map { item ->
+                    val containingFile = item.containingFile
+                    val descName = item.getDescName()
+                    val routerAnno = item
+                        .getAnnotationsByType(annotationKClass = RouterAnno::class)
+                        .first()
+                    when (item) {
+                        is KSFunctionDeclaration -> {
+                            RouterInfo.ServiceMethod(
+                                containingFile = containingFile,
+                                descName = descName,
+                                qualifiedNameStr = item.qualifiedName!!.asString(),
+                                routerAnnoBean = toRouterAnnoBean(
+                                    element = item,
+                                    routerAnno = routerAnno,
+                                ),
+                                firstParameterName = item.parameters.first().name!!.asString(),
+                            )
+                        }
+
+                        is KSClassDeclaration -> {
+                            RouterInfo.ServiceClass(
+                                containingFile = containingFile,
+                                descName = descName,
+                                qualifiedNameStr = item.qualifiedName!!.asString(),
+                                routerAnnoBean = toRouterAnnoBean(
+                                    element = item,
+                                    routerAnno = routerAnno,
+                                ),
+                            )
+                        }
+
+                        else -> notSupport()
+                    }
+
+                },
         )
         if (logEnable) {
             logger.warn(
-                "$TAG $componentModuleName routerAnnotatedList.size = ${routerAnnotatedList.size}"
+                "$TAG $componentModuleName routerInfoList.size = ${routerInfoList.size}"
             )
         }
 
@@ -1260,12 +1536,29 @@ class ModuleProcessor(
             )
             .partition { !validateEnable || it.validate() }
         // 路由降级的
-        routerDegradeAnnotatedList.addAll(
-            elements = routerDegradeValidList,
+        routerDegradeInfoList.addAll(
+            elements = routerDegradeValidList
+                .filterIsInstance<KSClassDeclaration>()
+                .map { item ->
+                    val containingFile = item.containingFile
+                    val descName = item.getDescName()
+                    RouterDegradeInfo(
+                        containingFile = containingFile,
+                        descName = descName,
+                        classClassName = item.toClassName(),
+                        routerDegradeAnnoInfo = item
+                            .getAnnotationsByType(annotationKClass = RouterDegradeAnno::class)
+                            .first().let {
+                                RouterDegradeInfo.RouterDegradeAnnoInfo(
+                                    priority = it.priority,
+                                )
+                            },
+                    )
+                },
         )
         if (logEnable) {
             logger.warn(
-                "$TAG $componentModuleName routerDegradeAnnotatedList.size = ${routerDegradeAnnotatedList.size}"
+                "$TAG $componentModuleName routerDegradeInfoList.size = ${routerDegradeInfoList.size}"
             )
         }
 
@@ -1294,14 +1587,17 @@ class ModuleProcessor(
             }
         }
 
-        val allMarkedList = (moduleAppAnnotatedList + serviceAnnotatedList +
-                serviceDecoratorAnnotatedList + fragmentAnnotatedList +
-                globalInterceptorAnnotatedList + interceptorAnnotatedList +
-                routerAnnotatedList + routerDegradeAnnotatedList
-                )
+        val allMarkedList = (routerDegradeInfoList)
 
-        val sources = allMarkedList
-            .mapNotNull { it.containingFile }
+        val sources = (moduleAppInfoList
+            .mapNotNull { it.containingFile } + serviceInfoList
+            .mapNotNull { it.containingFile } + serviceDecoratorInfoList
+            .mapNotNull { it.containingFile } + fragmentInfoList
+            .mapNotNull { it.containingFile } + globalInterceptorInfoList
+            .mapNotNull { it.containingFile } + interceptorInfoList
+            .mapNotNull { it.containingFile } + routerInfoList
+            .mapNotNull { it.containingFile } + allMarkedList
+            .mapNotNull { it.containingFile })
             .toTypedArray()
 
         val packageNameStr = "com.xiaojinzi.component.impl"
@@ -1347,29 +1643,29 @@ class ModuleProcessor(
             .apply {
                 initApplication(
                     typeSpecBuilder = this,
-                    moduleAppAnnotatedList = moduleAppAnnotatedList,
+                    moduleAppInfoList = moduleAppInfoList,
                 )
                 aboutService(
                     typeSpecBuilder = this,
-                    serviceAnnotatedList = serviceAnnotatedList,
-                    serviceDecoratorAnnotatedList = serviceDecoratorAnnotatedList,
+                    serviceInfoList = serviceInfoList,
+                    serviceDecoratorInfoList = serviceDecoratorInfoList,
                 )
                 aboutFragment(
                     typeSpecBuilder = this,
-                    fragmentAnnotatedList = fragmentAnnotatedList,
+                    fragmentInfoList = fragmentInfoList,
                 )
                 aboutInterceptor(
                     typeSpecBuilder = this,
-                    globalInterceptorAnnotatedList = globalInterceptorAnnotatedList,
-                    interceptorAnnotatedList = interceptorAnnotatedList,
+                    globalInterceptorInfoList = globalInterceptorInfoList,
+                    interceptorInfoList = interceptorInfoList,
                 )
                 aboutRouter(
                     typeSpecBuilder = this,
-                    routerAnnotatedList = routerAnnotatedList,
+                    routerInfoList = routerInfoList,
                 )
                 aboutRouterDegrade(
                     typeSpecBuilder = this,
-                    routerDegradeAnnotatedList = routerDegradeAnnotatedList,
+                    routerDegradeInfoList = routerDegradeInfoList,
                 )
             }
             .build()

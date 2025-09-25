@@ -23,4 +23,6 @@ package com.xiaojinzi.component.anno.router
     AnnotationTarget.PROPERTY_SETTER
 )
 @Retention(AnnotationRetention.BINARY)
-annotation class SchemeAnno(val value: String)
+annotation class SchemeAnno(
+    val value: String,
+)

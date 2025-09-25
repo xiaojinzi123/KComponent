@@ -7,9 +7,19 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Scaffold
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,13 +28,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.pager.ExperimentalPagerApi
+import com.xiaojinzi.component.app1.module.main.domain.MainUseCase
 import com.xiaojinzi.component.base.RouterConfig
 import com.xiaojinzi.component.base.api.RouterApi
 import com.xiaojinzi.component.base.view.ActionButton
 import com.xiaojinzi.component.base.view.AppbarNormal
-import com.xiaojinzi.component.app1.module.main.domain.MainUseCase
 import com.xiaojinzi.component.impl.Router
 import com.xiaojinzi.component.impl.application.ModuleManager
 import com.xiaojinzi.component.impl.routeApi
@@ -32,6 +41,7 @@ import com.xiaojinzi.support.ktx.nothing
 import com.xiaojinzi.support.ktx.toStringItemDto
 import kotlinx.coroutines.InternalCoroutinesApi
 
+@OptIn(ExperimentalLayoutApi::class)
 @InternalCoroutinesApi
 @ExperimentalMaterialApi
 @ExperimentalAnimationApi
@@ -54,8 +64,12 @@ private fun MainView() {
                 .wrapContentHeight()
                 .padding(horizontal = 12.dp, vertical = 16.dp)
                 .nothing(),
-            mainAxisSpacing = 8.dp,
-            crossAxisSpacing = 2.dp,
+            horizontalArrangement = Arrangement.spacedBy(
+                space = 8.dp,
+            ),
+            verticalArrangement = Arrangement.spacedBy(
+                space = 2.dp,
+            ),
         ) {
 
             ActionButton(text = "加载 app 模块") {
@@ -229,8 +243,16 @@ fun MainViewWrap() {
                 title = "KComponent".toStringItemDto(),
             )
         }
-    ) {
-        MainView()
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .padding(
+                    top = paddingValues.calculateTopPadding(),
+                )
+                .nothing(),
+        ) {
+            MainView()
+        }
     }
 }
 

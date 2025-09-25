@@ -41,6 +41,3 @@ annotation class NavigateAnno(
     val resultCodeMatch: Int = Int.MIN_VALUE
 
 )
-
-val NavigateAnno.resultCodeMatchValid: Boolean
-    get() = resultCodeMatch != Int.MIN_VALUE

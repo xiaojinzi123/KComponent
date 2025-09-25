@@ -11,9 +11,11 @@ import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSFile
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.Modifier
 import com.google.devtools.ksp.validate
+import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
@@ -27,7 +29,67 @@ import com.xiaojinzi.component.anno.UriAutowiredAnno
 import com.xiaojinzi.component.anno.support.ComponentGeneratedAnno
 import com.xiaojinzi.component.support.AttrAutoWireMode
 
-class AutowireProcessor(
+private data object UriAutowiredAnnoInfo
+
+/**
+ * see [AttrValueAutowiredAnno]
+ */
+private data class AttrValueAutowiredAnnoInfo(
+    val value: List<String>,
+    val mode: AttrAutoWireMode,
+)
+
+/**
+ * see [ServiceAutowiredAnno]
+ */
+private data class ServiceAutowiredAnnoInfo(
+    val name: String,
+)
+
+/**
+ * 一个 [InjectFileInfo] 对象表示一个要生成注入类
+ */
+private data class InjectFileInfo(
+    val targetClassContainingFile: KSFile,
+    val targetClassClassName: ClassName,
+    val isSubActivity: Boolean,
+    val isSubFragment: Boolean,
+) //
+{
+
+    data class PropertyInfo(
+        val isPropertyLateInit: Boolean,
+        val isPropertyNullable: Boolean,
+        val propertyName: String,
+        val propertyClassName: ClassName,
+        val propertyGetMethodName: String?,
+        val uriAutowiredAnnoInfo: UriAutowiredAnnoInfo?,
+        val attrValueAutowiredAnnoInfo: AttrValueAutowiredAnnoInfo?,
+        val serviceAutowiredAnnoInfo: ServiceAutowiredAnnoInfo?,
+    ) {
+
+        override fun hashCode(): Int {
+            var result = isPropertyLateInit.hashCode()
+            result = 31 * result + isPropertyNullable.hashCode()
+            result = 31 * result + propertyName.hashCode()
+            return result
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other !is PropertyInfo) return false
+
+            if (isPropertyLateInit != other.isPropertyLateInit) return false
+            if (isPropertyNullable != other.isPropertyNullable) return false
+            if (propertyName != other.propertyName) return false
+            return true
+        }
+
+    }
+
+}
+
+private class AutowireProcessor(
     override val environment: SymbolProcessorEnvironment,
 ) : BaseProcessor(
     environment = environment,
@@ -37,32 +99,20 @@ class AutowireProcessor(
         const val TAG = "AutowireProcessor"
     }
 
-    private val collectList = mutableListOf<KSPropertyDeclaration>()
+    private val collectInfoMap = mutableMapOf<InjectFileInfo, Set<InjectFileInfo.PropertyInfo>>()
 
     @OptIn(KspExperimental::class)
     private fun createFile(
-        classDeclaration: KSClassDeclaration,
-        targetAnnotatedList: List<KSPropertyDeclaration>,
+        injectFileInfo: InjectFileInfo,
+        propertyInfoSet: Set<InjectFileInfo.PropertyInfo>,
     ) {
-        // 目标注入对象的 KsType
-        val classDeclarationKsType = classDeclaration.asStarProjectedType()
 
-        val isSubActivity = activityKsClassDeclaration
-            ?.asStarProjectedType()
-            ?.isAssignableFrom(that = classDeclarationKsType)
-            ?: false
-
-        val isSubFragment = fragmentKsClassDeclaration
-            ?.asStarProjectedType()
-            ?.isAssignableFrom(that = classDeclarationKsType)
-            ?: false
-
-        if (isSubActivity.not() && isSubFragment.not()) {
+        if (injectFileInfo.isSubActivity.not() && injectFileInfo.isSubFragment.not()) {
             return
         }
 
         // 目标注入的 class 对象
-        val targetClassClassName = classDeclaration.toClassName()
+        val targetClassClassName = injectFileInfo.targetClassClassName
         // Inject 接口
         val injectClassName = ComponentConstants.INJECT_CLASS_NAME.toClassName()
         // 属性注入的模式
@@ -89,11 +139,11 @@ class AutowireProcessor(
                     )
                     .also {
                         when {
-                            isSubActivity -> {
+                            injectFileInfo.isSubActivity -> {
                                 it.addStatement("this.injectAttrValue(target = target, bundle = target.intent?.extras?: Bundle())")
                             }
 
-                            isSubFragment -> {
+                            injectFileInfo.isSubFragment -> {
                                 it.addStatement("this.injectAttrValue(target = target, bundle = target.arguments?: Bundle())")
                             }
                         }
@@ -119,56 +169,35 @@ class AutowireProcessor(
                     )
                     .also { funSpec ->
 
-                        targetAnnotatedList.forEach { ksPropertyDeclaration ->
+                        propertyInfoSet.forEach { propertyInfo ->
 
-                            val isPropertyLateInit =
-                                ksPropertyDeclaration.modifiers.contains(element = Modifier.LATEINIT)
-
-                            // 这个属性是否可空的
-                            val isPropertyNullable =
-                                ksPropertyDeclaration.type.resolve().isMarkedNullable
-
-                            // 属性的名字
-                            val propertyName = ksPropertyDeclaration.simpleName.asString()
-
-                            val uriAutoWireAnno = ksPropertyDeclaration.getAnnotationsByType(
-                                annotationKClass = UriAutowiredAnno::class
-                            ).firstOrNull()
-
-                            if (uriAutoWireAnno != null) {
+                            if (propertyInfo.uriAutowiredAnnoInfo != null) {
                                 if (logEnable) {
                                     logger.warn(
-                                        message = "$TAG $componentModuleName uriAutoWireAnno = $uriAutoWireAnno"
+                                        message = "$TAG $componentModuleName uriAutowiredAnnoInfo = ${propertyInfo.uriAutowiredAnnoInfo}"
                                     )
                                 }
                             }
 
-                            val attrAutoWireAnno = ksPropertyDeclaration.getAnnotationsByType(
-                                annotationKClass = AttrValueAutowiredAnno::class
-                            ).firstOrNull()
-
-                            if (logEnable) {
-                                logger.warn(
-                                    message = "$TAG $componentModuleName attrAutoWireAnno = $attrAutoWireAnno"
-                                )
+                            if (propertyInfo.attrValueAutowiredAnnoInfo != null) {
+                                if (logEnable) {
+                                    logger.warn(
+                                        message = "$TAG $componentModuleName attrValueAutowiredAnnoInfo = ${propertyInfo.attrValueAutowiredAnnoInfo}"
+                                    )
+                                }
                             }
-
-                            val serviceAutoWireAnno = ksPropertyDeclaration.getAnnotationsByType(
-                                annotationKClass = ServiceAutowiredAnno::class
-                            ).firstOrNull()
 
                             val defaultModel: (funSpec: FunSpec.Builder, attrAutoWireAnnoItemName: String) -> Unit =
                                 { funSpec, attrAutoWireAnnoItemName ->
                                     funSpec.addStatement(
                                         format = "target.%N = %T.%N(bundle = bundle, key = %S)?: target.%N",
-                                        propertyName,
+                                        propertyInfo.propertyName,
                                         mClassNameParameterSupport,
-                                        getMethodNameFromKsType(
-                                            ksType = ksPropertyDeclaration.type.resolve(),
-                                            prefix = "get",
+                                        checkNotNull(
+                                            value = propertyInfo.propertyGetMethodName,
                                         ),
                                         attrAutoWireAnnoItemName,
-                                        propertyName,
+                                        propertyInfo.propertyName,
                                     )
                                 }
 
@@ -176,27 +205,26 @@ class AutowireProcessor(
                                 { funSpec, attrAutoWireAnnoItemName, isNullable ->
                                     funSpec.addStatement(
                                         format = "target.%N = %T.%N(bundle = bundle, key = %S)${if (isNullable) "" else "!!"}",
-                                        propertyName,
+                                        propertyInfo.propertyName,
                                         mClassNameParameterSupport,
-                                        getMethodNameFromKsType(
-                                            ksType = ksPropertyDeclaration.type.resolve(),
-                                            prefix = "get",
+                                        checkNotNull(
+                                            value = propertyInfo.propertyGetMethodName,
                                         ),
                                         attrAutoWireAnnoItemName,
                                     )
                                 }
 
-                            uriAutoWireAnno?.let {
+                            propertyInfo.uriAutowiredAnnoInfo?.let {
 
                                 funSpec.addStatement(
-                                    format = "target.%N = %T.getUri(bundle = bundle)${if (isPropertyLateInit || isPropertyNullable) "!!" else ""}",
-                                    propertyName,
+                                    format = "target.%N = %T.getUri(bundle = bundle)${if (propertyInfo.isPropertyLateInit || propertyInfo.isPropertyNullable) "!!" else ""}",
+                                    propertyInfo.propertyName,
                                     mClassNameParameterSupport,
                                 )
 
                             }
 
-                            attrAutoWireAnno?.let { attrAutoWireAnno ->
+                            propertyInfo.attrValueAutowiredAnnoInfo?.let { attrAutoWireAnno ->
 
                                 val oneNameOfPropertyCall: (Int, String) -> Unit =
                                     { index, attrAutoWireAnnoItemName ->
@@ -215,11 +243,11 @@ class AutowireProcessor(
                                             )
                                         }
 
-                                        if (isPropertyLateInit) {
+                                        if (propertyInfo.isPropertyLateInit) {
                                             overrideModel.invoke(
                                                 funSpec,
                                                 attrAutoWireAnnoItemName,
-                                                isPropertyNullable,
+                                                propertyInfo.isPropertyNullable,
                                             )
                                         } else {
                                             when (attrAutoWireAnno.mode) {
@@ -255,7 +283,7 @@ class AutowireProcessor(
                                                             overrideModel.invoke(
                                                                 funSpec,
                                                                 attrAutoWireAnnoItemName,
-                                                                isPropertyNullable,
+                                                                propertyInfo.isPropertyNullable,
                                                             )
                                                             funSpec.endControlFlow()
                                                         }
@@ -278,7 +306,7 @@ class AutowireProcessor(
                                                     overrideModel.invoke(
                                                         funSpec,
                                                         attrAutoWireAnnoItemName,
-                                                        isPropertyNullable,
+                                                        propertyInfo.isPropertyNullable,
                                                     )
                                                 }
                                             }
@@ -291,7 +319,7 @@ class AutowireProcessor(
                                         attrAutoWireAnno.value
                                     }.getOrNull().isNullOrEmpty()
                                 ) {
-                                    oneNameOfPropertyCall.invoke(0, propertyName)
+                                    oneNameOfPropertyCall.invoke(0, propertyInfo.propertyName)
                                 } else {
                                     attrAutoWireAnno.value.forEachIndexed { index, attrAutoWireAnnoItemName ->
                                         oneNameOfPropertyCall.invoke(
@@ -303,18 +331,18 @@ class AutowireProcessor(
 
                             }
 
-                            serviceAutoWireAnno?.let {
+                            propertyInfo.serviceAutowiredAnnoInfo?.let {
 
                                 funSpec.addStatement(
                                     format = "target.%N = %T.%N(tClass = %T::class)",
-                                    propertyName,
+                                    propertyInfo.propertyName,
                                     mClassNameServiceManager,
-                                    if (isPropertyNullable) {
+                                    if (propertyInfo.isPropertyNullable) {
                                         "get"
                                     } else {
                                         "requiredGet"
                                     },
-                                    ksPropertyDeclaration.type.resolve().toClassName(),
+                                    propertyInfo.propertyClassName,
                                 )
 
                             }
@@ -346,27 +374,25 @@ class AutowireProcessor(
         try {
             if (logEnable) {
                 logger.warn(
-                    message = "$TAG $componentModuleName $componentModuleName classDeclarationKsType1 = $classDeclarationKsType, isSubFragmentActivity = $isSubActivity, isSubFragment = $isSubFragment",
+                    message = "$TAG $componentModuleName $componentModuleName, isSubFragmentActivity = ${injectFileInfo.isSubActivity}, isSubFragment = ${injectFileInfo.isSubFragment}",
                 )
             }
-            classDeclaration.containingFile?.let { containingFile ->
-                val targetDataArray = fileSpec.toString().toByteArray()
-                codeGenerator.createNewFile(
-                    dependencies = Dependencies(
-                        aggregating = false,
-                        containingFile,
-                    ),
-                    packageName = fileSpec.packageName,
-                    fileName = fileSpec.name,
-                ).use {
-                    it.write(
-                        targetDataArray
-                    )
-                }
+            val targetDataArray = fileSpec.toString().toByteArray()
+            codeGenerator.createNewFile(
+                dependencies = Dependencies(
+                    aggregating = false,
+                    injectFileInfo.targetClassContainingFile,
+                ),
+                packageName = fileSpec.packageName,
+                fileName = fileSpec.name,
+            ).use {
+                it.write(
+                    targetDataArray
+                )
             }
             if (logEnable) {
                 logger.warn(
-                    message = "$TAG $componentModuleName classDeclarationKsType2 = $classDeclarationKsType, isSubFragmentActivity = $isSubActivity, isSubFragment = $isSubFragment",
+                    message = "$TAG $componentModuleName, isSubFragmentActivity = ${injectFileInfo.isSubActivity}, isSubFragment = ${injectFileInfo.isSubFragment}",
                 )
             }
         } catch (e: Exception) {
@@ -374,17 +400,69 @@ class AutowireProcessor(
         }
     }
 
+    @OptIn(KspExperimental::class)
+    private fun KSPropertyDeclaration.convertToPropertyInfo(
+    ): InjectFileInfo.PropertyInfo? {
+        val ksPropertyDeclaration = this
+        val propertyType = ksPropertyDeclaration.type.resolve()
+        return InjectFileInfo.PropertyInfo(
+            isPropertyLateInit = ksPropertyDeclaration.modifiers.contains(element = Modifier.LATEINIT),
+            isPropertyNullable =
+                ksPropertyDeclaration.type.resolve().isMarkedNullable,
+            propertyName = ksPropertyDeclaration.simpleName.asString(),
+            propertyClassName = propertyType.toClassName(),
+            propertyGetMethodName = runCatching {
+                getMethodNameFromKsType(
+                    ksType = propertyType,
+                    prefix = "get",
+                )
+            }.getOrNull(),
+            uriAutowiredAnnoInfo = ksPropertyDeclaration.getAnnotationsByType(
+                annotationKClass = UriAutowiredAnno::class
+            ).firstOrNull()?.let {
+                UriAutowiredAnnoInfo
+            },
+            attrValueAutowiredAnnoInfo = ksPropertyDeclaration.getAnnotationsByType(
+                annotationKClass = AttrValueAutowiredAnno::class
+            ).firstOrNull()?.let { anno ->
+                AttrValueAutowiredAnnoInfo(
+                    value = anno.value.toList(),
+                    mode = anno.mode,
+                )
+            },
+            serviceAutowiredAnnoInfo = ksPropertyDeclaration.getAnnotationsByType(
+                annotationKClass = ServiceAutowiredAnno::class
+            ).firstOrNull()?.let { anno ->
+                ServiceAutowiredAnnoInfo(
+                    name = anno.name,
+                )
+            },
+        )
+    }
+
+    private fun KSClassDeclaration.convertToInjectFileInfo(
+    ): InjectFileInfo? {
+        this.qualifiedName?.getQualifier()
+        val containingFile = this.containingFile ?: return null
+        val classDeclarationKsType = this.asStarProjectedType()
+        return InjectFileInfo(
+            targetClassContainingFile = containingFile,
+            targetClassClassName = classDeclarationKsType.toClassName(),
+            isSubActivity = activityKsClassDeclaration
+                .asStarProjectedType()
+                .isAssignableFrom(that = classDeclarationKsType),
+            isSubFragment = fragmentKsClassDeclaration
+                .asStarProjectedType()
+                .isAssignableFrom(that = classDeclarationKsType),
+        )
+    }
+
     private fun createAllFile() {
-        collectList
-            .groupBy {
-                it.closestClassDeclaration()
-            }
-            .forEach { mapItem ->
-                // 对 key 为 null 的不予考虑
-                val classDeclaration = mapItem.key ?: return@forEach
+        collectInfoMap
+            .forEach { (injectFileInfo, propertyInfoSet) ->
                 createFile(
-                    classDeclaration = classDeclaration,
-                    targetAnnotatedList = mapItem.value
+                    injectFileInfo = injectFileInfo,
+                    propertyInfoSet = propertyInfoSet,
                 )
             }
     }
@@ -437,9 +515,18 @@ class AutowireProcessor(
             (uriAutoWireValidList + attrValueAutowiredValidList + serviceAutowiredValidList)
                 .filterIsInstance<KSPropertyDeclaration>()
 
-        collectList.addAll(
-            elements = eachCollectList,
-        )
+        eachCollectList.groupBy {
+            it.closestClassDeclaration()?.convertToInjectFileInfo()
+        }.mapNotNull { (key, value) ->
+            key?.let {
+                key to value.mapNotNull {
+                    it.convertToPropertyInfo()
+                }
+            }
+        }.forEach { (key, value) ->
+            val newValue = (collectInfoMap[key] ?: emptySet()) + value.toSet()
+            collectInfoMap[key] = newValue
+        }
 
         return uriAutoWireInValidList + attrValueAutowiredInValidList + serviceAutowiredInValidList
 

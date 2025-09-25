@@ -16,7 +16,7 @@ annotation class AttrValueAutowiredAnno(
      * 需要注入的 Key
      * key 可以是多个
      */
-    vararg val value: String,
+    vararg val value: String = [],
 
     /**
      * 注入的模式

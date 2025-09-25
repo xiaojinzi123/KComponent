@@ -14,6 +14,7 @@ import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSFile
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.validate
 import com.squareup.kotlinpoet.ClassName
@@ -49,6 +50,11 @@ import java.io.File
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.reflect.KClass
+
+data class ApplicationInfo(
+    val containingFile: KSFile?,
+    val qualifiedNameOfClass: String,
+)
 
 /**
  * - ModuleApplication
@@ -134,12 +140,12 @@ class ModuleProcessor(
 
     private fun initApplication(
         typeSpecBuilder: TypeSpec.Builder,
-        moduleAppAnnotatedList: List<KSClassDeclaration>,
+        moduleAppInfoList: List<ApplicationInfo>,
     ) {
 
-        val tempStr = moduleAppAnnotatedList
+        val tempStr = moduleAppInfoList
             .joinToString { item ->
-                "${item.qualifiedName!!.asString()}()"
+                "${item.qualifiedNameOfClass}()"
             }
 
         typeSpecBuilder
@@ -1097,7 +1103,7 @@ class ModuleProcessor(
 
     }
 
-    private val moduleAppAnnotatedList: MutableList<KSClassDeclaration> = mutableListOf()
+    private val moduleAppInfoList: MutableList<ApplicationInfo> = mutableListOf()
     private val serviceAnnotatedList: MutableList<KSAnnotated> = mutableListOf()
     private val serviceDecoratorAnnotatedList: MutableList<KSAnnotated> = mutableListOf()
     private val fragmentAnnotatedList: MutableList<KSAnnotated> = mutableListOf()
@@ -1108,7 +1114,7 @@ class ModuleProcessor(
 
     override fun initProcess(resolver: Resolver) {
         super.initProcess(resolver)
-        moduleAppAnnotatedList.clear()
+        moduleAppInfoList.clear()
         serviceAnnotatedList.clear()
         serviceDecoratorAnnotatedList.clear()
         fragmentAnnotatedList.clear()
@@ -1136,22 +1142,28 @@ class ModuleProcessor(
             .partition { !validateEnable || it.validate() }
 
         // 模块 Application 的
-        moduleAppAnnotatedList.addAll(
-            elements = moduleAppValidList
+        moduleAppInfoList.addAll(
+            moduleAppValidList
                 .filterIsInstance<KSClassDeclaration>()
-                .filterNot { it.qualifiedName == null }
-                .toList()
+                .mapNotNull { item ->
+                    item.qualifiedName?.asString()?.let { qualifiedNameOfClass ->
+                        ApplicationInfo(
+                            containingFile = item.containingFile,
+                            qualifiedNameOfClass = qualifiedNameOfClass,
+                        )
+                    }
+                }
         )
 
         if (logEnable) {
             logger.warn(
-                "$TAG $componentModuleName moduleAppAnnotatedList = $moduleAppAnnotatedList"
+                "$TAG $componentModuleName moduleAppInfoList = $moduleAppInfoList"
             )
         }
 
         if (logEnable) {
             logger.warn(
-                "$TAG $componentModuleName moduleAppAnnotatedList.size = ${moduleAppAnnotatedList.size}"
+                "$TAG $componentModuleName moduleAppInfoList.size = ${moduleAppInfoList.size}"
             )
         }
 
@@ -1294,14 +1306,14 @@ class ModuleProcessor(
             }
         }
 
-        val allMarkedList = (moduleAppAnnotatedList + serviceAnnotatedList +
+        val allMarkedList = (serviceAnnotatedList +
                 serviceDecoratorAnnotatedList + fragmentAnnotatedList +
                 globalInterceptorAnnotatedList + interceptorAnnotatedList +
-                routerAnnotatedList + routerDegradeAnnotatedList
-                )
+                routerAnnotatedList + routerDegradeAnnotatedList)
 
-        val sources = allMarkedList
-            .mapNotNull { it.containingFile }
+        val sources = (moduleAppInfoList
+            .mapNotNull { it.containingFile } + allMarkedList
+            .mapNotNull { it.containingFile })
             .toTypedArray()
 
         val packageNameStr = "com.xiaojinzi.component.impl"
@@ -1347,7 +1359,7 @@ class ModuleProcessor(
             .apply {
                 initApplication(
                     typeSpecBuilder = this,
-                    moduleAppAnnotatedList = moduleAppAnnotatedList,
+                    moduleAppInfoList = moduleAppInfoList,
                 )
                 aboutService(
                     typeSpecBuilder = this,

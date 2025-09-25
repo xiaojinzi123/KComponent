@@ -160,6 +160,45 @@ data class InterceptorInfo(
     val interceptorAnno: InterceptorAnno,
 )
 
+sealed class RouterInfo(
+    open val containingFile: KSFile?,
+    open val descName: String,
+    open val qualifiedNameStr: String,
+    open val routerAnno: RouterAnno,
+    open val routerAnnoBean: RouterAnnoBean,
+) {
+
+    data class ServiceClass(
+        override val containingFile: KSFile?,
+        override val descName: String,
+        override val qualifiedNameStr: String,
+        override val routerAnno: RouterAnno,
+        override val routerAnnoBean: RouterAnnoBean,
+    ) : RouterInfo(
+        containingFile = containingFile,
+        descName = descName,
+        qualifiedNameStr = qualifiedNameStr,
+        routerAnno = routerAnno,
+        routerAnnoBean = routerAnnoBean,
+    )
+
+    data class ServiceMethod(
+        override val containingFile: KSFile?,
+        override val descName: String,
+        override val qualifiedNameStr: String,
+        override val routerAnno: RouterAnno,
+        override val routerAnnoBean: RouterAnnoBean,
+        val firstParameterName: String,
+    ) : RouterInfo(
+        containingFile = containingFile,
+        descName = descName,
+        qualifiedNameStr = qualifiedNameStr,
+        routerAnno = routerAnno,
+        routerAnnoBean = routerAnnoBean,
+    )
+
+}
+
 /**
  * - ModuleApplication
  * - Fragment
@@ -853,22 +892,8 @@ class ModuleProcessor(
     private fun aboutRouter(
         typeSpecBuilder: TypeSpec.Builder,
         // 可能是标记在静态方法上或者类上的
-        routerAnnotatedList: List<KSAnnotated>,
+        routerInfoList: List<RouterInfo>,
     ) {
-
-        val targetAnnotatedList = routerAnnotatedList
-            .map { item ->
-                item to item.getAnnotationsByType(
-                    annotationKClass = RouterAnno::class,
-                )
-            }.flatMap { item1 ->
-                item1.second.map { item2 ->
-                    toRouterAnnoBean(
-                        element = item1.first,
-                        routerAnno = item2,
-                    ) to item1.first
-                }
-            }
 
         val routerBeanClassName = ClassName(
             packageName = ComponentConstants.ROUTER_BEAN_CLASS_NAME.packageName(),
@@ -885,14 +910,13 @@ class ModuleProcessor(
             ComponentConstants.PAGEINTERCEPTOR_BEAN_CLASS_NAME.simpleClassName(),
         )
 
-        val routerStr = targetAnnotatedList
+        val routerStr = routerInfoList
             .joinToString { item ->
-                val routeAnnoBean = item.first
                 StringBuffer()
                     .append("%T(")
                     .append("\nregex = %S,")
                     .apply {
-                        if (routeAnnoBean.scheme.isNullOrEmpty()) {
+                        if (item.routerAnnoBean.scheme.isNullOrEmpty()) {
                             this.append("\nuri = defaultScheme + %S,")
                         } else {
                             this.append("\nuri = %S,")
@@ -901,53 +925,48 @@ class ModuleProcessor(
                     .append("\ndesc = %S,")
                     .apply {
                         this.append("\npageInterceptors = listOf(")
-                        routeAnnoBean.interceptors.forEach {
+                        item.routerAnnoBean.interceptors.forEach { _ ->
                             this.append("\n%T(priority = %L, interceptorClass = %T::class,),")
                         }
-                        routeAnnoBean.interceptorNames.forEach {
+                        item.routerAnnoBean.interceptorNames.forEach { _ ->
                             this.append("\n%T(priority = %L, interceptorName = %S,),")
                         }
                         this.append("),")
                     }
                     .apply {
-                        when (item.second) {
-                            is KSClassDeclaration -> {
+                        when (item) {
+                            is RouterInfo.ServiceClass -> {
                                 this.append("\ntargetClass = %L::class,")
                             }
 
-                            is KSFunctionDeclaration -> {
+                            is RouterInfo.ServiceMethod -> {
                                 this.append("\ncustomerIntentCall = object : %T {")
                                 this.append("\n\toverride fun get(request: RouterRequest): %T {")
                                 this.append("\n\t\t\treturn %L(\n\t\t\t\t%N = request\n\t\t\t)")
                                 this.append("\n\t}")
                                 this.append("\n}")
                             }
-
-                            else -> throw ProcessException(
-                                message = "not support"
-                            )
                         }
                     }
                     .append("\n)")
                     .toString()
             }
 
-        val routerArgList = targetAnnotatedList
-            .map { item ->
-                val routeAnnoBean = item.first
+        val routerArgList = routerInfoList
+            .map { routerInfo ->
                 listOfNotNull(
                     routerBeanClassName,
-                    item.first.regex,
-                    if (item.first.scheme.isNullOrEmpty()) {
-                        "://${item.first.hostAndPath()}"
+                    routerInfo.routerAnnoBean.regex,
+                    if (routerInfo.routerAnnoBean.scheme.isNullOrEmpty()) {
+                        "://${routerInfo.routerAnnoBean.hostAndPath()}"
                     } else {
-                        "${item.first.scheme}://${item.first.hostAndPath()}"
+                        "${routerInfo.routerAnnoBean.scheme}://${routerInfo.routerAnnoBean.hostAndPath()}"
                     },
-                    item.first.desc ?: "",
-                ) + routeAnnoBean.interceptors
+                    routerInfo.routerAnnoBean.desc ?: "",
+                ) + routerInfo.routerAnnoBean.interceptors
                     .mapIndexed { index, interceptorClassPathStr ->
                         interceptorClassPathStr to
-                                (routeAnnoBean.interceptorPriorities.getOrNull(
+                                (routerInfo.routerAnnoBean.interceptorPriorities.getOrNull(
                                     index
                                 ) ?: 0)
                     }
@@ -957,10 +976,10 @@ class ModuleProcessor(
                             it.second,
                             it.first.toClassName(),
                         )
-                    }.flatten() + routeAnnoBean.interceptorNames
+                    }.flatten() + routerInfo.routerAnnoBean.interceptorNames
                     .mapIndexed { index, interceptorName ->
                         interceptorName to
-                                (routeAnnoBean.interceptorNamePriorities.getOrNull(
+                                (routerInfo.routerAnnoBean.interceptorNamePriorities.getOrNull(
                                     index
                                 ) ?: 0)
                     }
@@ -970,26 +989,22 @@ class ModuleProcessor(
                             it.second,
                             it.first,
                         )
-                    }.flatten() + when (val element = item.second) {
-                    is KSClassDeclaration -> {
-                        listOf(element.qualifiedName!!.asString())
+                    }.flatten() + when (routerInfo) {
+                    is RouterInfo.ServiceClass -> {
+                        listOf(routerInfo.qualifiedNameStr)
                     }
 
-                    is KSFunctionDeclaration -> {
+                    is RouterInfo.ServiceMethod -> {
                         if (logEnable) {
-                            logger.warn("element.qualifiedName = ${element.qualifiedName?.asString()}")
+                            logger.warn("routerInfo.descName = ${routerInfo.descName}")
                         }
                         listOf(
                             customerIntentCallClassName,
                             mClassNameIntent,
-                            element.qualifiedName!!.asString(),
-                            element.parameters.first().name!!.asString(),
+                            routerInfo.qualifiedNameStr,
+                            routerInfo.firstParameterName,
                         )
                     }
-
-                    else -> throw ProcessException(
-                        message = "not support"
-                    )
                 }
 
             }
@@ -1106,7 +1121,7 @@ class ModuleProcessor(
     private val fragmentInfoList: MutableList<FragmentInfo> = mutableListOf()
     private val globalInterceptorInfoList: MutableList<GlobalInterceptorInfo> = mutableListOf()
     private val interceptorInfoList: MutableList<InterceptorInfo> = mutableListOf()
-    private val routerAnnotatedList: MutableList<KSAnnotated> = mutableListOf()
+    private val routerInfoList: MutableList<RouterInfo> = mutableListOf()
     private val routerDegradeAnnotatedList: MutableList<KSAnnotated> = mutableListOf()
 
     override fun initProcess(resolver: Resolver) {
@@ -1117,7 +1132,7 @@ class ModuleProcessor(
         fragmentInfoList.clear()
         globalInterceptorInfoList.clear()
         interceptorInfoList.clear()
-        routerAnnotatedList.clear()
+        routerInfoList.clear()
         routerDegradeAnnotatedList.clear()
     }
 
@@ -1394,12 +1409,51 @@ class ModuleProcessor(
             .partition { !validateEnable || it.validate() }
 
         // 路由的
-        routerAnnotatedList.addAll(
-            elements = routerValidList,
+        routerInfoList.addAll(
+            elements = routerValidList
+                .map { item ->
+                    val containingFile = item.containingFile
+                    val descName = item.getDescName()
+                    val routerAnno = item
+                        .getAnnotationsByType(annotationKClass = RouterAnno::class)
+                        .first()
+                    when (item) {
+                        is KSFunctionDeclaration -> {
+
+                            RouterInfo.ServiceMethod(
+                                containingFile = containingFile,
+                                descName = descName,
+                                qualifiedNameStr = item.qualifiedName!!.asString(),
+                                routerAnno = routerAnno,
+                                routerAnnoBean = toRouterAnnoBean(
+                                    element = item,
+                                    routerAnno = routerAnno,
+                                ),
+                                firstParameterName = item.parameters.first().name!!.asString(),
+                            )
+                        }
+
+                        is KSClassDeclaration -> {
+                            RouterInfo.ServiceClass(
+                                containingFile = containingFile,
+                                descName = descName,
+                                qualifiedNameStr = item.qualifiedName!!.asString(),
+                                routerAnno = routerAnno,
+                                routerAnnoBean = toRouterAnnoBean(
+                                    element = item,
+                                    routerAnno = routerAnno,
+                                ),
+                            )
+                        }
+
+                        else -> notSupport()
+                    }
+
+                },
         )
         if (logEnable) {
             logger.warn(
-                "$TAG $componentModuleName routerAnnotatedList.size = ${routerAnnotatedList.size}"
+                "$TAG $componentModuleName routerInfoList.size = ${routerInfoList.size}"
             )
         }
 
@@ -1443,7 +1497,7 @@ class ModuleProcessor(
             }
         }
 
-        val allMarkedList = (routerAnnotatedList + routerDegradeAnnotatedList)
+        val allMarkedList = (routerDegradeAnnotatedList)
 
         val sources = (moduleAppInfoList
             .mapNotNull { it.containingFile } + serviceInfoList
@@ -1451,6 +1505,7 @@ class ModuleProcessor(
             .mapNotNull { it.containingFile } + fragmentInfoList
             .mapNotNull { it.containingFile } + globalInterceptorInfoList
             .mapNotNull { it.containingFile } + interceptorInfoList
+            .mapNotNull { it.containingFile } + routerInfoList
             .mapNotNull { it.containingFile } + allMarkedList
             .mapNotNull { it.containingFile })
             .toTypedArray()
@@ -1516,7 +1571,7 @@ class ModuleProcessor(
                 )
                 aboutRouter(
                     typeSpecBuilder = this,
-                    routerAnnotatedList = routerAnnotatedList,
+                    routerInfoList = routerInfoList,
                 )
                 aboutRouterDegrade(
                     typeSpecBuilder = this,

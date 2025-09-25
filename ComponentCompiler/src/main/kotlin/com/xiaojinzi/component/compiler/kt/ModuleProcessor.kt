@@ -112,7 +112,8 @@ sealed class FragmentInfo(
     // 目标 Fragment 的全路径
     open val targetClassNameStr: String,
     open val fragmentAnno: FragmentAnno,
-) {
+) //
+{
 
 
     data class ServiceClass(
@@ -144,6 +145,13 @@ sealed class FragmentInfo(
     )
 
 }
+
+data class GlobalInterceptorInfo(
+    val containingFile: KSFile?,
+    val descName: String,
+    val qualifiedNameStr: String,
+    val globalInterceptorAnno: GlobalInterceptorAnno,
+)
 
 /**
  * - ModuleApplication
@@ -701,7 +709,7 @@ class ModuleProcessor(
     @OptIn(KspExperimental::class)
     private fun aboutInterceptor(
         typeSpecBuilder: TypeSpec.Builder,
-        globalInterceptorAnnotatedList: List<KSClassDeclaration>,
+        globalInterceptorInfoList: List<GlobalInterceptorInfo>,
         interceptorAnnotatedList: List<KSClassDeclaration>,
     ) {
 
@@ -715,15 +723,12 @@ class ModuleProcessor(
             ComponentConstants.INTERCEPTOR_INTERFACE_CLASS_NAME.simpleClassName(),
         )
 
-        val globalInterceptorListStr = globalInterceptorAnnotatedList
+        val globalInterceptorListStr = globalInterceptorInfoList
             .joinToString { item ->
-                val anno =
-                    item.getAnnotationsByType(annotationKClass = GlobalInterceptorAnno::class)
-                        .first()
-                "%T(interceptor = ${item.qualifiedName!!.asString()}::class," + "priority = ${anno.priority})"
+                "%T(interceptor = ${item.qualifiedNameStr}::class," + "priority = ${item.globalInterceptorAnno.priority})"
             }
 
-        val globalInterceptorArgList = globalInterceptorAnnotatedList
+        val globalInterceptorArgList = globalInterceptorInfoList
             .map {
                 interceptorBeanClassName
             }.toTypedArray()
@@ -1094,7 +1099,7 @@ class ModuleProcessor(
     private val serviceInfoList: MutableList<ServiceInfo> = mutableListOf()
     private val serviceDecoratorInfoList: MutableList<ServiceDecoratorInfo> = mutableListOf()
     private val fragmentInfoList: MutableList<FragmentInfo> = mutableListOf()
-    private val globalInterceptorAnnotatedList: MutableList<KSClassDeclaration> = mutableListOf()
+    private val globalInterceptorInfoList: MutableList<GlobalInterceptorInfo> = mutableListOf()
     private val interceptorAnnotatedList: MutableList<KSClassDeclaration> = mutableListOf()
     private val routerAnnotatedList: MutableList<KSAnnotated> = mutableListOf()
     private val routerDegradeAnnotatedList: MutableList<KSAnnotated> = mutableListOf()
@@ -1105,7 +1110,7 @@ class ModuleProcessor(
         serviceInfoList.clear()
         serviceDecoratorInfoList.clear()
         fragmentInfoList.clear()
-        globalInterceptorAnnotatedList.clear()
+        globalInterceptorInfoList.clear()
         interceptorAnnotatedList.clear()
         routerAnnotatedList.clear()
         routerDegradeAnnotatedList.clear()
@@ -1327,14 +1332,25 @@ class ModuleProcessor(
             .partition { !validateEnable || it.validate() }
 
         // 全局拦截器的
-        globalInterceptorAnnotatedList.addAll(
+        globalInterceptorInfoList.addAll(
             elements = globalInterceptorValidList
                 .filterIsInstance<KSClassDeclaration>()
-                .toList(),
+                .map { item ->
+                    val containingFile = item.containingFile
+                    val descName = item.getDescName()
+                    GlobalInterceptorInfo(
+                        containingFile = containingFile,
+                        descName = descName,
+                        qualifiedNameStr = item.qualifiedName!!.asString(),
+                        globalInterceptorAnno = item
+                            .getAnnotationsByType(annotationKClass = GlobalInterceptorAnno::class)
+                            .first(),
+                    )
+                },
         )
         if (logEnable) {
             logger.warn(
-                "$TAG $componentModuleName globalInterceptorAnnotatedList.size = ${globalInterceptorAnnotatedList.size}"
+                "$TAG $componentModuleName globalInterceptorInfoList.size = ${globalInterceptorInfoList.size}"
             )
         }
 
@@ -1411,13 +1427,14 @@ class ModuleProcessor(
             }
         }
 
-        val allMarkedList = (globalInterceptorAnnotatedList + interceptorAnnotatedList +
+        val allMarkedList = (interceptorAnnotatedList +
                 routerAnnotatedList + routerDegradeAnnotatedList)
 
         val sources = (moduleAppInfoList
             .mapNotNull { it.containingFile } + serviceInfoList
             .mapNotNull { it.containingFile } + serviceDecoratorInfoList
             .mapNotNull { it.containingFile } + fragmentInfoList
+            .mapNotNull { it.containingFile } + globalInterceptorInfoList
             .mapNotNull { it.containingFile } + allMarkedList
             .mapNotNull { it.containingFile })
             .toTypedArray()
@@ -1478,7 +1495,7 @@ class ModuleProcessor(
                 )
                 aboutInterceptor(
                     typeSpecBuilder = this,
-                    globalInterceptorAnnotatedList = globalInterceptorAnnotatedList,
+                    globalInterceptorInfoList = globalInterceptorInfoList,
                     interceptorAnnotatedList = interceptorAnnotatedList,
                 )
                 aboutRouter(

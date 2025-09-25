@@ -94,6 +94,18 @@ sealed class ServiceInfo(
 
 }
 
+data class ServiceDecoratorInfo(
+    val uuid: String,
+    val containingFile: KSFile?,
+    val descName: String,
+    val classClassName: ClassName,
+    val serviceDecoratorAnno: ServiceDecoratorAnno,
+    val conditionalAnno: ConditionalAnno?,
+    // 被 @ServiceDecoratorAnno 标记的类的 class 类型的构造函数的参数名.
+    // 被标记的只有一个构造函数, 并且参数只有一个
+    val constructorParameterName: String,
+)
+
 /**
  * - ModuleApplication
  * - Fragment
@@ -210,14 +222,8 @@ class ModuleProcessor(
     private fun aboutService(
         typeSpecBuilder: TypeSpec.Builder,
         serviceInfoList: List<ServiceInfo>,
-        serviceDecoratorAnnotatedList: List<KSAnnotated>,
+        serviceDecoratorInfoList: List<ServiceDecoratorInfo>,
     ) {
-
-        val serviceDecoratorAnnotatedListMap = serviceDecoratorAnnotatedList
-            .filterIsInstance<KSClassDeclaration>()
-            .associateWith {
-                UUID.randomUUID().toString()
-            }
 
         val classNameServiceManager: ClassName = ClassName(
             packageName = ComponentConstants.SERVICE_MANAGER_CLASS_NAME.packageName(),
@@ -290,8 +296,6 @@ class ModuleProcessor(
                                                 )
                                             }
                                         }
-
-                                        else -> notSupport()
                                     }
                                 }
 
@@ -394,87 +398,72 @@ class ModuleProcessor(
                     }
                     // 处理服务发现装饰者的问题
                     .also { funSpec ->
-                        serviceDecoratorAnnotatedListMap
-                            .forEach { serviceDecoratorAnnotatedItem ->
+                        serviceDecoratorInfoList.forEach { serviceDecoratorInfo ->
 
-                                val ksClassDeclaration = serviceDecoratorAnnotatedItem.key
-                                val uuid = serviceDecoratorAnnotatedItem.value
+                            // 装饰的目标接口
+                            val decorateTargetClassName =
+                                serviceDecoratorInfo.serviceDecoratorAnno.valueClassPath.toClassName()
 
-                                val serviceDecoratorAnno = ksClassDeclaration
-                                    .getAnnotationsByType(annotationKClass = ServiceDecoratorAnno::class)
-                                    .first()
+                            addConditionIfCodeToFunction(
+                                funSpecBuilder = funSpec,
+                                condition = serviceDecoratorInfo.conditionalAnno,
+                            ) {
 
-                                // 装饰的目标接口
-                                val decorateTargetClassName =
-                                    serviceDecoratorAnno.valueClassPath.toClassName()
+                                val implName = "implName${counter.incrementAndGet()}"
 
-                                val parameterName = ksClassDeclaration.getConstructors()
-                                    .first().parameters.first().name!!.asString()
-
-                                val condition = ksClassDeclaration.getAnnotationsByType(
-                                    annotationKClass = ConditionalAnno::class,
-                                ).firstOrNull()
-
-                                addConditionIfCodeToFunction(
-                                    funSpecBuilder = funSpec,
-                                    condition = condition,
-                                ) {
-
-                                    val implName = "implName${counter.incrementAndGet()}"
-
-                                    funSpec.addStatement(
-                                        format = "val %N = %L",
-                                        implName,
-                                        TypeSpec
-                                            .anonymousClassBuilder()
-                                            .addSuperinterface(
-                                                superinterface = classNameServiceDecoratorCallable.parameterizedBy(
-                                                    decorateTargetClassName,
+                                funSpec.addStatement(
+                                    format = "val %N = %L",
+                                    implName,
+                                    TypeSpec
+                                        .anonymousClassBuilder()
+                                        .addSuperinterface(
+                                            superinterface = classNameServiceDecoratorCallable.parameterizedBy(
+                                                decorateTargetClassName,
+                                            )
+                                        )
+                                        .addFunction(
+                                            funSpec = FunSpec
+                                                .builder("get")
+                                                .addModifiers(KModifier.OVERRIDE)
+                                                .addParameter(
+                                                    name = "target",
+                                                    type = decorateTargetClassName,
                                                 )
-                                            )
-                                            .addFunction(
-                                                funSpec = FunSpec
-                                                    .builder("get")
-                                                    .addModifiers(KModifier.OVERRIDE)
-                                                    .addParameter(
-                                                        name = "target",
-                                                        type = decorateTargetClassName,
-                                                    )
-                                                    .returns(
-                                                        returnType = decorateTargetClassName,
-                                                    )
-                                                    .addStatement(
-                                                        format = "return %T($parameterName = target)",
-                                                        ksClassDeclaration.toClassName(),
-                                                    )
-                                                    .build()
-                                            )
-                                            .addFunction(
-                                                funSpec = FunSpec
-                                                    .builder("priority")
-                                                    .addModifiers(KModifier.OVERRIDE)
-                                                    .returns(
-                                                        returnType = Int::class,
-                                                    )
-                                                    .addStatement(
-                                                        format = "return ${serviceDecoratorAnno.priority}"
-                                                    )
-                                                    .build()
-                                            )
-                                            .build()
-                                    )
+                                                .returns(
+                                                    returnType = decorateTargetClassName,
+                                                )
+                                                .addStatement(
+                                                    format = "return %T(${serviceDecoratorInfo.constructorParameterName} = target)",
+                                                    serviceDecoratorInfo.classClassName,
+                                                )
+                                                .build()
+                                        )
+                                        .addFunction(
+                                            funSpec = FunSpec
+                                                .builder("priority")
+                                                .addModifiers(KModifier.OVERRIDE)
+                                                .returns(
+                                                    returnType = Int::class,
+                                                )
+                                                .addStatement(
+                                                    format = "return ${serviceDecoratorInfo.serviceDecoratorAnno.priority}"
+                                                )
+                                                .build()
+                                        )
+                                        .build()
+                                )
 
-                                    funSpec.addStatement(
-                                        format = "%T.registerDecorator(tClass = %T::class, uid = %S, %N)",
-                                        classNameServiceManager,
-                                        decorateTargetClassName,
-                                        uuid,
-                                        implName,
-                                    )
-
-                                }
+                                funSpec.addStatement(
+                                    format = "%T.registerDecorator(tClass = %T::class, uid = %S, %N)",
+                                    classNameServiceManager,
+                                    decorateTargetClassName,
+                                    serviceDecoratorInfo.uuid,
+                                    implName,
+                                )
 
                             }
+
+                        }
                     }
                     .build()
             )
@@ -526,21 +515,16 @@ class ModuleProcessor(
                     }
                     // 处理服务发现装饰者的问题
                     .also { funSpec ->
-                        serviceDecoratorAnnotatedListMap
-                            .forEach { serviceDecoratorAnnotatedItem ->
-                                val uuid = serviceDecoratorAnnotatedItem.value
-                                val ksClassDeclaration = serviceDecoratorAnnotatedItem.key
-                                val serviceDecoratorAnno = ksClassDeclaration
-                                    .getAnnotationsByType(annotationKClass = ServiceDecoratorAnno::class)
-                                    .first()
+                        serviceDecoratorInfoList
+                            .forEach { serviceDecoratorInfo ->
                                 // 装饰的目标接口
                                 val decorateTargetClassName =
-                                    serviceDecoratorAnno.valueClassPath.toClassName()
+                                    serviceDecoratorInfo.serviceDecoratorAnno.valueClassPath.toClassName()
                                 funSpec.addStatement(
                                     format = "%T.unregisterDecorator(tClass = %T::class, uid = %S)",
                                     classNameServiceManager,
                                     decorateTargetClassName,
-                                    uuid,
+                                    serviceDecoratorInfo.uuid,
                                 )
                             }
                     }
@@ -1111,7 +1095,7 @@ class ModuleProcessor(
 
     private val moduleAppInfoList: MutableList<ApplicationInfo> = mutableListOf()
     private val serviceInfoList: MutableList<ServiceInfo> = mutableListOf()
-    private val serviceDecoratorAnnotatedList: MutableList<KSAnnotated> = mutableListOf()
+    private val serviceDecoratorInfoList: MutableList<ServiceDecoratorInfo> = mutableListOf()
     private val fragmentAnnotatedList: MutableList<KSAnnotated> = mutableListOf()
     private val globalInterceptorAnnotatedList: MutableList<KSClassDeclaration> = mutableListOf()
     private val interceptorAnnotatedList: MutableList<KSClassDeclaration> = mutableListOf()
@@ -1122,7 +1106,7 @@ class ModuleProcessor(
         super.initProcess(resolver)
         moduleAppInfoList.clear()
         serviceInfoList.clear()
-        serviceDecoratorAnnotatedList.clear()
+        serviceDecoratorInfoList.clear()
         fragmentAnnotatedList.clear()
         globalInterceptorAnnotatedList.clear()
         interceptorAnnotatedList.clear()
@@ -1250,12 +1234,35 @@ class ModuleProcessor(
             .partition { !validateEnable || it.validate() }
 
         // ServiceDecorator 的
-        serviceDecoratorAnnotatedList.addAll(
-            elements = serviceDecoratorValidList,
+        serviceDecoratorInfoList.addAll(
+            elements = serviceDecoratorValidList
+                .filterIsInstance<KSClassDeclaration>()
+                .map { item ->
+                    val uuid = UUID.randomUUID().toString()
+                    val containingFile = item.containingFile
+                    val descName = item.getDescName()
+                    ServiceDecoratorInfo(
+                        uuid = uuid,
+                        containingFile = containingFile,
+                        descName = descName,
+                        classClassName = item.toClassName(),
+                        serviceDecoratorAnno = item
+                            .getAnnotationsByType(annotationKClass = ServiceDecoratorAnno::class)
+                            .first(),
+                        conditionalAnno = item
+                            .getAnnotationsByType(annotationKClass = ConditionalAnno::class)
+                            .firstOrNull(),
+                        constructorParameterName = checkNotNull(
+                            value = item.getConstructors()
+                                .firstOrNull()?.parameters?.firstOrNull()?.name?.asString(),
+                            lazyMessage = {},
+                        ),
+                    )
+                },
         )
         if (logEnable) {
             logger.warn(
-                "$TAG $componentModuleName serviceDecoratorAnnotatedList.size = ${serviceDecoratorAnnotatedList.size}"
+                "$TAG $componentModuleName serviceDecoratorInfoList.size = ${serviceDecoratorInfoList.size}"
             )
         }
 
@@ -1366,12 +1373,13 @@ class ModuleProcessor(
             }
         }
 
-        val allMarkedList = (serviceDecoratorAnnotatedList + fragmentAnnotatedList +
+        val allMarkedList = (fragmentAnnotatedList +
                 globalInterceptorAnnotatedList + interceptorAnnotatedList +
                 routerAnnotatedList + routerDegradeAnnotatedList)
 
         val sources = (moduleAppInfoList
             .mapNotNull { it.containingFile } + serviceInfoList
+            .mapNotNull { it.containingFile } + serviceDecoratorInfoList
             .mapNotNull { it.containingFile } + allMarkedList
             .mapNotNull { it.containingFile })
             .toTypedArray()
@@ -1424,7 +1432,7 @@ class ModuleProcessor(
                 aboutService(
                     typeSpecBuilder = this,
                     serviceInfoList = serviceInfoList,
-                    serviceDecoratorAnnotatedList = serviceDecoratorAnnotatedList,
+                    serviceDecoratorInfoList = serviceDecoratorInfoList,
                 )
                 aboutFragment(
                     typeSpecBuilder = this,

@@ -59,28 +59,35 @@ private data class ApplicationInfo(
 private sealed class ServiceInfo(
     open val containingFile: KSFile?,
     open val descName: String,
-    open val serviceAnno: ServiceAnno,
+    open val serviceAnnoInfo: ServiceAnnoInfo,
     // 被 ServiceAnno 标记的类的 class 类型 或者 方法返回值的 class 类型
     open val classTypeName: TypeName,
 ) {
 
+    data class ServiceAnnoInfo(
+        val serviceClassPathList: List<String>,
+        val name: List<String>,
+        val singleTon: Boolean,
+        val autoInit: Boolean,
+    )
+
     data class ServiceClass(
         override val containingFile: KSFile?,
         override val descName: String,
-        override val serviceAnno: ServiceAnno,
+        override val serviceAnnoInfo: ServiceAnnoInfo,
         override val classTypeName: TypeName,
         val applicationParameterName: String?,
     ) : ServiceInfo(
         containingFile = containingFile,
         descName = descName,
-        serviceAnno = serviceAnno,
+        serviceAnnoInfo = serviceAnnoInfo,
         classTypeName = classTypeName,
     )
 
     data class ServiceMethod(
         override val containingFile: KSFile?,
         override val descName: String,
-        override val serviceAnno: ServiceAnno,
+        override val serviceAnnoInfo: ServiceAnnoInfo,
         override val classTypeName: TypeName,
         val applicationParameterName: String?,
         // @ServiceAnno 标记的方法的 com.xxx.xxx.testName
@@ -88,7 +95,7 @@ private sealed class ServiceInfo(
     ) : ServiceInfo(
         containingFile = containingFile,
         descName = descName,
-        serviceAnno = serviceAnno,
+        serviceAnnoInfo = serviceAnnoInfo,
         classTypeName = classTypeName,
     )
 
@@ -417,7 +424,7 @@ private class ModuleProcessor(
                                 }
 
                             // 如果是单利
-                            if (serviceInfo.serviceAnno.singleTon) {
+                            if (serviceInfo.serviceAnnoInfo.singleTon) {
                                 args.add(
                                     element = TypeSpec
                                         .anonymousClassBuilder()
@@ -480,13 +487,14 @@ private class ModuleProcessor(
                             }
 
                             funSpec.addStatement(stateCode, *args.toTypedArray())
-                            val serviceClassPathList = serviceInfo.serviceAnno.serviceClassPathList
+                            val serviceClassPathList =
+                                serviceInfo.serviceAnnoInfo.serviceClassPathList
                             if (serviceClassPathList.isEmpty()) {
                                 throw ProcessException(
                                     message = "${serviceInfo.descName} 的 @ServiceAnno 注解, value 不可以为空"
                                 )
                             }
-                            val nameList = serviceInfo.serviceAnno.name
+                            val nameList = serviceInfo.serviceAnnoInfo.name
                             if (nameList.isNotEmpty() || serviceClassPathList.size > 1) {
                                 if (serviceClassPathList.size != nameList.size) {
                                     throw ProcessException(
@@ -504,7 +512,7 @@ private class ModuleProcessor(
                                     targetName ?: classNameServiceManager,
                                     implName,
                                 )
-                                if (serviceInfo.serviceAnno.autoInit) {
+                                if (serviceInfo.serviceAnnoInfo.autoInit) {
                                     funSpec.addStatement(
                                         "%T.registerAutoInit(tClass = %T::class, name = ${if (targetName == null) "%T.DEFAULT_NAME" else "%S"})",
                                         classNameServiceManager,
@@ -591,9 +599,10 @@ private class ModuleProcessor(
                     )
                     .also { funSpec ->
                         serviceInfoList.forEach { serviceInfo ->
-                            val serviceClassPathList = serviceInfo.serviceAnno.serviceClassPathList
+                            val serviceClassPathList =
+                                serviceInfo.serviceAnnoInfo.serviceClassPathList
                             serviceClassPathList.forEachIndexed { index, interfaceClassPath ->
-                                val serviceName = serviceInfo.serviceAnno.name.getOrNull(index)
+                                val serviceName = serviceInfo.serviceAnnoInfo.name.getOrNull(index)
                                 if (serviceName == null) {
                                     funSpec.addStatement(
                                         format = "%T.unregister(tClass = %T::class, name = %T.DEFAULT_NAME)",
@@ -609,7 +618,7 @@ private class ModuleProcessor(
                                         serviceName,
                                     )
                                 }
-                                if (serviceInfo.serviceAnno.autoInit) {
+                                if (serviceInfo.serviceAnnoInfo.autoInit) {
                                     if (serviceName == null) {
                                         funSpec.addStatement(
                                             format = "%T.registerAutoInit(tClass = %T::class)",
@@ -1213,6 +1222,12 @@ private class ModuleProcessor(
                 val serviceAnno = item
                     .getAnnotationsByType(annotationKClass = ServiceAnno::class)
                     .first()
+                val serviceAnnoInfo = ServiceInfo.ServiceAnnoInfo(
+                    serviceClassPathList = serviceAnno.serviceClassPathList,
+                    name = serviceAnno.name.toList(),
+                    singleTon = serviceAnno.singleTon,
+                    autoInit = serviceAnno.autoInit,
+                )
                 when (item) {
                     is KSClassDeclaration -> {
                         val targetApplicationConstructor =
@@ -1224,7 +1239,7 @@ private class ModuleProcessor(
                         ServiceInfo.ServiceClass(
                             containingFile = containingFile,
                             descName = descName,
-                            serviceAnno = serviceAnno,
+                            serviceAnnoInfo = serviceAnnoInfo,
                             classTypeName = item.toClassName(),
                             applicationParameterName = if (
                                 targetApplicationConstructor == null
@@ -1251,7 +1266,7 @@ private class ModuleProcessor(
                         ServiceInfo.ServiceMethod(
                             containingFile = containingFile,
                             descName = descName,
-                            serviceAnno = serviceAnno,
+                            serviceAnnoInfo = serviceAnnoInfo,
                             classTypeName = classTypeName,
                             applicationParameterName = item.parameters.getOrNull(0)?.name?.asString(),
                             qualifiedName = item.qualifiedName!!.asString(),

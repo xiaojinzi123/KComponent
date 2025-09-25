@@ -5,7 +5,7 @@ import com.google.devtools.ksp.*
 import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.google.devtools.ksp.symbol.KSDeclaration
+import com.google.devtools.ksp.symbol.KSFile
 import com.google.devtools.ksp.symbol.KSValueParameter
 import com.google.devtools.ksp.symbol.Modifier
 import com.squareup.kotlinpoet.*
@@ -17,6 +17,7 @@ import com.xiaojinzi.component.packageName
 import com.xiaojinzi.component.simpleClassName
 
 private data class RouterApiInfo(
+    val containingFile: KSFile?,
     // 生成的类要实现的接口的 String 全类名
     val fullClassName: String,
     // 生成的类要实现的接口的 ClassName
@@ -55,7 +56,7 @@ private data class RouterApiInfo(
         val requestCodeAnno: RequestCodeAnno?,
         val checkRepeatAnno: CheckRepeatAnno?,
         // 方法返回值类型的声明
-        val returnTypeKsDeclaration: KSDeclaration?,
+        val returnTypePoetTypeName: TypeName?,
         // 是否是 suspend 函数
         val isSuspendMethod: Boolean,
         // 方法名字
@@ -70,7 +71,32 @@ private data class RouterApiInfo(
         val isComponentNavigatorReturnType: Boolean,
         // 是否返回 Component 的 Call
         val isComponentCallReturnType: Boolean,
-    )
+        // 方法所有参数的信息
+        val parameterInfoList: List<ParameterInfo>,
+        var ksValueParameter_options: ParameterInfo?,
+        var ksValueParameter_beforeAction: ParameterInfo?,
+        var ksValueParameter_beforeStartAction: ParameterInfo?,
+        var ksValueParameter_afterAction: ParameterInfo?,
+        var ksValueParameter_afterError: ParameterInfo?,
+        var ksValueParameter_afterEvent: ParameterInfo?,
+        var ksValueParameter_afterStart: ParameterInfo?,
+        var ksValueParameter_requestCode: ParameterInfo?,
+        var ksValueParameter_bundle: ParameterInfo?,
+        var ksValueParameter_context: ParameterInfo?,
+        var ksValueParameter_callback: ParameterInfo?,
+        var ksValueParameter_biCallback: ParameterInfo?,
+        var ksValueParameter_kt_function0: ParameterInfo?,
+        var ksValueParameter_kt_function1: ParameterInfo?,
+    ) {
+
+        data class ParameterInfo(
+            val name: String,
+            val typeName: TypeName,
+            val parameterAnno: ParameterAnno?,
+            val methodCallName: String,
+        )
+
+    }
 
 }
 
@@ -195,22 +221,20 @@ private class RouterApiProcessor(
                             "forward"
                         }
 
-                        var ksValueParameter_context: KSValueParameter? = null
-                        var ksValueParameter_options: KSValueParameter? = null
-                        var ksValueParameter_callback: KSValueParameter? = null
-                        var ksValueParameter_biCallback: KSValueParameter? = null
-                        var ksValueParameter_kt_function0: KSValueParameter? = null
-                        var ksValueParameter_kt_function1: KSValueParameter? = null
-                        var ksValueParameter_beforeAction: KSValueParameter? = null
-                        var ksValueParameter_beforeStartAction: KSValueParameter? = null
-                        var ksValueParameter_afterAction: KSValueParameter? = null
-                        var ksValueParameter_afterError: KSValueParameter? = null
-                        var ksValueParameter_afterEvent: KSValueParameter? = null
-                        var ksValueParameter_afterStart: KSValueParameter? = null
-                        var ksValueParameter_requestCode: KSValueParameter? = null
-                        var ksValueParameter_bundle: KSValueParameter? = null
-
-                        val returnTypePoetTypeName = ksFunctionDeclaration.returnTypeToTypeName()
+                        val ksValueParameter_context = functionInfo.ksValueParameter_context
+                        val ksValueParameter_options = functionInfo.ksValueParameter_options
+                        val ksValueParameter_callback = functionInfo.ksValueParameter_callback
+                        val ksValueParameter_biCallback = functionInfo.ksValueParameter_biCallback
+                        val ksValueParameter_kt_function0 = functionInfo.ksValueParameter_kt_function0
+                        val ksValueParameter_kt_function1 = functionInfo.ksValueParameter_kt_function1
+                        val ksValueParameter_beforeAction = functionInfo.ksValueParameter_beforeAction
+                        val ksValueParameter_beforeStartAction = functionInfo.ksValueParameter_beforeStartAction
+                        val ksValueParameter_afterAction = functionInfo.ksValueParameter_afterAction
+                        val ksValueParameter_afterError = functionInfo.ksValueParameter_afterError
+                        val ksValueParameter_afterEvent = functionInfo.ksValueParameter_afterEvent
+                        val ksValueParameter_afterStart = functionInfo.ksValueParameter_afterStart
+                        val ksValueParameter_requestCode = functionInfo.ksValueParameter_requestCode
+                        val ksValueParameter_bundle = functionInfo.ksValueParameter_bundle
 
                         // 几个扩展函数成员
                         val activityResultCallExtendMethodMemberName =
@@ -232,102 +256,100 @@ private class RouterApiProcessor(
                                 .addModifiers(KModifier.OVERRIDE)
                                 // 先添加方法的参数, 同时解析出一些特别的参数
                                 .apply {
-                                    ksFunctionDeclaration
-                                        .parameters
-                                        .forEach { ksValueParameter ->
+                                    functionInfo.parameterInfoList.forEach { parameterInfo ->
 
-                                            when {
-                                                ksValueParameter.isAnnotationPresent(
-                                                    annotationKClass = OptionsAnno::class
-                                                ) -> {
-                                                    ksValueParameter_options = ksValueParameter
-                                                }
-
-                                                ksValueParameter.isAnnotationPresent(
-                                                    annotationKClass = BeforeRouteSuccessActionAnno::class
-                                                ) -> {
-                                                    ksValueParameter_beforeAction = ksValueParameter
-                                                }
-
-                                                ksValueParameter.isAnnotationPresent(
-                                                    annotationKClass = BeforeStartActivityActionAnno::class
-                                                ) -> {
-                                                    ksValueParameter_beforeStartAction =
-                                                        ksValueParameter
-                                                }
-
-                                                ksValueParameter.isAnnotationPresent(
-                                                    annotationKClass = AfterRouteActionAnno::class
-                                                ) -> {
-                                                    ksValueParameter_afterAction = ksValueParameter
-                                                }
-
-                                                ksValueParameter.isAnnotationPresent(
-                                                    annotationKClass = AfterRouteErrorActionAnno::class
-                                                ) -> {
-                                                    ksValueParameter_afterError = ksValueParameter
-                                                }
-
-                                                ksValueParameter.isAnnotationPresent(
-                                                    annotationKClass = AfterRouteEventActionAnno::class
-                                                ) -> {
-                                                    ksValueParameter_afterEvent = ksValueParameter
-                                                }
-
-                                                ksValueParameter.isAnnotationPresent(
-                                                    annotationKClass = AfterStartActivityActionAnno::class
-                                                ) -> {
-                                                    ksValueParameter_afterStart = ksValueParameter
-                                                }
-
-                                                ksValueParameter.isAnnotationPresent(
-                                                    annotationKClass = RequestCodeAnno::class
-                                                ) -> {
-                                                    ksValueParameter_requestCode = ksValueParameter
-                                                }
-
-                                                ksValueParameter.isAnnotationPresent(
-                                                    annotationKClass = ParameterBundleAnno::class
-                                                ) -> {
-                                                    ksValueParameter_bundle = ksValueParameter
-                                                }
-                                            }
-                                            when (ksValueParameter.type.resolve().declaration.qualifiedName) {
-                                                androidContextKSClassDeclaration?.qualifiedName -> {
-                                                    ksValueParameter_context = ksValueParameter
-                                                }
-
-                                                componentCallbackKSClassDeclaration?.qualifiedName -> {
-                                                    ksValueParameter_callback = ksValueParameter
-                                                }
-
-                                                componentBiCallbackKSClassDeclaration?.qualifiedName -> {
-                                                    ksValueParameter_biCallback = ksValueParameter
-                                                }
-
-                                                kotlinFunction0KSClassDeclaration?.qualifiedName -> {
-                                                    ksValueParameter_kt_function0 = ksValueParameter
-                                                }
-
-                                                kotlinFunction1KSClassDeclaration?.qualifiedName -> {
-                                                    ksValueParameter_kt_function1 = ksValueParameter
-                                                }
+                                        /*when {
+                                            ksValueParameter.isAnnotationPresent(
+                                                annotationKClass = OptionsAnno::class
+                                            ) -> {
+                                                ksValueParameter_options = ksValueParameter
                                             }
 
-                                            this.addParameter(
-                                                name = ksValueParameter.name!!.asString(),
-                                                type = try {
-                                                    ksValueParameter.typeToClassName()
-                                                } catch (e: Exception) {
-                                                    if (logEnable) {
-                                                        logger.warn(
-                                                            message = "$TAG $componentModuleName ksValueParameter = $ksValueParameter"
-                                                        )
-                                                    }
-                                                    throw e
-                                                },
-                                            )
+                                            ksValueParameter.isAnnotationPresent(
+                                                annotationKClass = BeforeRouteSuccessActionAnno::class
+                                            ) -> {
+                                                ksValueParameter_beforeAction = ksValueParameter
+                                            }
+
+                                            ksValueParameter.isAnnotationPresent(
+                                                annotationKClass = BeforeStartActivityActionAnno::class
+                                            ) -> {
+                                                ksValueParameter_beforeStartAction =
+                                                    ksValueParameter
+                                            }
+
+                                            ksValueParameter.isAnnotationPresent(
+                                                annotationKClass = AfterRouteActionAnno::class
+                                            ) -> {
+                                                ksValueParameter_afterAction = ksValueParameter
+                                            }
+
+                                            ksValueParameter.isAnnotationPresent(
+                                                annotationKClass = AfterRouteErrorActionAnno::class
+                                            ) -> {
+                                                ksValueParameter_afterError = ksValueParameter
+                                            }
+
+                                            ksValueParameter.isAnnotationPresent(
+                                                annotationKClass = AfterRouteEventActionAnno::class
+                                            ) -> {
+                                                ksValueParameter_afterEvent = ksValueParameter
+                                            }
+
+                                            ksValueParameter.isAnnotationPresent(
+                                                annotationKClass = AfterStartActivityActionAnno::class
+                                            ) -> {
+                                                ksValueParameter_afterStart = ksValueParameter
+                                            }
+
+                                            ksValueParameter.isAnnotationPresent(
+                                                annotationKClass = RequestCodeAnno::class
+                                            ) -> {
+                                                ksValueParameter_requestCode = ksValueParameter
+                                            }
+
+                                            ksValueParameter.isAnnotationPresent(
+                                                annotationKClass = ParameterBundleAnno::class
+                                            ) -> {
+                                                ksValueParameter_bundle = ksValueParameter
+                                            }
                                         }
+                                        when (ksValueParameter.type.resolve().declaration.qualifiedName) {
+                                            androidContextKSClassDeclaration?.qualifiedName -> {
+                                                ksValueParameter_context = ksValueParameter
+                                            }
+
+                                            componentCallbackKSClassDeclaration?.qualifiedName -> {
+                                                ksValueParameter_callback = ksValueParameter
+                                            }
+
+                                            componentBiCallbackKSClassDeclaration?.qualifiedName -> {
+                                                ksValueParameter_biCallback = ksValueParameter
+                                            }
+
+                                            kotlinFunction0KSClassDeclaration?.qualifiedName -> {
+                                                ksValueParameter_kt_function0 = ksValueParameter
+                                            }
+
+                                            kotlinFunction1KSClassDeclaration?.qualifiedName -> {
+                                                ksValueParameter_kt_function1 = ksValueParameter
+                                            }
+                                        }*/
+
+                                        this.addParameter(
+                                            name = parameterInfo.name,
+                                            type = try {
+                                                parameterInfo.typeName
+                                            } catch (e: Exception) {
+                                                if (logEnable) {
+                                                    logger.warn(
+                                                        message = "$TAG $componentModuleName parameterInfo = $parameterInfo"
+                                                    )
+                                                }
+                                                throw e
+                                            },
+                                        )
+                                    }
                                 }
                                 .also { funSpecBuilder ->
 
@@ -337,9 +359,9 @@ private class RouterApiProcessor(
                                         )
                                     }
 
-                                    returnTypePoetTypeName?.let {
+                                    functionInfo.returnTypePoetTypeName?.let {
                                         if (logEnable) {
-                                            logger.warn(message = "$TAG $componentModuleName returnTypePoetTypeName = $returnTypePoetTypeName")
+                                            logger.warn(message = "$TAG $componentModuleName returnTypePoetTypeName = ${functionInfo.returnTypePoetTypeName}")
                                         }
                                         funSpecBuilder.returns(
                                             returnType = it
@@ -372,7 +394,7 @@ private class RouterApiProcessor(
                                             "context = %N)",
                                         )
                                         functionArgList.add(
-                                            element = ksValueParameter_context.name!!.asString(),
+                                            element = ksValueParameter_context.name,
                                         )
                                     }
 
@@ -431,33 +453,21 @@ private class RouterApiProcessor(
                                     // 参数的处理
                                     run {
                                         // 普通的参数处理
-                                        ksFunctionDeclaration
-                                            .parameters
-                                            .forEach { ksValueParameter ->
-
-                                                val parameterNameStr =
-                                                    ksValueParameter.name!!.asString()
-
-                                                ksValueParameter.getAnnotationsByType(
-                                                    annotationKClass = ParameterAnno::class,
-                                                ).firstOrNull()?.let { parameterAnno ->
-                                                    val methodCallName = getMethodNameFromKsType(
-                                                        ksType = ksValueParameter.type.resolve(),
-                                                        prefix = "put",
-                                                    )
-                                                    functionCodeStringBuffer.append(
-                                                        "\n.$methodCallName(key = %S, value = %N)",
-                                                    )
-                                                    functionArgList.add(
-                                                        element = parameterAnno.value.ifEmpty {
-                                                            parameterNameStr
-                                                        },
-                                                    )
-                                                    functionArgList.add(
-                                                        element = ksValueParameter.name!!.asString(),
-                                                    )
-                                                }
+                                        functionInfo.parameterInfoList.forEach { parameterInfo ->
+                                            parameterInfo.parameterAnno?.let { parameterAnno ->
+                                                functionCodeStringBuffer.append(
+                                                    "\n.${parameterInfo.methodCallName}(key = %S, value = %N)",
+                                                )
+                                                functionArgList.add(
+                                                    element = parameterAnno.value.ifEmpty {
+                                                        parameterInfo.name
+                                                    },
+                                                )
+                                                functionArgList.add(
+                                                    element = parameterInfo.name,
+                                                )
                                             }
+                                        }
 
                                         // Bundle 参数处理
                                         ksValueParameter_bundle?.let {
@@ -465,9 +475,10 @@ private class RouterApiProcessor(
                                                 "\n.putAll(bundle = %N)",
                                             )
                                             functionArgList.add(
-                                                element = it.name!!.asString(),
+                                                element = it.name,
                                             )
                                         }
+
                                     }
 
                                     // routeRepeatCheck requestCode category flag options 等处理
@@ -500,13 +511,13 @@ private class RouterApiProcessor(
                                                 )
                                             }
                                         } else {
-                                            ksValueParameter_requestCode?.let {
+                                            ksValueParameter_requestCode.let {
                                                 functionCodeStringBuffer.append(
                                                     "\n.requestCode(requestCode = %N)",
                                                 )
 
                                                 functionArgList.add(
-                                                    element = it.name!!.asString(),
+                                                    element = it.name,
                                                 )
                                             }
                                         }
@@ -518,7 +529,7 @@ private class RouterApiProcessor(
                                             )
 
                                             functionArgList.add(
-                                                element = it.name!!.asString(),
+                                                element = it.name,
                                             )
 
                                         }
@@ -626,7 +637,7 @@ private class RouterApiProcessor(
                                             )
 
                                             functionArgList.add(
-                                                element = it.name!!.asString()
+                                                element = it.name
                                             )
 
                                         }
@@ -638,7 +649,7 @@ private class RouterApiProcessor(
                                             )
 
                                             functionArgList.add(
-                                                element = it.name!!.asString()
+                                                element = it.name
                                             )
 
                                         }
@@ -650,7 +661,7 @@ private class RouterApiProcessor(
                                             )
 
                                             functionArgList.add(
-                                                element = it.name!!.asString()
+                                                element = it.name
                                             )
 
                                         }
@@ -662,7 +673,7 @@ private class RouterApiProcessor(
                                             )
 
                                             functionArgList.add(
-                                                element = it.name!!.asString()
+                                                element = it.name
                                             )
 
                                         }
@@ -674,7 +685,7 @@ private class RouterApiProcessor(
                                             )
 
                                             functionArgList.add(
-                                                element = it.name!!.asString()
+                                                element = it.name
                                             )
 
                                         }
@@ -686,7 +697,7 @@ private class RouterApiProcessor(
                                             )
 
                                             functionArgList.add(
-                                                element = it.name!!.asString()
+                                                element = it.name
                                             )
 
                                         }
@@ -743,14 +754,14 @@ private class RouterApiProcessor(
                                                             element = functionInfo.navigateAnno.resultCodeMatch,
                                                         )
                                                         functionArgList.add(
-                                                            element = ksValueParameter_biCallback.name!!.asString(),
+                                                            element = ksValueParameter_biCallback.name,
                                                         )
                                                     } else {
                                                         functionCodeStringBuffer.append(
                                                             "\n.${navigatePrefixStr}ForIntent(callback = %N)",
                                                         )
                                                         functionArgList.add(
-                                                            element = ksValueParameter_biCallback.name!!.asString(),
+                                                            element = ksValueParameter_biCallback.name,
                                                         )
                                                     }
                                                 }
@@ -764,14 +775,14 @@ private class RouterApiProcessor(
                                                             element = functionInfo.navigateAnno.resultCodeMatch,
                                                         )
                                                         functionArgList.add(
-                                                            element = ksValueParameter_kt_function1!!.name!!.asString(),
+                                                            element = ksValueParameter_kt_function1.name,
                                                         )
                                                     } else {
                                                         functionCodeStringBuffer.append(
                                                             "\n.${navigatePrefixStr}ForIntent(callback = %N)",
                                                         )
                                                         functionArgList.add(
-                                                            element = ksValueParameter_kt_function1!!.name!!.asString(),
+                                                            element = ksValueParameter_kt_function1.name,
                                                         )
                                                     }
                                                 }
@@ -800,7 +811,7 @@ private class RouterApiProcessor(
                                                         "\n.${navigatePrefixStr}ForResult(callback = %N)",
                                                     )
                                                     functionArgList.add(
-                                                        element = ksValueParameter_biCallback!!.name!!.asString(),
+                                                        element = ksValueParameter_biCallback.name,
                                                     )
                                                 }
 
@@ -809,7 +820,7 @@ private class RouterApiProcessor(
                                                         "\n.${navigatePrefixStr}ForResult(callback = %N)",
                                                     )
                                                     functionArgList.add(
-                                                        element = ksValueParameter_kt_function1!!.name!!.asString(),
+                                                        element = ksValueParameter_kt_function1.name,
                                                     )
                                                 }
                                             }
@@ -837,7 +848,7 @@ private class RouterApiProcessor(
                                                         "\n.${navigatePrefixStr}ForResultCode(callback = %N)",
                                                     )
                                                     functionArgList.add(
-                                                        element = ksValueParameter_biCallback!!.name!!.asString(),
+                                                        element = ksValueParameter_biCallback.name,
                                                     )
                                                 }
 
@@ -846,7 +857,7 @@ private class RouterApiProcessor(
                                                         "\n.${navigatePrefixStr}ForResultCode(callback = %N)",
                                                     )
                                                     functionArgList.add(
-                                                        element = ksValueParameter_kt_function1!!.name!!.asString(),
+                                                        element = ksValueParameter_kt_function1.name,
                                                     )
                                                 }
                                             }
@@ -884,7 +895,7 @@ private class RouterApiProcessor(
                                                         element = functionInfo.navigateAnno.resultCodeMatch,
                                                     )
                                                     functionArgList.add(
-                                                        element = ksValueParameter_callback.name!!.asString(),
+                                                        element = ksValueParameter_callback.name,
                                                     )
                                                 }
 
@@ -896,7 +907,7 @@ private class RouterApiProcessor(
                                                         element = functionInfo.navigateAnno.resultCodeMatch,
                                                     )
                                                     functionArgList.add(
-                                                        element = ksValueParameter_kt_function0.name!!.asString(),
+                                                        element = ksValueParameter_kt_function0.name,
                                                     )
                                                 }
                                             }
@@ -933,7 +944,7 @@ private class RouterApiProcessor(
                                                         "callback = %N",
                                                     )
                                                     functionArgList.add(
-                                                        element = it.name!!.asString(),
+                                                        element = it.name,
                                                     )
                                                 }
 
@@ -969,7 +980,8 @@ private class RouterApiProcessor(
             .build()
 
         try {
-            routerApiKSClassDeclaration.containingFile
+            routerApiInfo
+                .containingFile
                 ?.let { containingFile ->
                     val targetDataArray = fileSpec.toString().toByteArray()
                     codeGenerator.createNewFile(
@@ -997,6 +1009,19 @@ private class RouterApiProcessor(
     }
 
     @OptIn(KspExperimental::class)
+    private fun KSValueParameter.toParameterInfo() = RouterApiInfo.FunctionInfo.ParameterInfo(
+        name = this.name!!.asString(),
+        typeName = this.typeToClassName(),
+        parameterAnno = this.getAnnotationsByType(
+            annotationKClass = ParameterAnno::class,
+        ).firstOrNull(),
+        methodCallName = getMethodNameFromKsType(
+            ksType = this.type.resolve(),
+            prefix = "put",
+        ),
+    )
+
+    @OptIn(KspExperimental::class)
     override fun roundProcess(
         resolver: Resolver,
         round: Int,
@@ -1021,6 +1046,7 @@ private class RouterApiProcessor(
                             annotationKClass = HostAnno::class
                         ).firstOrNull()
                     RouterApiInfo(
+                        containingFile = classItem.containingFile,
                         fullClassName = classItem.asStarProjectedType().declaration.qualifiedName!!.asString(),
                         defaultSchemeAnno = defaultSchemeAnno,
                         defaultHostAnno = defaultHostAnno,
@@ -1043,6 +1069,105 @@ private class RouterApiProcessor(
                                     .returnType
                                     ?.resolve()
                                     ?.declaration
+
+                                var ksValueParameter_options: RouterApiInfo.FunctionInfo.ParameterInfo? = null
+                                var ksValueParameter_beforeAction: RouterApiInfo.FunctionInfo.ParameterInfo? = null
+                                var ksValueParameter_beforeStartAction: RouterApiInfo.FunctionInfo.ParameterInfo? = null
+                                var ksValueParameter_afterAction: RouterApiInfo.FunctionInfo.ParameterInfo? = null
+                                var ksValueParameter_afterError: RouterApiInfo.FunctionInfo.ParameterInfo? = null
+                                var ksValueParameter_afterEvent: RouterApiInfo.FunctionInfo.ParameterInfo? = null
+                                var ksValueParameter_afterStart: RouterApiInfo.FunctionInfo.ParameterInfo? = null
+                                var ksValueParameter_requestCode: RouterApiInfo.FunctionInfo.ParameterInfo? = null
+                                var ksValueParameter_bundle: RouterApiInfo.FunctionInfo.ParameterInfo? = null
+                                var ksValueParameter_context: RouterApiInfo.FunctionInfo.ParameterInfo? = null
+                                var ksValueParameter_callback: RouterApiInfo.FunctionInfo.ParameterInfo? = null
+                                var ksValueParameter_biCallback: RouterApiInfo.FunctionInfo.ParameterInfo? = null
+                                var ksValueParameter_kt_function0: RouterApiInfo.FunctionInfo.ParameterInfo? = null
+                                var ksValueParameter_kt_function1: RouterApiInfo.FunctionInfo.ParameterInfo? = null
+
+                                val parameterInfoList = ksFunctionDeclaration
+                                    .parameters
+                                    .onEach { ksValueParameter ->
+                                        when {
+                                            ksValueParameter.isAnnotationPresent(
+                                                annotationKClass = OptionsAnno::class
+                                            ) -> {
+                                                ksValueParameter_options = ksValueParameter.toParameterInfo()
+                                            }
+
+                                            ksValueParameter.isAnnotationPresent(
+                                                annotationKClass = BeforeRouteSuccessActionAnno::class
+                                            ) -> {
+                                                ksValueParameter_beforeAction = ksValueParameter.toParameterInfo()
+                                            }
+
+                                            ksValueParameter.isAnnotationPresent(
+                                                annotationKClass = BeforeStartActivityActionAnno::class
+                                            ) -> {
+                                                ksValueParameter_beforeStartAction = ksValueParameter.toParameterInfo()
+                                            }
+
+                                            ksValueParameter.isAnnotationPresent(
+                                                annotationKClass = AfterRouteActionAnno::class
+                                            ) -> {
+                                                ksValueParameter_afterAction = ksValueParameter.toParameterInfo()
+                                            }
+
+                                            ksValueParameter.isAnnotationPresent(
+                                                annotationKClass = AfterRouteErrorActionAnno::class
+                                            ) -> {
+                                                ksValueParameter_afterError = ksValueParameter.toParameterInfo()
+                                            }
+
+                                            ksValueParameter.isAnnotationPresent(
+                                                annotationKClass = AfterRouteEventActionAnno::class
+                                            ) -> {
+                                                ksValueParameter_afterEvent = ksValueParameter.toParameterInfo()
+                                            }
+
+                                            ksValueParameter.isAnnotationPresent(
+                                                annotationKClass = AfterStartActivityActionAnno::class
+                                            ) -> {
+                                                ksValueParameter_afterStart = ksValueParameter.toParameterInfo()
+                                            }
+
+                                            ksValueParameter.isAnnotationPresent(
+                                                annotationKClass = RequestCodeAnno::class
+                                            ) -> {
+                                                ksValueParameter_requestCode = ksValueParameter.toParameterInfo()
+                                            }
+
+                                            ksValueParameter.isAnnotationPresent(
+                                                annotationKClass = ParameterBundleAnno::class
+                                            ) -> {
+                                                ksValueParameter_bundle = ksValueParameter.toParameterInfo()
+                                            }
+                                        }
+                                        when (ksValueParameter.type.resolve().declaration.qualifiedName) {
+                                            androidContextKSClassDeclaration?.qualifiedName -> {
+                                                ksValueParameter_context = ksValueParameter.toParameterInfo()
+                                            }
+
+                                            componentCallbackKSClassDeclaration?.qualifiedName -> {
+                                                ksValueParameter_callback = ksValueParameter.toParameterInfo()
+                                            }
+
+                                            componentBiCallbackKSClassDeclaration?.qualifiedName -> {
+                                                ksValueParameter_biCallback = ksValueParameter.toParameterInfo()
+                                            }
+
+                                            kotlinFunction0KSClassDeclaration?.qualifiedName -> {
+                                                ksValueParameter_kt_function0 = ksValueParameter.toParameterInfo()
+                                            }
+
+                                            kotlinFunction1KSClassDeclaration?.qualifiedName -> {
+                                                ksValueParameter_kt_function1 = ksValueParameter.toParameterInfo()
+                                            }
+                                        }
+                                    }
+                                    .map { ksValueParameter ->
+                                        ksValueParameter.toParameterInfo()
+                                    }
                                 RouterApiInfo.FunctionInfo(
                                     navigateAnno = navigateAnno,
                                     schemeAnno = ksFunctionDeclaration.getAnnotationsByType(
@@ -1083,7 +1208,7 @@ private class RouterApiProcessor(
                                         .getAnnotationsByType(
                                             annotationKClass = CheckRepeatAnno::class,
                                         ).firstOrNull(),
-                                    returnTypeKsDeclaration = returnTypeKsDeclaration,
+                                    returnTypePoetTypeName = ksFunctionDeclaration.returnTypeToTypeName(),
                                     isSuspendMethod = ksFunctionDeclaration
                                         .modifiers
                                         .contains(element = Modifier.SUSPEND),
@@ -1100,6 +1225,21 @@ private class RouterApiProcessor(
                                         ?.qualifiedName == componentNavigatorKSClassDeclaration?.qualifiedName,
                                     isComponentCallReturnType = returnTypeKsDeclaration
                                         ?.qualifiedName == componentCallKSClassDeclaration?.qualifiedName,
+                                    parameterInfoList = parameterInfoList,
+                                    ksValueParameter_options = ksValueParameter_options,
+                                    ksValueParameter_beforeAction = ksValueParameter_beforeAction,
+                                    ksValueParameter_beforeStartAction = ksValueParameter_beforeStartAction,
+                                    ksValueParameter_afterAction = ksValueParameter_afterAction,
+                                    ksValueParameter_afterError = ksValueParameter_afterError,
+                                    ksValueParameter_afterEvent = ksValueParameter_afterEvent,
+                                    ksValueParameter_afterStart = ksValueParameter_afterStart,
+                                    ksValueParameter_requestCode = ksValueParameter_requestCode,
+                                    ksValueParameter_bundle = ksValueParameter_bundle,
+                                    ksValueParameter_context = ksValueParameter_context,
+                                    ksValueParameter_callback = ksValueParameter_callback,
+                                    ksValueParameter_biCallback = ksValueParameter_biCallback,
+                                    ksValueParameter_kt_function0 = ksValueParameter_kt_function0,
+                                    ksValueParameter_kt_function1 = ksValueParameter_kt_function1,
                                 )
                             }.toList(),
                     )

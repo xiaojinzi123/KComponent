@@ -21,6 +21,6 @@ annotation class FragmentAnno(
      *
      * @return 对应 Fragment 的一个标记, 不能重复
      */
-    vararg val value: String
+    vararg val value: String = []
 
 )

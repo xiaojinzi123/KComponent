@@ -136,28 +136,31 @@ private sealed class FragmentInfo(
     open val descName: String,
     // 目标 Fragment 的全路径
     open val targetClassNameStr: String,
-    open val fragmentAnno: FragmentAnno,
+    open val fragmentAnnoInfo: FragmentAnnoInfo,
 ) //
 {
 
+    data class FragmentAnnoInfo(
+        val value: List<String>,
+    )
 
     data class ServiceClass(
         override val containingFile: KSFile?,
         override val descName: String,
         override val targetClassNameStr: String,
-        override val fragmentAnno: FragmentAnno,
+        override val fragmentAnnoInfo: FragmentAnnoInfo,
     ) : FragmentInfo(
         containingFile = containingFile,
         descName = descName,
         targetClassNameStr = targetClassNameStr,
-        fragmentAnno = fragmentAnno,
+        fragmentAnnoInfo = fragmentAnnoInfo,
     )
 
     data class ServiceMethod(
         override val containingFile: KSFile?,
         override val descName: String,
         override val targetClassNameStr: String,
-        override val fragmentAnno: FragmentAnno,
+        override val fragmentAnnoInfo: FragmentAnnoInfo,
         // com.xxx.xxx.testName
         val methodQualifiedName: String,
         // 只能有一个参数类型, xxx: Bundle
@@ -166,7 +169,7 @@ private sealed class FragmentInfo(
         containingFile = containingFile,
         descName = descName,
         targetClassNameStr = targetClassNameStr,
-        fragmentAnno = fragmentAnno,
+        fragmentAnnoInfo = fragmentAnnoInfo,
     )
 
 }
@@ -678,7 +681,7 @@ private class ModuleProcessor(
                         val counter = AtomicInteger()
                         fragmentInfoList.forEach { fragmentInfo ->
 
-                            if (fragmentInfo.fragmentAnno.value.isEmpty()) {
+                            if (fragmentInfo.fragmentAnnoInfo.value.isEmpty()) {
                                 throw ProcessException(message = "FragmentAnno.value can't be empty: ${fragmentInfo.descName} ")
                             }
                             val targetClassName = ClassName(
@@ -754,7 +757,7 @@ private class ModuleProcessor(
                                     .build()
                             )
 
-                            fragmentInfo.fragmentAnno.value.forEach { fragmentName ->
+                            fragmentInfo.fragmentAnnoInfo.value.forEach { fragmentName ->
                                 funSpec.addStatement(
                                     format = "%T.register(flag = %S, function = %N)",
                                     mClassNameFragmentManager,
@@ -775,7 +778,7 @@ private class ModuleProcessor(
                     )
                     .also { funSpec ->
                         fragmentInfoList.forEach { fragmentInfo ->
-                            fragmentInfo.fragmentAnno.value.forEach { fragmentName ->
+                            fragmentInfo.fragmentAnnoInfo.value.forEach { fragmentName ->
                                 funSpec.addStatement(
                                     format = "%T.unregister(flag = %S)",
                                     mClassNameFragmentManager,
@@ -1353,6 +1356,9 @@ private class ModuleProcessor(
                     val fragmentAnno = item.getAnnotationsByType(
                         annotationKClass = FragmentAnno::class,
                     ).first()
+                    val fragmentAnnoInfo = FragmentInfo.FragmentAnnoInfo(
+                        value = fragmentAnno.value.toList(),
+                    )
                     when (item) {
                         is KSFunctionDeclaration -> {
                             if (item.parameters.size != 1) {
@@ -1369,7 +1375,7 @@ private class ModuleProcessor(
                                     ?.qualifiedName
                                     ?.asString()
                                     ?: "",
-                                fragmentAnno = fragmentAnno,
+                                fragmentAnnoInfo = fragmentAnnoInfo,
                                 methodQualifiedName = item.qualifiedName!!.asString(),
                                 parameterName = item.parameters.first().name?.asString(),
                             )
@@ -1380,7 +1386,7 @@ private class ModuleProcessor(
                                 containingFile = containingFile,
                                 descName = descName,
                                 targetClassNameStr = item.qualifiedName?.asString() ?: "",
-                                fragmentAnno = fragmentAnno,
+                                fragmentAnnoInfo = fragmentAnnoInfo,
                             )
                         }
 

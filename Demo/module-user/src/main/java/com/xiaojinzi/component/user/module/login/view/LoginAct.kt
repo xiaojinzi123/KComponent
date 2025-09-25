@@ -7,7 +7,6 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.core.view.WindowCompat
-import com.google.accompanist.pager.ExperimentalPagerApi
 import com.xiaojinzi.component.anno.RouterAnno
 import com.xiaojinzi.component.anno.UriAutowiredAnno
 import com.xiaojinzi.component.base.RouterConfig
@@ -36,7 +35,6 @@ class LoginAct : BaseAct<LoginViewModel>() {
         InternalCoroutinesApi::class,
         ExperimentalMaterialApi::class,
         ExperimentalAnimationApi::class,
-        ExperimentalPagerApi::class,
         ExperimentalFoundationApi::class
     )
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -18,7 +18,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.accompanist.pager.ExperimentalPagerApi
 import com.xiaojinzi.component.base.theme.SPECIFIC_FF3A373A
 import com.xiaojinzi.component.base.view.AppbarNormal
 import com.xiaojinzi.support.ktx.nothing
@@ -28,7 +27,6 @@ import kotlinx.coroutines.InternalCoroutinesApi
 @InternalCoroutinesApi
 @ExperimentalMaterialApi
 @ExperimentalAnimationApi
-@ExperimentalPagerApi
 @ExperimentalFoundationApi
 @Composable
 private fun TestParameterAutowireView() {
@@ -66,7 +64,6 @@ private fun TestParameterAutowireView() {
 @InternalCoroutinesApi
 @ExperimentalMaterialApi
 @ExperimentalAnimationApi
-@ExperimentalPagerApi
 @ExperimentalFoundationApi
 @Composable
 fun TestParameterAutowireViewWrap() {
@@ -84,7 +81,6 @@ fun TestParameterAutowireViewWrap() {
 @InternalCoroutinesApi
 @ExperimentalMaterialApi
 @ExperimentalAnimationApi
-@ExperimentalPagerApi
 @ExperimentalFoundationApi
 @Preview
 @Composable

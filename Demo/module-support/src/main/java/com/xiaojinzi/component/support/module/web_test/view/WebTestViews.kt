@@ -1,22 +1,17 @@
 package com.xiaojinzi.component.support.module.web_test.view
 
 import android.annotation.SuppressLint
-import android.webkit.JavascriptInterface
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.web.AccompanistWebViewClient
-import com.google.accompanist.web.WebView
-import com.google.accompanist.web.rememberWebViewState
 import com.xiaojinzi.component.base.view.AppbarNormal
 import com.xiaojinzi.component.impl.Router
 import com.xiaojinzi.support.ktx.nothing
@@ -25,9 +20,7 @@ import kotlinx.coroutines.InternalCoroutinesApi
 
 @SuppressLint("SetJavaScriptEnabled")
 @InternalCoroutinesApi
-@ExperimentalMaterialApi
 @ExperimentalAnimationApi
-@ExperimentalPagerApi
 @ExperimentalFoundationApi
 @Composable
 private fun WebTestView() {
@@ -39,17 +32,8 @@ private fun WebTestView() {
             .nothing(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-
-        val client: AccompanistWebViewClient = remember {
-            AccompanistWebViewClient()
-        }
-
-        WebView(
-            state = rememberWebViewState(url = "file:///android_asset/index.html"),
-            captureBackPresses = false,
-            client = client,
+        AndroidView(
             factory = { context ->
-
                 class JavascriptInterface {
 
                     /**
@@ -64,25 +48,22 @@ private fun WebTestView() {
                     }
 
                 }
-
                 android.webkit.WebView(context).apply {
                     this.settings.javaScriptEnabled = true
                     this.addJavascriptInterface(
                         JavascriptInterface(),
                         "testWebRouter",
                     )
+                    this.loadUrl("file:///android_asset/index.html")
                 }
-            }
+            },
         )
-
     }
 }
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @InternalCoroutinesApi
-@ExperimentalMaterialApi
 @ExperimentalAnimationApi
-@ExperimentalPagerApi
 @ExperimentalFoundationApi
 @Composable
 fun WebTestViewWrap() {
@@ -92,15 +73,21 @@ fun WebTestViewWrap() {
                 title = "Web 测试".toStringItemDto(),
             )
         }
-    ) {
-        WebTestView()
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .padding(
+                    top = paddingValues.calculateTopPadding(),
+                )
+                .nothing(),
+        ) {
+            WebTestView()
+        }
     }
 }
 
 @InternalCoroutinesApi
-@ExperimentalMaterialApi
 @ExperimentalAnimationApi
-@ExperimentalPagerApi
 @ExperimentalFoundationApi
 @Preview
 @Composable

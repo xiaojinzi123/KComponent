@@ -16,7 +16,6 @@ import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
-import com.google.accompanist.pager.ExperimentalPagerApi
 import com.xiaojinzi.component.base.view.AppbarNormal
 import com.xiaojinzi.support.ktx.nothing
 import com.xiaojinzi.support.ktx.toStringItemDto
@@ -25,7 +24,6 @@ import kotlinx.coroutines.InternalCoroutinesApi
 @InternalCoroutinesApi
 @ExperimentalMaterialApi
 @ExperimentalAnimationApi
-@ExperimentalPagerApi
 @ExperimentalFoundationApi
 @Composable
 private fun DefaultView() {
@@ -58,7 +56,6 @@ private fun DefaultView() {
 @InternalCoroutinesApi
 @ExperimentalMaterialApi
 @ExperimentalAnimationApi
-@ExperimentalPagerApi
 @ExperimentalFoundationApi
 @Composable
 fun DefaultViewWrap() {
@@ -76,7 +73,6 @@ fun DefaultViewWrap() {
 @InternalCoroutinesApi
 @ExperimentalMaterialApi
 @ExperimentalAnimationApi
-@ExperimentalPagerApi
 @ExperimentalFoundationApi
 @Preview
 @Composable

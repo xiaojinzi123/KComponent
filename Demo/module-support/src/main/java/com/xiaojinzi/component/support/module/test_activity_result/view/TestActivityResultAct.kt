@@ -6,7 +6,6 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.core.view.WindowCompat
-import com.google.accompanist.pager.ExperimentalPagerApi
 import com.xiaojinzi.component.anno.RouterAnno
 import com.xiaojinzi.component.base.RouterConfig
 import com.xiaojinzi.component.base.theme.CommonTheme
@@ -28,8 +27,9 @@ class TestActivityResultAct : BaseAct<TestActivityResultViewModel>() {
     }
 
     @OptIn(
-        InternalCoroutinesApi::class, ExperimentalMaterialApi::class,
-        ExperimentalAnimationApi::class, ExperimentalPagerApi::class,
+        InternalCoroutinesApi::class,
+        ExperimentalMaterialApi::class,
+        ExperimentalAnimationApi::class,
         ExperimentalFoundationApi::class
     )
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -4,9 +4,16 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -15,8 +22,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.accompanist.flowlayout.FlowRow
-import com.google.accompanist.pager.ExperimentalPagerApi
 import com.xiaojinzi.component.base.RouterConfig
 import com.xiaojinzi.component.base.api.RouterApi
 import com.xiaojinzi.component.base.interceptor.DialogShowInterceptor
@@ -24,9 +29,18 @@ import com.xiaojinzi.component.base.interceptor.ErrorRouterInterceptor
 import com.xiaojinzi.component.base.view.ActionButton
 import com.xiaojinzi.component.base.view.AppbarNormal
 import com.xiaojinzi.component.bean.ActivityResult
-import com.xiaojinzi.component.impl.*
+import com.xiaojinzi.component.impl.BiCallback
+import com.xiaojinzi.component.impl.Router
+import com.xiaojinzi.component.impl.RouterErrorResult
+import com.xiaojinzi.component.impl.RouterRequest
+import com.xiaojinzi.component.impl.RouterResult
 import com.xiaojinzi.component.support.CallbackAdapter
-import com.xiaojinzi.support.ktx.*
+import com.xiaojinzi.support.ktx.AppScope
+import com.xiaojinzi.support.ktx.ErrorIgnoreContext
+import com.xiaojinzi.support.ktx.app
+import com.xiaojinzi.support.ktx.nothing
+import com.xiaojinzi.support.ktx.toStringItemDto
+import com.xiaojinzi.support.ktx.tryFinishActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -35,7 +49,6 @@ import kotlinx.coroutines.launch
 @InternalCoroutinesApi
 @ExperimentalMaterialApi
 @ExperimentalAnimationApi
-@ExperimentalPagerApi
 @ExperimentalFoundationApi
 @Composable
 private fun TestRouteView() {
@@ -54,8 +67,12 @@ private fun TestRouteView() {
                 .wrapContentHeight()
                 .padding(horizontal = 12.dp, vertical = 16.dp)
                 .nothing(),
-            mainAxisSpacing = 6.dp,
-            crossAxisSpacing = 2.dp,
+            horizontalArrangement = Arrangement.spacedBy(
+                6.dp,
+            ),
+            verticalArrangement = Arrangement.spacedBy(
+                2.dp,
+            ),
         ) {
             ActionButton(text = "手动取消") {
                 Router.with(context = context)
@@ -70,7 +87,11 @@ private fun TestRouteView() {
 
                             override fun onError(errorResult: RouterErrorResult) {
                                 super.onError(errorResult)
-                                Toast.makeText(app, "路由错误: ${errorResult.error.message}", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    app,
+                                    "路由错误: ${errorResult.error.message}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
 
                             override fun onEvent(
@@ -91,7 +112,11 @@ private fun TestRouteView() {
                         callback = object : CallbackAdapter() {
                             override fun onCancel(originalRequest: RouterRequest?) {
                                 super.onCancel(originalRequest)
-                                Toast.makeText(app, "路由被取消, originalRequest 是否为空?: ${originalRequest == null}", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    app,
+                                    "路由被取消, originalRequest 是否为空?: ${originalRequest == null}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         }
                     )
@@ -356,7 +381,6 @@ private fun TestRouteView() {
 @InternalCoroutinesApi
 @ExperimentalMaterialApi
 @ExperimentalAnimationApi
-@ExperimentalPagerApi
 @ExperimentalFoundationApi
 @Composable
 fun TestRouteViewWrap() {
@@ -374,7 +398,6 @@ fun TestRouteViewWrap() {
 @InternalCoroutinesApi
 @ExperimentalMaterialApi
 @ExperimentalAnimationApi
-@ExperimentalPagerApi
 @ExperimentalFoundationApi
 @Preview
 @Composable

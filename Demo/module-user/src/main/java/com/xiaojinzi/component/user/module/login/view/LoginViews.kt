@@ -25,7 +25,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.accompanist.pager.ExperimentalPagerApi
 import com.xiaojinzi.component.base.theme.SPECIFIC_FF3A373A
 import com.xiaojinzi.component.base.theme.SPECIFIC_FF958F95
 import com.xiaojinzi.component.base.view.AppbarNormal
@@ -36,7 +35,6 @@ import kotlinx.coroutines.InternalCoroutinesApi
 @InternalCoroutinesApi
 @ExperimentalMaterialApi
 @ExperimentalAnimationApi
-@ExperimentalPagerApi
 @ExperimentalFoundationApi
 @Composable
 private fun LoginView() {
@@ -167,7 +165,6 @@ private fun LoginView() {
 @InternalCoroutinesApi
 @ExperimentalMaterialApi
 @ExperimentalAnimationApi
-@ExperimentalPagerApi
 @ExperimentalFoundationApi
 @Composable
 fun LoginViewWrap() {
@@ -185,7 +182,6 @@ fun LoginViewWrap() {
 @InternalCoroutinesApi
 @ExperimentalMaterialApi
 @ExperimentalAnimationApi
-@ExperimentalPagerApi
 @ExperimentalFoundationApi
 @Preview
 @Composable

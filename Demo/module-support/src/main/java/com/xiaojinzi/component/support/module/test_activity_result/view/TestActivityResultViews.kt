@@ -4,9 +4,13 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -14,7 +18,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.accompanist.pager.ExperimentalPagerApi
 import com.xiaojinzi.component.base.view.ActionButton
 import com.xiaojinzi.component.base.view.AppbarNormal
 import com.xiaojinzi.support.ktx.getFragmentActivity
@@ -23,9 +26,7 @@ import com.xiaojinzi.support.ktx.toStringItemDto
 import kotlinx.coroutines.InternalCoroutinesApi
 
 @InternalCoroutinesApi
-@ExperimentalMaterialApi
 @ExperimentalAnimationApi
-@ExperimentalPagerApi
 @ExperimentalFoundationApi
 @Composable
 private fun TestActivityResultView() {
@@ -59,9 +60,7 @@ private fun TestActivityResultView() {
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @InternalCoroutinesApi
-@ExperimentalMaterialApi
 @ExperimentalAnimationApi
-@ExperimentalPagerApi
 @ExperimentalFoundationApi
 @Composable
 fun TestActivityResultViewWrap() {
@@ -71,15 +70,21 @@ fun TestActivityResultViewWrap() {
                 title = "测试返回 ActivityResult".toStringItemDto(),
             )
         }
-    ) {
-        TestActivityResultView()
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .padding(
+                    top = paddingValues.calculateTopPadding(),
+                )
+                .nothing(),
+        ) {
+            TestActivityResultView()
+        }
     }
 }
 
 @InternalCoroutinesApi
-@ExperimentalMaterialApi
 @ExperimentalAnimationApi
-@ExperimentalPagerApi
 @ExperimentalFoundationApi
 @Preview
 @Composable

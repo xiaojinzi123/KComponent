@@ -1,10 +1,13 @@
 package com.xiaojinzi.component.support.module.web.view
 
 import android.annotation.SuppressLint
+import android.webkit.WebView
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -12,9 +15,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.web.rememberWebViewState
 import com.xiaojinzi.component.base.view.AppbarNormal
 import com.xiaojinzi.support.ktx.nothing
 import com.xiaojinzi.support.ktx.toStringItemDto
@@ -23,7 +25,6 @@ import kotlinx.coroutines.InternalCoroutinesApi
 @InternalCoroutinesApi
 @ExperimentalMaterialApi
 @ExperimentalAnimationApi
-@ExperimentalPagerApi
 @ExperimentalFoundationApi
 @Composable
 private fun WebView() {
@@ -37,13 +38,18 @@ private fun WebView() {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         targetUrl?.let {
-            val state = rememberWebViewState(url = it)
-            com.google.accompanist.web.WebView(
+            AndroidView(
                 modifier = Modifier
                     .fillMaxSize()
                     .nothing(),
-                state = state,
-                captureBackPresses = false,
+                factory = { context ->
+                    WebView(context)
+                },
+                update = { webView ->
+                    webView.loadUrl(it)
+                },
+                onRelease = { webView ->
+                },
             )
         }
     }
@@ -53,7 +59,6 @@ private fun WebView() {
 @InternalCoroutinesApi
 @ExperimentalMaterialApi
 @ExperimentalAnimationApi
-@ExperimentalPagerApi
 @ExperimentalFoundationApi
 @Composable
 fun WebViewWrap() {
@@ -71,7 +76,6 @@ fun WebViewWrap() {
 @InternalCoroutinesApi
 @ExperimentalMaterialApi
 @ExperimentalAnimationApi
-@ExperimentalPagerApi
 @ExperimentalFoundationApi
 @Preview
 @Composable

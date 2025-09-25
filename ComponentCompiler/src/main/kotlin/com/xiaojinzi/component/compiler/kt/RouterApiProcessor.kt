@@ -1,20 +1,129 @@
 package com.xiaojinzi.component.compiler.kt
 
 import com.google.auto.service.AutoService
-import com.google.devtools.ksp.*
-import com.google.devtools.ksp.processing.*
+import com.google.devtools.ksp.KSTypesNotPresentException
+import com.google.devtools.ksp.KspExperimental
+import com.google.devtools.ksp.getAnnotationsByType
+import com.google.devtools.ksp.getClassDeclarationByName
+import com.google.devtools.ksp.getDeclaredFunctions
+import com.google.devtools.ksp.isAnnotationPresent
+import com.google.devtools.ksp.processing.Dependencies
+import com.google.devtools.ksp.processing.Resolver
+import com.google.devtools.ksp.processing.SymbolProcessor
+import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
+import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFile
 import com.google.devtools.ksp.symbol.KSValueParameter
 import com.google.devtools.ksp.symbol.Modifier
-import com.squareup.kotlinpoet.*
+import com.google.devtools.ksp.validate
+import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.MemberName
+import com.squareup.kotlinpoet.TypeName
+import com.squareup.kotlinpoet.TypeSpec
 import com.xiaojinzi.component.ComponentConstants
 import com.xiaojinzi.component.ComponentUtil
-import com.xiaojinzi.component.anno.router.*
+import com.xiaojinzi.component.anno.router.AfterRouteActionAnno
+import com.xiaojinzi.component.anno.router.AfterRouteErrorActionAnno
+import com.xiaojinzi.component.anno.router.AfterRouteEventActionAnno
+import com.xiaojinzi.component.anno.router.AfterStartActivityActionAnno
+import com.xiaojinzi.component.anno.router.BeforeRouteSuccessActionAnno
+import com.xiaojinzi.component.anno.router.BeforeStartActivityActionAnno
+import com.xiaojinzi.component.anno.router.CategoryAnno
+import com.xiaojinzi.component.anno.router.CheckRepeatAnno
+import com.xiaojinzi.component.anno.router.FlagAnno
+import com.xiaojinzi.component.anno.router.HostAndPathAnno
+import com.xiaojinzi.component.anno.router.HostAnno
+import com.xiaojinzi.component.anno.router.NavigateAnno
+import com.xiaojinzi.component.anno.router.OptionsAnno
+import com.xiaojinzi.component.anno.router.ParameterAnno
+import com.xiaojinzi.component.anno.router.ParameterBundleAnno
+import com.xiaojinzi.component.anno.router.PathAnno
+import com.xiaojinzi.component.anno.router.RequestCodeAnno
+import com.xiaojinzi.component.anno.router.RouterApiAnno
+import com.xiaojinzi.component.anno.router.SchemeAnno
+import com.xiaojinzi.component.anno.router.UrlAnno
+import com.xiaojinzi.component.anno.router.UseInterceptorAnno
+import com.xiaojinzi.component.anno.router.UserInfoAnno
 import com.xiaojinzi.component.anno.support.ComponentGeneratedAnno
 import com.xiaojinzi.component.packageName
 import com.xiaojinzi.component.simpleClassName
+
+private data class UserInfoAnnoInfo(
+    val value: String,
+)
+
+private data class UrlAnnoInfo(
+    val value: String,
+)
+
+private data class SchemeAnnoInfo(
+    val value: String,
+)
+
+private data class HostAnnoInfo(
+    val value: String,
+)
+
+private data class PathAnnoInfo(
+    val value: String,
+)
+
+private data class HostAndPathAnnoInfo(
+    val value: String,
+)
+
+private data class UseInterceptorAnnoInfo(
+    val classesClassPathList: List<String>,
+    val names: List<String>,
+)
+
+private data class RequestCodeAnnoInfo(
+    val value: Int,
+)
+
+private data class CheckRepeatAnnoInfo(
+    val value: Boolean,
+)
+
+private data class NavigateAnnoInfo(
+    val forResult: Boolean,
+    val forResultCode: Boolean,
+    val forIntent: Boolean,
+    val resultCodeMatch: Int,
+) {
+    val resultCodeMatchValid: Boolean
+        get() = resultCodeMatch != Int.MIN_VALUE
+}
+
+private fun UserInfoAnno.toUserInfoAnnoInfo() = UserInfoAnnoInfo(value = this.value)
+
+private fun UrlAnno.toUrlAnnoInfo() = UrlAnnoInfo(value = this.value)
+
+private fun SchemeAnno.toSchemeAnnoInfo() = SchemeAnnoInfo(value = this.value)
+
+private fun HostAnno.toHostAnnoInfo() = HostAnnoInfo(value = this.value)
+
+private fun PathAnno.toPathAnnoInfo() = PathAnnoInfo(value = this.value)
+
+private fun HostAndPathAnno.toHostAndPathAnnoInfo() = HostAndPathAnnoInfo(value = this.value)
+
+private fun UseInterceptorAnno.toUseInterceptorAnnoInfo() = UseInterceptorAnnoInfo(
+    classesClassPathList = this.classesClassPathList,
+    names = this.names.toList(),
+)
+
+private fun RequestCodeAnno.toRequestCodeAnnoInfo() = RequestCodeAnnoInfo(
+    value = this.value,
+)
+
+private fun CheckRepeatAnno.toCheckRepeatAnnoInfo() = CheckRepeatAnnoInfo(
+    value = this.value,
+)
 
 private data class RouterApiInfo(
     val containingFile: KSFile?,
@@ -23,9 +132,9 @@ private data class RouterApiInfo(
     // 生成的类要实现的接口的 ClassName
     val targetRouterApiInterfaceClassName: ClassName = fullClassName.toClassName(),
     // 默认的 SchemeAnno
-    val defaultSchemeAnno: SchemeAnno?,
+    val defaultSchemeAnnoInfo: SchemeAnnoInfo?,
     // 默认的 HostAnno
-    val defaultHostAnno: HostAnno?,
+    val defaultHostAnnoInfo: HostAnnoInfo?,
     // 默认的 CategoryAnno 的值
     val defaultCategoryValueList: List<String>,
     // 默认的 FlagAnno 的值
@@ -35,26 +144,26 @@ private data class RouterApiInfo(
 
     data class FunctionInfo(
         // 导航的注解, 默认可以省略
-        val navigateAnno: NavigateAnno?,
+        val navigateAnnoInfo: NavigateAnnoInfo?,
         // SchemeAnno 信息
-        val schemeAnno: SchemeAnno?,
+        val schemeAnnoInfo: SchemeAnnoInfo?,
         // userInfo 信息
-        val userInfoAnno: UserInfoAnno?,
+        val userInfoAnnoInfo: UserInfoAnnoInfo?,
         // 标记路由的 url
-        val urlAnno: UrlAnno?,
+        val urlAnnoInfo: UrlAnnoInfo?,
         // 标记路由的 host
-        val hostAnno: HostAnno?,
+        val hostAnnoInfo: HostAnnoInfo?,
         // 标记路由的 path
-        val pathAnno: PathAnno?,
+        val pathAnnoInfo: PathAnnoInfo?,
         // 标记路由的地址
-        val hostAndPathAnno: HostAndPathAnno?,
+        val hostAndPathAnnoInfo: HostAndPathAnnoInfo?,
         val categoryValueList: List<String>,
         val flagValueList: List<Int>,
         // 使用的拦截器
-        val useInterceptorAnno: UseInterceptorAnno?,
+        val useInterceptorAnnoInfo: UseInterceptorAnnoInfo?,
         // RequestCodeAnno 信息
-        val requestCodeAnno: RequestCodeAnno?,
-        val checkRepeatAnno: CheckRepeatAnno?,
+        val requestCodeAnnoInfo: RequestCodeAnnoInfo?,
+        val checkRepeatAnnoInfo: CheckRepeatAnnoInfo?,
         // 方法返回值类型的声明
         val returnTypePoetTypeName: TypeName?,
         // 是否是 suspend 函数
@@ -179,7 +288,8 @@ private class RouterApiProcessor(
     ) {
 
         // 生成的目标类的 String className
-        val targetClassSimpleName = routerApiInfo.fullClassName.simpleClassName() + ComponentUtil.UIROUTERAPI
+        val targetClassSimpleName =
+            routerApiInfo.fullClassName.simpleClassName() + ComponentUtil.UIROUTERAPI
 
         val typeSpec = TypeSpec
             .classBuilder(name = targetClassSimpleName)
@@ -208,18 +318,20 @@ private class RouterApiProcessor(
                             routerApiInfo.defaultFlagValueList + (functionInfo.flagValueList)
 
                         // 是否是返回 Rx
-                        val isRxReturnType = functionInfo.isSingleReturnType || functionInfo.isCompletableReturnType
+                        val isRxReturnType =
+                            functionInfo.isSingleReturnType || functionInfo.isCompletableReturnType
 
-                        val isNeedReturn = (functionInfo.navigateAnno?.let {
-                            functionInfo.navigateAnno.forResult || functionInfo.navigateAnno.forIntent || functionInfo.navigateAnno.forResultCode
+                        val isNeedReturn = (functionInfo.navigateAnnoInfo?.let {
+                            functionInfo.navigateAnnoInfo.forResult || functionInfo.navigateAnnoInfo.forIntent || functionInfo.navigateAnnoInfo.forResultCode
                         } ?: false) || functionInfo.isComponentNavigationDisposableReturnType
                                 || functionInfo.isCompletableReturnType || functionInfo.isComponentNavigatorReturnType || functionInfo.isComponentCallReturnType
 
-                        val navigatePrefixStr = if (functionInfo.isComponentNavigationDisposableReturnType) {
-                            "navigate"
-                        } else {
-                            "forward"
-                        }
+                        val navigatePrefixStr =
+                            if (functionInfo.isComponentNavigationDisposableReturnType) {
+                                "navigate"
+                            } else {
+                                "forward"
+                            }
 
                         val ksValueParameter_bundle = functionInfo.bundleParameterInfo
 
@@ -387,7 +499,7 @@ private class RouterApiProcessor(
 
                                     // scheme userInfo host path 的处理
                                     run {
-                                        functionInfo.schemeAnno?.let {
+                                        functionInfo.schemeAnnoInfo?.let {
                                             functionCodeStringBuffer.append(
                                                 "\n.scheme(scheme = %S)",
                                             )
@@ -395,7 +507,7 @@ private class RouterApiProcessor(
                                                 element = it.value,
                                             )
                                         }
-                                        functionInfo.userInfoAnno?.let {
+                                        functionInfo.userInfoAnnoInfo?.let {
                                             functionCodeStringBuffer.append(
                                                 "\n.userInfo(userInfo = %S)",
                                             )
@@ -403,7 +515,7 @@ private class RouterApiProcessor(
                                                 element = it.value,
                                             )
                                         }
-                                        functionInfo.urlAnno?.let {
+                                        functionInfo.urlAnnoInfo?.let {
                                             functionCodeStringBuffer.append(
                                                 "\n.url(url = %S)",
                                             )
@@ -411,7 +523,7 @@ private class RouterApiProcessor(
                                                 element = it.value,
                                             )
                                         }
-                                        functionInfo.hostAnno?.let {
+                                        functionInfo.hostAnnoInfo?.let {
                                             functionCodeStringBuffer.append(
                                                 "\n.host(host = %S)",
                                             )
@@ -419,7 +531,7 @@ private class RouterApiProcessor(
                                                 element = it.value,
                                             )
                                         }
-                                        functionInfo.pathAnno?.let {
+                                        functionInfo.pathAnnoInfo?.let {
                                             functionCodeStringBuffer.append(
                                                 "\n.path(path = %S)",
                                             )
@@ -427,7 +539,7 @@ private class RouterApiProcessor(
                                                 element = it.value,
                                             )
                                         }
-                                        functionInfo.hostAndPathAnno?.let {
+                                        functionInfo.hostAndPathAnnoInfo?.let {
                                             functionCodeStringBuffer.append(
                                                 "\n.hostAndPath(hostAndPath = %S)",
                                             )
@@ -471,7 +583,7 @@ private class RouterApiProcessor(
                                     // routeRepeatCheck requestCode category flag options 等处理
                                     run {
 
-                                        functionInfo.checkRepeatAnno?.let {
+                                        functionInfo.checkRepeatAnnoInfo?.let {
                                             functionCodeStringBuffer.append(
                                                 "\n.useRouteRepeatCheck(useRouteRepeatCheck = %L)",
                                             )
@@ -483,7 +595,7 @@ private class RouterApiProcessor(
 
                                         // 如果没有参数, 就看看有没有标记方法上的注解
                                         if (functionInfo.requestCodeParameterInfo == null) {
-                                            functionInfo.requestCodeAnno?.let {
+                                            functionInfo.requestCodeAnnoInfo?.let {
                                                 if (it.value == Int.MIN_VALUE) {
                                                     functionCodeStringBuffer.append(
                                                         "\n // requestCode 框架将会随机生成",
@@ -568,7 +680,7 @@ private class RouterApiProcessor(
                                     // 处理拦截器的使用
                                     run {
 
-                                        functionInfo.useInterceptorAnno?.let { useInterceptorAnno ->
+                                        functionInfo.useInterceptorAnnoInfo?.let { useInterceptorAnno ->
 
                                             run {
                                                 val classesClassPathList =
@@ -694,10 +806,10 @@ private class RouterApiProcessor(
                                     // 结尾方法的处理
                                     when {
 
-                                        functionInfo.navigateAnno?.forIntent == true -> {
+                                        functionInfo.navigateAnnoInfo?.forIntent == true -> {
                                             when {
                                                 isRxReturnType -> {
-                                                    if (functionInfo.navigateAnno.resultCodeMatchValid) {
+                                                    if (functionInfo.navigateAnnoInfo.resultCodeMatchValid) {
                                                         functionCodeStringBuffer.append(
                                                             "\n.%M(expectedResultCode = %L)",
                                                         )
@@ -705,7 +817,7 @@ private class RouterApiProcessor(
                                                             element = intentResultCodeMatchCallExtendMethodMemberName,
                                                         )
                                                         functionArgList.add(
-                                                            element = functionInfo.navigateAnno.resultCodeMatch,
+                                                            element = functionInfo.navigateAnnoInfo.resultCodeMatch,
                                                         )
                                                     } else {
                                                         functionCodeStringBuffer.append(
@@ -718,12 +830,12 @@ private class RouterApiProcessor(
                                                 }
 
                                                 functionInfo.isSuspendMethod -> {
-                                                    if (functionInfo.navigateAnno.resultCodeMatchValid) {
+                                                    if (functionInfo.navigateAnnoInfo.resultCodeMatchValid) {
                                                         functionCodeStringBuffer.append(
                                                             "\n.resultCodeMatchAndIntentAwait(expectedResultCode = %L)",
                                                         )
                                                         functionArgList.add(
-                                                            element = functionInfo.navigateAnno.resultCodeMatch,
+                                                            element = functionInfo.navigateAnnoInfo.resultCodeMatch,
                                                         )
                                                     } else {
                                                         functionCodeStringBuffer.append(
@@ -733,12 +845,12 @@ private class RouterApiProcessor(
                                                 }
 
                                                 functionInfo.biCallbackParameterInfo != null -> {
-                                                    if (functionInfo.navigateAnno.resultCodeMatchValid) {
+                                                    if (functionInfo.navigateAnnoInfo.resultCodeMatchValid) {
                                                         functionCodeStringBuffer.append(
                                                             "\n.${navigatePrefixStr}ForIntentAndResultCodeMatch(expectedResultCode = %L, callback = %N)",
                                                         )
                                                         functionArgList.add(
-                                                            element = functionInfo.navigateAnno.resultCodeMatch,
+                                                            element = functionInfo.navigateAnnoInfo.resultCodeMatch,
                                                         )
                                                         functionArgList.add(
                                                             element = functionInfo.biCallbackParameterInfo.name,
@@ -754,12 +866,12 @@ private class RouterApiProcessor(
                                                 }
 
                                                 functionInfo.ktFunction1ParameterInfo != null -> {
-                                                    if (functionInfo.navigateAnno.resultCodeMatchValid) {
+                                                    if (functionInfo.navigateAnnoInfo.resultCodeMatchValid) {
                                                         functionCodeStringBuffer.append(
                                                             "\n.${navigatePrefixStr}ForIntentAndResultCodeMatch(expectedResultCode = %L, callback = %N)",
                                                         )
                                                         functionArgList.add(
-                                                            element = functionInfo.navigateAnno.resultCodeMatch,
+                                                            element = functionInfo.navigateAnnoInfo.resultCodeMatch,
                                                         )
                                                         functionArgList.add(
                                                             element = functionInfo.ktFunction1ParameterInfo.name,
@@ -776,7 +888,7 @@ private class RouterApiProcessor(
                                             }
                                         }
 
-                                        functionInfo.navigateAnno?.forResult == true -> {
+                                        functionInfo.navigateAnnoInfo?.forResult == true -> {
                                             when {
                                                 isRxReturnType -> {
                                                     functionCodeStringBuffer.append(
@@ -813,7 +925,7 @@ private class RouterApiProcessor(
                                             }
                                         }
 
-                                        functionInfo.navigateAnno?.forResultCode == true -> {
+                                        functionInfo.navigateAnnoInfo?.forResultCode == true -> {
                                             when {
                                                 isRxReturnType -> {
                                                     functionCodeStringBuffer.append(
@@ -850,7 +962,7 @@ private class RouterApiProcessor(
                                             }
                                         }
 
-                                        functionInfo.navigateAnno?.resultCodeMatchValid == true -> {
+                                        functionInfo.navigateAnnoInfo?.resultCodeMatchValid == true -> {
 
                                             when {
                                                 isRxReturnType -> {
@@ -861,7 +973,7 @@ private class RouterApiProcessor(
                                                         element = resultCodeMatchCallExtendMethodMemberName,
                                                     )
                                                     functionArgList.add(
-                                                        element = functionInfo.navigateAnno.resultCodeMatch,
+                                                        element = functionInfo.navigateAnnoInfo.resultCodeMatch,
                                                     )
                                                 }
 
@@ -870,7 +982,7 @@ private class RouterApiProcessor(
                                                         "\n.resultCodeMatchAwait(expectedResultCode = %L)",
                                                     )
                                                     functionArgList.add(
-                                                        element = functionInfo.navigateAnno.resultCodeMatch,
+                                                        element = functionInfo.navigateAnnoInfo.resultCodeMatch,
                                                     )
                                                 }
 
@@ -879,7 +991,7 @@ private class RouterApiProcessor(
                                                         "\n.${navigatePrefixStr}ForResultCodeMatch(expectedResultCode = %L, callback = %N)",
                                                     )
                                                     functionArgList.add(
-                                                        element = functionInfo.navigateAnno.resultCodeMatch,
+                                                        element = functionInfo.navigateAnnoInfo.resultCodeMatch,
                                                     )
                                                     functionArgList.add(
                                                         element = functionInfo.callbackParameterInfo.name,
@@ -891,7 +1003,7 @@ private class RouterApiProcessor(
                                                         "\n.${navigatePrefixStr}ForResultCodeMatch(expectedResultCode = %L, callback = %N)",
                                                     )
                                                     functionArgList.add(
-                                                        element = functionInfo.navigateAnno.resultCodeMatch,
+                                                        element = functionInfo.navigateAnnoInfo.resultCodeMatch,
                                                     )
                                                     functionArgList.add(
                                                         element = functionInfo.ktFunction0ParameterInfo.name,
@@ -1037,8 +1149,8 @@ private class RouterApiProcessor(
                     RouterApiInfo(
                         containingFile = classItem.containingFile,
                         fullClassName = classItem.asStarProjectedType().declaration.qualifiedName!!.asString(),
-                        defaultSchemeAnno = defaultSchemeAnno,
-                        defaultHostAnno = defaultHostAnno,
+                        defaultSchemeAnnoInfo = defaultSchemeAnno?.toSchemeAnnoInfo(),
+                        defaultHostAnnoInfo = defaultHostAnno?.toHostAnnoInfo(),
                         defaultCategoryValueList = classItem
                             .getAnnotationsByType(
                                 annotationKClass = CategoryAnno::class
@@ -1054,25 +1166,47 @@ private class RouterApiProcessor(
                                     .getAnnotationsByType(
                                         annotationKClass = NavigateAnno::class
                                     ).firstOrNull()
+                                val navigateAnnoInfo = navigateAnno?.let { anno ->
+                                    NavigateAnnoInfo(
+                                        forResult = anno.forResult,
+                                        forResultCode = anno.forResultCode,
+                                        forIntent = anno.forIntent,
+                                        resultCodeMatch = anno.resultCodeMatch,
+                                    )
+                                }
                                 val returnTypeKsDeclaration = ksFunctionDeclaration
                                     .returnType
                                     ?.resolve()
                                     ?.declaration
 
-                                var ksValueParameter_options: RouterApiInfo.FunctionInfo.ParameterInfo? = null
-                                var ksValueParameter_beforeAction: RouterApiInfo.FunctionInfo.ParameterInfo? = null
-                                var ksValueParameter_beforeStartAction: RouterApiInfo.FunctionInfo.ParameterInfo? = null
-                                var ksValueParameter_afterAction: RouterApiInfo.FunctionInfo.ParameterInfo? = null
-                                var ksValueParameter_afterError: RouterApiInfo.FunctionInfo.ParameterInfo? = null
-                                var ksValueParameter_afterEvent: RouterApiInfo.FunctionInfo.ParameterInfo? = null
-                                var ksValueParameter_afterStart: RouterApiInfo.FunctionInfo.ParameterInfo? = null
-                                var ksValueParameter_requestCode: RouterApiInfo.FunctionInfo.ParameterInfo? = null
-                                var ksValueParameter_bundle: RouterApiInfo.FunctionInfo.ParameterInfo? = null
-                                var ksValueParameter_context: RouterApiInfo.FunctionInfo.ParameterInfo? = null
-                                var ksValueParameter_callback: RouterApiInfo.FunctionInfo.ParameterInfo? = null
-                                var ksValueParameter_biCallback: RouterApiInfo.FunctionInfo.ParameterInfo? = null
-                                var ksValueParameter_kt_function0: RouterApiInfo.FunctionInfo.ParameterInfo? = null
-                                var ksValueParameter_kt_function1: RouterApiInfo.FunctionInfo.ParameterInfo? = null
+                                var ksValueParameter_options: RouterApiInfo.FunctionInfo.ParameterInfo? =
+                                    null
+                                var ksValueParameter_beforeAction: RouterApiInfo.FunctionInfo.ParameterInfo? =
+                                    null
+                                var ksValueParameter_beforeStartAction: RouterApiInfo.FunctionInfo.ParameterInfo? =
+                                    null
+                                var ksValueParameter_afterAction: RouterApiInfo.FunctionInfo.ParameterInfo? =
+                                    null
+                                var ksValueParameter_afterError: RouterApiInfo.FunctionInfo.ParameterInfo? =
+                                    null
+                                var ksValueParameter_afterEvent: RouterApiInfo.FunctionInfo.ParameterInfo? =
+                                    null
+                                var ksValueParameter_afterStart: RouterApiInfo.FunctionInfo.ParameterInfo? =
+                                    null
+                                var ksValueParameter_requestCode: RouterApiInfo.FunctionInfo.ParameterInfo? =
+                                    null
+                                var ksValueParameter_bundle: RouterApiInfo.FunctionInfo.ParameterInfo? =
+                                    null
+                                var ksValueParameter_context: RouterApiInfo.FunctionInfo.ParameterInfo? =
+                                    null
+                                var ksValueParameter_callback: RouterApiInfo.FunctionInfo.ParameterInfo? =
+                                    null
+                                var ksValueParameter_biCallback: RouterApiInfo.FunctionInfo.ParameterInfo? =
+                                    null
+                                var ksValueParameter_kt_function0: RouterApiInfo.FunctionInfo.ParameterInfo? =
+                                    null
+                                var ksValueParameter_kt_function1: RouterApiInfo.FunctionInfo.ParameterInfo? =
+                                    null
 
                                 val parameterInfoList = ksFunctionDeclaration
                                     .parameters
@@ -1081,76 +1215,90 @@ private class RouterApiProcessor(
                                             ksValueParameter.isAnnotationPresent(
                                                 annotationKClass = OptionsAnno::class
                                             ) -> {
-                                                ksValueParameter_options = ksValueParameter.toParameterInfo()
+                                                ksValueParameter_options =
+                                                    ksValueParameter.toParameterInfo()
                                             }
 
                                             ksValueParameter.isAnnotationPresent(
                                                 annotationKClass = BeforeRouteSuccessActionAnno::class
                                             ) -> {
-                                                ksValueParameter_beforeAction = ksValueParameter.toParameterInfo()
+                                                ksValueParameter_beforeAction =
+                                                    ksValueParameter.toParameterInfo()
                                             }
 
                                             ksValueParameter.isAnnotationPresent(
                                                 annotationKClass = BeforeStartActivityActionAnno::class
                                             ) -> {
-                                                ksValueParameter_beforeStartAction = ksValueParameter.toParameterInfo()
+                                                ksValueParameter_beforeStartAction =
+                                                    ksValueParameter.toParameterInfo()
                                             }
 
                                             ksValueParameter.isAnnotationPresent(
                                                 annotationKClass = AfterRouteActionAnno::class
                                             ) -> {
-                                                ksValueParameter_afterAction = ksValueParameter.toParameterInfo()
+                                                ksValueParameter_afterAction =
+                                                    ksValueParameter.toParameterInfo()
                                             }
 
                                             ksValueParameter.isAnnotationPresent(
                                                 annotationKClass = AfterRouteErrorActionAnno::class
                                             ) -> {
-                                                ksValueParameter_afterError = ksValueParameter.toParameterInfo()
+                                                ksValueParameter_afterError =
+                                                    ksValueParameter.toParameterInfo()
                                             }
 
                                             ksValueParameter.isAnnotationPresent(
                                                 annotationKClass = AfterRouteEventActionAnno::class
                                             ) -> {
-                                                ksValueParameter_afterEvent = ksValueParameter.toParameterInfo()
+                                                ksValueParameter_afterEvent =
+                                                    ksValueParameter.toParameterInfo()
                                             }
 
                                             ksValueParameter.isAnnotationPresent(
                                                 annotationKClass = AfterStartActivityActionAnno::class
                                             ) -> {
-                                                ksValueParameter_afterStart = ksValueParameter.toParameterInfo()
+                                                ksValueParameter_afterStart =
+                                                    ksValueParameter.toParameterInfo()
                                             }
 
                                             ksValueParameter.isAnnotationPresent(
                                                 annotationKClass = RequestCodeAnno::class
                                             ) -> {
-                                                ksValueParameter_requestCode = ksValueParameter.toParameterInfo()
+                                                ksValueParameter_requestCode =
+                                                    ksValueParameter.toParameterInfo()
                                             }
 
                                             ksValueParameter.isAnnotationPresent(
                                                 annotationKClass = ParameterBundleAnno::class
                                             ) -> {
-                                                ksValueParameter_bundle = ksValueParameter.toParameterInfo()
+                                                ksValueParameter_bundle =
+                                                    ksValueParameter.toParameterInfo()
                                             }
                                         }
                                         when (ksValueParameter.type.resolve().declaration.qualifiedName) {
                                             androidContextKSClassDeclaration?.qualifiedName -> {
-                                                ksValueParameter_context = ksValueParameter.toParameterInfo()
+                                                ksValueParameter_context =
+                                                    ksValueParameter.toParameterInfo()
                                             }
 
                                             componentCallbackKSClassDeclaration?.qualifiedName -> {
-                                                ksValueParameter_callback = ksValueParameter.toParameterInfo()
+                                                ksValueParameter_callback =
+                                                    ksValueParameter.toParameterInfo()
                                             }
 
                                             componentBiCallbackKSClassDeclaration?.qualifiedName -> {
-                                                ksValueParameter_biCallback = ksValueParameter.toParameterInfo()
+                                                ksValueParameter_biCallback =
+                                                    ksValueParameter.toParameterInfo()
                                             }
 
                                             kotlinFunction0KSClassDeclaration?.qualifiedName -> {
-                                                ksValueParameter_kt_function0 = ksValueParameter.toParameterInfo()
+                                                ksValueParameter_kt_function0 =
+                                                    ksValueParameter.toParameterInfo()
                                             }
 
                                             kotlinFunction1KSClassDeclaration?.qualifiedName -> {
-                                                ksValueParameter_kt_function1 = ksValueParameter.toParameterInfo()
+                                                ksValueParameter_kt_function1 =
+                                                    ksValueParameter.toParameterInfo()
                                             }
                                         }
                                     }
@@ -1158,25 +1306,25 @@ private class RouterApiProcessor(
                                         ksValueParameter.toParameterInfo()
                                     }
                                 RouterApiInfo.FunctionInfo(
-                                    navigateAnno = navigateAnno,
-                                    schemeAnno = ksFunctionDeclaration.getAnnotationsByType(
+                                    navigateAnnoInfo = navigateAnnoInfo,
+                                    schemeAnnoInfo = (ksFunctionDeclaration.getAnnotationsByType(
                                         annotationKClass = SchemeAnno::class,
-                                    ).firstOrNull() ?: defaultSchemeAnno,
-                                    userInfoAnno = ksFunctionDeclaration.getAnnotationsByType(
+                                    ).firstOrNull() ?: defaultSchemeAnno)?.toSchemeAnnoInfo(),
+                                    userInfoAnnoInfo = ksFunctionDeclaration.getAnnotationsByType(
                                         annotationKClass = UserInfoAnno::class,
-                                    ).firstOrNull(),
-                                    urlAnno = ksFunctionDeclaration.getAnnotationsByType(
+                                    ).firstOrNull()?.toUserInfoAnnoInfo(),
+                                    urlAnnoInfo = ksFunctionDeclaration.getAnnotationsByType(
                                         annotationKClass = UrlAnno::class,
-                                    ).firstOrNull(),
-                                    hostAnno = ksFunctionDeclaration.getAnnotationsByType(
+                                    ).firstOrNull()?.toUrlAnnoInfo(),
+                                    hostAnnoInfo = (ksFunctionDeclaration.getAnnotationsByType(
                                         annotationKClass = HostAnno::class,
-                                    ).firstOrNull() ?: defaultHostAnno,
-                                    pathAnno = ksFunctionDeclaration.getAnnotationsByType(
+                                    ).firstOrNull() ?: defaultHostAnno)?.toHostAnnoInfo(),
+                                    pathAnnoInfo = ksFunctionDeclaration.getAnnotationsByType(
                                         annotationKClass = PathAnno::class,
-                                    ).firstOrNull(),
-                                    hostAndPathAnno = ksFunctionDeclaration.getAnnotationsByType(
+                                    ).firstOrNull()?.toPathAnnoInfo(),
+                                    hostAndPathAnnoInfo = ksFunctionDeclaration.getAnnotationsByType(
                                         annotationKClass = HostAndPathAnno::class,
-                                    ).firstOrNull(),
+                                    ).firstOrNull()?.toHostAndPathAnnoInfo(),
                                     categoryValueList = ksFunctionDeclaration
                                         .getAnnotationsByType(
                                             annotationKClass = CategoryAnno::class,
@@ -1185,18 +1333,18 @@ private class RouterApiProcessor(
                                         .getAnnotationsByType(
                                             annotationKClass = FlagAnno::class,
                                         ).firstOrNull()?.value?.toList() ?: emptyList(),
-                                    useInterceptorAnno = ksFunctionDeclaration
+                                    useInterceptorAnnoInfo = ksFunctionDeclaration
                                         .getAnnotationsByType(
                                             annotationKClass = UseInterceptorAnno::class,
-                                        ).firstOrNull(),
-                                    requestCodeAnno = ksFunctionDeclaration
+                                        ).firstOrNull()?.toUseInterceptorAnnoInfo(),
+                                    requestCodeAnnoInfo = ksFunctionDeclaration
                                         .getAnnotationsByType(
                                             annotationKClass = RequestCodeAnno::class,
-                                        ).firstOrNull(),
-                                    checkRepeatAnno = ksFunctionDeclaration
+                                        ).firstOrNull()?.toRequestCodeAnnoInfo(),
+                                    checkRepeatAnnoInfo = ksFunctionDeclaration
                                         .getAnnotationsByType(
                                             annotationKClass = CheckRepeatAnno::class,
-                                        ).firstOrNull(),
+                                        ).firstOrNull()?.toCheckRepeatAnnoInfo(),
                                     returnTypePoetTypeName = ksFunctionDeclaration.returnTypeToTypeName(),
                                     isSuspendMethod = ksFunctionDeclaration
                                         .modifiers

@@ -153,6 +153,13 @@ data class GlobalInterceptorInfo(
     val globalInterceptorAnno: GlobalInterceptorAnno,
 )
 
+data class InterceptorInfo(
+    val containingFile: KSFile?,
+    val descName: String,
+    val qualifiedNameStr: String,
+    val interceptorAnno: InterceptorAnno,
+)
+
 /**
  * - ModuleApplication
  * - Fragment
@@ -710,7 +717,7 @@ class ModuleProcessor(
     private fun aboutInterceptor(
         typeSpecBuilder: TypeSpec.Builder,
         globalInterceptorInfoList: List<GlobalInterceptorInfo>,
-        interceptorAnnotatedList: List<KSClassDeclaration>,
+        interceptorInfoList: List<InterceptorInfo>,
     ) {
 
         val interceptorBeanClassName = ClassName(
@@ -733,15 +740,13 @@ class ModuleProcessor(
                 interceptorBeanClassName
             }.toTypedArray()
 
-        val interceptorListStr = interceptorAnnotatedList
+        val interceptorListStr = interceptorInfoList
             .joinToString { item ->
-                val anno =
-                    item.getAnnotationsByType(annotationKClass = InterceptorAnno::class).first()
-                "\"${anno.value}\" to %L::class"
+                "\"${item.interceptorAnno.value}\" to %L::class"
             }
 
-        val interceptorArgList = interceptorAnnotatedList.map { item ->
-            item.qualifiedName!!.asString()
+        val interceptorArgList = interceptorInfoList.map { item ->
+            item.qualifiedNameStr
         }.toTypedArray()
 
         typeSpecBuilder
@@ -1100,7 +1105,7 @@ class ModuleProcessor(
     private val serviceDecoratorInfoList: MutableList<ServiceDecoratorInfo> = mutableListOf()
     private val fragmentInfoList: MutableList<FragmentInfo> = mutableListOf()
     private val globalInterceptorInfoList: MutableList<GlobalInterceptorInfo> = mutableListOf()
-    private val interceptorAnnotatedList: MutableList<KSClassDeclaration> = mutableListOf()
+    private val interceptorInfoList: MutableList<InterceptorInfo> = mutableListOf()
     private val routerAnnotatedList: MutableList<KSAnnotated> = mutableListOf()
     private val routerDegradeAnnotatedList: MutableList<KSAnnotated> = mutableListOf()
 
@@ -1111,7 +1116,7 @@ class ModuleProcessor(
         serviceDecoratorInfoList.clear()
         fragmentInfoList.clear()
         globalInterceptorInfoList.clear()
-        interceptorAnnotatedList.clear()
+        interceptorInfoList.clear()
         routerAnnotatedList.clear()
         routerDegradeAnnotatedList.clear()
     }
@@ -1360,14 +1365,25 @@ class ModuleProcessor(
             )
             .partition { !validateEnable || it.validate() }
         // 拦截器
-        interceptorAnnotatedList.addAll(
+        interceptorInfoList.addAll(
             elements = interceptorValidList
                 .filterIsInstance<KSClassDeclaration>()
-                .toList(),
+                .map { item ->
+                    val containingFile = item.containingFile
+                    val descName = item.getDescName()
+                    InterceptorInfo(
+                        containingFile = containingFile,
+                        descName = descName,
+                        qualifiedNameStr = item.qualifiedName!!.asString(),
+                        interceptorAnno = item
+                            .getAnnotationsByType(annotationKClass = InterceptorAnno::class)
+                            .first(),
+                    )
+                },
         )
         if (logEnable) {
             logger.warn(
-                "$TAG $componentModuleName interceptorAnnotatedList.size = ${interceptorAnnotatedList.size}"
+                "$TAG $componentModuleName interceptorInfoList.size = ${interceptorInfoList.size}"
             )
         }
 
@@ -1427,14 +1443,14 @@ class ModuleProcessor(
             }
         }
 
-        val allMarkedList = (interceptorAnnotatedList +
-                routerAnnotatedList + routerDegradeAnnotatedList)
+        val allMarkedList = (routerAnnotatedList + routerDegradeAnnotatedList)
 
         val sources = (moduleAppInfoList
             .mapNotNull { it.containingFile } + serviceInfoList
             .mapNotNull { it.containingFile } + serviceDecoratorInfoList
             .mapNotNull { it.containingFile } + fragmentInfoList
             .mapNotNull { it.containingFile } + globalInterceptorInfoList
+            .mapNotNull { it.containingFile } + interceptorInfoList
             .mapNotNull { it.containingFile } + allMarkedList
             .mapNotNull { it.containingFile })
             .toTypedArray()
@@ -1496,7 +1512,7 @@ class ModuleProcessor(
                 aboutInterceptor(
                     typeSpecBuilder = this,
                     globalInterceptorInfoList = globalInterceptorInfoList,
-                    interceptorAnnotatedList = interceptorAnnotatedList,
+                    interceptorInfoList = interceptorInfoList,
                 )
                 aboutRouter(
                     typeSpecBuilder = this,

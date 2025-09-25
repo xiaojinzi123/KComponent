@@ -206,7 +206,8 @@ private sealed class RouterInfo(
     open val descName: String,
     open val qualifiedNameStr: String,
     open val routerAnnoBean: RouterAnnoBean,
-) {
+) //
+{
 
     data class ServiceClass(
         override val containingFile: KSFile?,
@@ -239,8 +240,12 @@ private data class RouterDegradeInfo(
     val containingFile: KSFile?,
     val descName: String,
     val classClassName: ClassName,
-    val routerDegradeAnno: RouterDegradeAnno,
-)
+    val routerDegradeAnnoInfo: RouterDegradeAnnoInfo,
+) {
+    data class RouterDegradeAnnoInfo(
+        val priority: Int,
+    )
+}
 
 /**
  * - ModuleApplication
@@ -1135,7 +1140,7 @@ private class ModuleProcessor(
                             .forEach { routerDegradeInfo ->
 
                                 codeList.add(
-                                    element = "%T(priority = ${routerDegradeInfo.routerDegradeAnno.priority}, targetClass = %T::class)",
+                                    element = "%T(priority = ${routerDegradeInfo.routerDegradeAnnoInfo.priority}, targetClass = %T::class)",
                                 )
 
                                 args.add(
@@ -1541,9 +1546,13 @@ private class ModuleProcessor(
                         containingFile = containingFile,
                         descName = descName,
                         classClassName = item.toClassName(),
-                        routerDegradeAnno = item
+                        routerDegradeAnnoInfo = item
                             .getAnnotationsByType(annotationKClass = RouterDegradeAnno::class)
-                            .first(),
+                            .first().let {
+                                RouterDegradeInfo.RouterDegradeAnnoInfo(
+                                    priority = it.priority,
+                                )
+                            },
                     )
                 },
         )

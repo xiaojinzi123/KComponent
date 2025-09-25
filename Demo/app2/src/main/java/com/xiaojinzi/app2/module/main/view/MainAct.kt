@@ -7,7 +7,6 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.core.view.WindowCompat
-import com.google.accompanist.pager.ExperimentalPagerApi
 import com.xiaojinzi.component.anno.RouterAnno
 import com.xiaojinzi.component.anno.ServiceAutowiredAnno
 import com.xiaojinzi.component.base.RouterConfig
@@ -39,7 +38,6 @@ class MainAct : BaseAct<MainViewModel>() {
         InternalCoroutinesApi::class,
         ExperimentalMaterialApi::class,
         ExperimentalAnimationApi::class,
-        ExperimentalPagerApi::class
     )
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

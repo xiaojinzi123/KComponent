@@ -29,6 +29,23 @@ import com.xiaojinzi.component.anno.UriAutowiredAnno
 import com.xiaojinzi.component.anno.support.ComponentGeneratedAnno
 import com.xiaojinzi.component.support.AttrAutoWireMode
 
+private data object UriAutowiredAnnoInfo
+
+/**
+ * see [AttrValueAutowiredAnno]
+ */
+private data class AttrValueAutowiredAnnoInfo(
+    val value: List<String>,
+    val mode: AttrAutoWireMode,
+)
+
+/**
+ * see [ServiceAutowiredAnno]
+ */
+private data class ServiceAutowiredAnnoInfo(
+    val name: String,
+)
+
 /**
  * 一个 [InjectFileInfo] 对象表示一个要生成注入类
  */
@@ -46,9 +63,9 @@ private data class InjectFileInfo(
         val propertyName: String,
         val propertyClassName: ClassName,
         val propertyGetMethodName: String?,
-        val uriAutoWireAnno: UriAutowiredAnno?,
-        val attrAutoWireAnno: AttrValueAutowiredAnno?,
-        val serviceAutoWireAnno: ServiceAutowiredAnno?,
+        val uriAutowiredAnnoInfo: UriAutowiredAnnoInfo?,
+        val attrValueAutowiredAnnoInfo: AttrValueAutowiredAnnoInfo?,
+        val serviceAutowiredAnnoInfo: ServiceAutowiredAnnoInfo?,
     ) {
 
         override fun hashCode(): Int {
@@ -154,18 +171,18 @@ private class AutowireProcessor(
 
                         propertyInfoSet.forEach { propertyInfo ->
 
-                            if (propertyInfo.uriAutoWireAnno != null) {
+                            if (propertyInfo.uriAutowiredAnnoInfo != null) {
                                 if (logEnable) {
                                     logger.warn(
-                                        message = "$TAG $componentModuleName uriAutoWireAnno = ${propertyInfo.uriAutoWireAnno}"
+                                        message = "$TAG $componentModuleName uriAutowiredAnnoInfo = ${propertyInfo.uriAutowiredAnnoInfo}"
                                     )
                                 }
                             }
 
-                            if (propertyInfo.attrAutoWireAnno != null) {
+                            if (propertyInfo.attrValueAutowiredAnnoInfo != null) {
                                 if (logEnable) {
                                     logger.warn(
-                                        message = "$TAG $componentModuleName attrAutoWireAnno = ${propertyInfo.attrAutoWireAnno}"
+                                        message = "$TAG $componentModuleName attrValueAutowiredAnnoInfo = ${propertyInfo.attrValueAutowiredAnnoInfo}"
                                     )
                                 }
                             }
@@ -197,7 +214,7 @@ private class AutowireProcessor(
                                     )
                                 }
 
-                            propertyInfo.uriAutoWireAnno?.let {
+                            propertyInfo.uriAutowiredAnnoInfo?.let {
 
                                 funSpec.addStatement(
                                     format = "target.%N = %T.getUri(bundle = bundle)${if (propertyInfo.isPropertyLateInit || propertyInfo.isPropertyNullable) "!!" else ""}",
@@ -207,7 +224,7 @@ private class AutowireProcessor(
 
                             }
 
-                            propertyInfo.attrAutoWireAnno?.let { attrAutoWireAnno ->
+                            propertyInfo.attrValueAutowiredAnnoInfo?.let { attrAutoWireAnno ->
 
                                 val oneNameOfPropertyCall: (Int, String) -> Unit =
                                     { index, attrAutoWireAnnoItemName ->
@@ -314,7 +331,7 @@ private class AutowireProcessor(
 
                             }
 
-                            propertyInfo.serviceAutoWireAnno?.let {
+                            propertyInfo.serviceAutowiredAnnoInfo?.let {
 
                                 funSpec.addStatement(
                                     format = "target.%N = %T.%N(tClass = %T::class)",
@@ -400,15 +417,26 @@ private class AutowireProcessor(
                     prefix = "get",
                 )
             }.getOrNull(),
-            uriAutoWireAnno = ksPropertyDeclaration.getAnnotationsByType(
+            uriAutowiredAnnoInfo = ksPropertyDeclaration.getAnnotationsByType(
                 annotationKClass = UriAutowiredAnno::class
-            ).firstOrNull(),
-            attrAutoWireAnno = ksPropertyDeclaration.getAnnotationsByType(
+            ).firstOrNull()?.let {
+                UriAutowiredAnnoInfo
+            },
+            attrValueAutowiredAnnoInfo = ksPropertyDeclaration.getAnnotationsByType(
                 annotationKClass = AttrValueAutowiredAnno::class
-            ).firstOrNull(),
-            serviceAutoWireAnno = ksPropertyDeclaration.getAnnotationsByType(
+            ).firstOrNull()?.let { anno ->
+                AttrValueAutowiredAnnoInfo(
+                    value = anno.value.toList(),
+                    mode = anno.mode,
+                )
+            },
+            serviceAutowiredAnnoInfo = ksPropertyDeclaration.getAnnotationsByType(
                 annotationKClass = ServiceAutowiredAnno::class
-            ).firstOrNull(),
+            ).firstOrNull()?.let { anno ->
+                ServiceAutowiredAnnoInfo(
+                    name = anno.name,
+                )
+            },
         )
     }
 

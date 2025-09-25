@@ -199,6 +199,13 @@ sealed class RouterInfo(
 
 }
 
+data class RouterDegradeInfo(
+    val containingFile: KSFile?,
+    val descName: String,
+    val classClassName: ClassName,
+    val routerDegradeAnno: RouterDegradeAnno,
+)
+
 /**
  * - ModuleApplication
  * - Fragment
@@ -1060,8 +1067,9 @@ class ModuleProcessor(
     private fun aboutRouterDegrade(
         typeSpecBuilder: TypeSpec.Builder,
         // 标记类上的
-        routerDegradeAnnotatedList: List<KSAnnotated>,
-    ) {
+        routerDegradeInfoList: List<RouterDegradeInfo>,
+    ) //
+    {
 
         val classNameRouterDegradeBean =
             ComponentConstants.ROUTER_DEGRADE_BEAN_CLASS_NAME.toClassName()
@@ -1082,16 +1090,11 @@ class ModuleProcessor(
 
                         val args = mutableListOf<Any>()
 
-                        routerDegradeAnnotatedList
-                            .filterIsInstance<KSClassDeclaration>()
-                            .forEach { ksClassDeclaration ->
-
-                                val routerDegradeAnno = ksClassDeclaration.getAnnotationsByType(
-                                    annotationKClass = RouterDegradeAnno::class
-                                ).first()
+                        routerDegradeInfoList
+                            .forEach { routerDegradeInfo ->
 
                                 codeList.add(
-                                    element = "%T(priority = ${routerDegradeAnno.priority}, targetClass = %T::class)",
+                                    element = "%T(priority = ${routerDegradeInfo.routerDegradeAnno.priority}, targetClass = %T::class)",
                                 )
 
                                 args.add(
@@ -1099,7 +1102,7 @@ class ModuleProcessor(
                                 )
 
                                 args.add(
-                                    element = ksClassDeclaration.toClassName(),
+                                    element = routerDegradeInfo.classClassName,
                                 )
 
                             }
@@ -1122,7 +1125,7 @@ class ModuleProcessor(
     private val globalInterceptorInfoList: MutableList<GlobalInterceptorInfo> = mutableListOf()
     private val interceptorInfoList: MutableList<InterceptorInfo> = mutableListOf()
     private val routerInfoList: MutableList<RouterInfo> = mutableListOf()
-    private val routerDegradeAnnotatedList: MutableList<KSAnnotated> = mutableListOf()
+    private val routerDegradeInfoList: MutableList<RouterDegradeInfo> = mutableListOf()
 
     override fun initProcess(resolver: Resolver) {
         super.initProcess(resolver)
@@ -1133,7 +1136,7 @@ class ModuleProcessor(
         globalInterceptorInfoList.clear()
         interceptorInfoList.clear()
         routerInfoList.clear()
-        routerDegradeAnnotatedList.clear()
+        routerDegradeInfoList.clear()
     }
 
     @OptIn(KspExperimental::class)
@@ -1463,12 +1466,25 @@ class ModuleProcessor(
             )
             .partition { !validateEnable || it.validate() }
         // 路由降级的
-        routerDegradeAnnotatedList.addAll(
-            elements = routerDegradeValidList,
+        routerDegradeInfoList.addAll(
+            elements = routerDegradeValidList
+                .filterIsInstance<KSClassDeclaration>()
+                .map { item ->
+                    val containingFile = item.containingFile
+                    val descName = item.getDescName()
+                    RouterDegradeInfo(
+                        containingFile = containingFile,
+                        descName = descName,
+                        classClassName = item.toClassName(),
+                        routerDegradeAnno = item
+                            .getAnnotationsByType(annotationKClass = RouterDegradeAnno::class)
+                            .first(),
+                    )
+                },
         )
         if (logEnable) {
             logger.warn(
-                "$TAG $componentModuleName routerDegradeAnnotatedList.size = ${routerDegradeAnnotatedList.size}"
+                "$TAG $componentModuleName routerDegradeInfoList.size = ${routerDegradeInfoList.size}"
             )
         }
 
@@ -1497,7 +1513,7 @@ class ModuleProcessor(
             }
         }
 
-        val allMarkedList = (routerDegradeAnnotatedList)
+        val allMarkedList = (routerDegradeInfoList)
 
         val sources = (moduleAppInfoList
             .mapNotNull { it.containingFile } + serviceInfoList
@@ -1575,7 +1591,7 @@ class ModuleProcessor(
                 )
                 aboutRouterDegrade(
                     typeSpecBuilder = this,
-                    routerDegradeAnnotatedList = routerDegradeAnnotatedList,
+                    routerDegradeInfoList = routerDegradeInfoList,
                 )
             }
             .build()

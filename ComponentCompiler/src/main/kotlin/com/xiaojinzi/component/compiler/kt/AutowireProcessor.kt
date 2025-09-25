@@ -72,7 +72,7 @@ private data class InjectFileInfo(
 
 }
 
-class AutowireProcessor(
+private class AutowireProcessor(
     override val environment: SymbolProcessorEnvironment,
 ) : BaseProcessor(
     environment = environment,

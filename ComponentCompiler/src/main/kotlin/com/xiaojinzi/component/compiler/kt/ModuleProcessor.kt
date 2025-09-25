@@ -51,12 +51,12 @@ import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.reflect.KClass
 
-data class ApplicationInfo(
+private data class ApplicationInfo(
     val containingFile: KSFile?,
     val qualifiedNameOfClass: String,
 )
 
-sealed class ServiceInfo(
+private sealed class ServiceInfo(
     open val containingFile: KSFile?,
     open val descName: String,
     open val serviceAnno: ServiceAnno,
@@ -94,7 +94,7 @@ sealed class ServiceInfo(
 
 }
 
-data class ServiceDecoratorInfo(
+private data class ServiceDecoratorInfo(
     val uuid: String,
     val containingFile: KSFile?,
     val descName: String,
@@ -106,7 +106,7 @@ data class ServiceDecoratorInfo(
     val constructorParameterName: String,
 )
 
-sealed class FragmentInfo(
+private sealed class FragmentInfo(
     open val containingFile: KSFile?,
     open val descName: String,
     // 目标 Fragment 的全路径
@@ -146,21 +146,21 @@ sealed class FragmentInfo(
 
 }
 
-data class GlobalInterceptorInfo(
+private data class GlobalInterceptorInfo(
     val containingFile: KSFile?,
     val descName: String,
     val qualifiedNameStr: String,
     val globalInterceptorAnno: GlobalInterceptorAnno,
 )
 
-data class InterceptorInfo(
+private data class InterceptorInfo(
     val containingFile: KSFile?,
     val descName: String,
     val qualifiedNameStr: String,
     val interceptorAnno: InterceptorAnno,
 )
 
-sealed class RouterInfo(
+private sealed class RouterInfo(
     open val containingFile: KSFile?,
     open val descName: String,
     open val qualifiedNameStr: String,
@@ -199,7 +199,7 @@ sealed class RouterInfo(
 
 }
 
-data class RouterDegradeInfo(
+private data class RouterDegradeInfo(
     val containingFile: KSFile?,
     val descName: String,
     val classClassName: ClassName,
@@ -212,7 +212,7 @@ data class RouterDegradeInfo(
  * - Service
  * https://github.com/aasitnikov/ksp-aggregating-issue/blob/master/experiments/processor/src/main/java/com/example/experiments/processor/ExperimentsProcessor.kt
  */
-class ModuleProcessor(
+private class ModuleProcessor(
     override val environment: SymbolProcessorEnvironment,
 ) : BaseProcessor(
     environment = environment,

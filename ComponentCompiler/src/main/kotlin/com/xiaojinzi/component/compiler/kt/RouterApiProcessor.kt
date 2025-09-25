@@ -5,6 +5,7 @@ import com.google.devtools.ksp.*
 import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSDeclaration
 import com.google.devtools.ksp.symbol.KSValueParameter
 import com.google.devtools.ksp.symbol.Modifier
 import com.squareup.kotlinpoet.*
@@ -15,7 +16,65 @@ import com.xiaojinzi.component.anno.support.ComponentGeneratedAnno
 import com.xiaojinzi.component.packageName
 import com.xiaojinzi.component.simpleClassName
 
-class RouterApiProcessor(
+private data class RouterApiInfo(
+    // 生成的类要实现的接口的 String 全类名
+    val fullClassName: String,
+    // 生成的类要实现的接口的 ClassName
+    val targetRouterApiInterfaceClassName: ClassName = fullClassName.toClassName(),
+    // 默认的 SchemeAnno
+    val defaultSchemeAnno: SchemeAnno?,
+    // 默认的 HostAnno
+    val defaultHostAnno: HostAnno?,
+    // 默认的 CategoryAnno 的值
+    val defaultCategoryValueList: List<String>,
+    // 默认的 FlagAnno 的值
+    val defaultFlagValueList: List<Int>,
+    val functionInfoList: List<FunctionInfo>,
+) {
+
+    data class FunctionInfo(
+        // 导航的注解, 默认可以省略
+        val navigateAnno: NavigateAnno?,
+        // SchemeAnno 信息
+        val schemeAnno: SchemeAnno?,
+        // userInfo 信息
+        val userInfoAnno: UserInfoAnno?,
+        // 标记路由的 url
+        val urlAnno: UrlAnno?,
+        // 标记路由的 host
+        val hostAnno: HostAnno?,
+        // 标记路由的 path
+        val pathAnno: PathAnno?,
+        // 标记路由的地址
+        val hostAndPathAnno: HostAndPathAnno?,
+        val categoryValueList: List<String>,
+        val flagValueList: List<Int>,
+        // 使用的拦截器
+        val useInterceptorAnno: UseInterceptorAnno?,
+        // RequestCodeAnno 信息
+        val requestCodeAnno: RequestCodeAnno?,
+        val checkRepeatAnno: CheckRepeatAnno?,
+        // 方法返回值类型的声明
+        val returnTypeKsDeclaration: KSDeclaration?,
+        // 是否是 suspend 函数
+        val isSuspendMethod: Boolean,
+        // 方法名字
+        val methodName: String,
+        // 是否返回 Rx 的 Single
+        val isSingleReturnType: Boolean,
+        // 是否返回 Rx 的 Completable
+        val isCompletableReturnType: Boolean,
+        // 是否返回 NavigationDisposable
+        val isComponentNavigationDisposableReturnType: Boolean,
+        // 是否返回 Navigator
+        val isComponentNavigatorReturnType: Boolean,
+        // 是否返回 Component 的 Call
+        val isComponentCallReturnType: Boolean,
+    )
+
+}
+
+private class RouterApiProcessor(
     override val environment: SymbolProcessorEnvironment,
 ) : BaseProcessor(
     environment = environment,
@@ -47,7 +106,7 @@ class RouterApiProcessor(
 
     var kotlinFunction1KSClassDeclaration: KSClassDeclaration? = null
 
-    private val collectList = mutableListOf<KSClassDeclaration>()
+    private val collectList = mutableListOf<RouterApiInfo>()
 
     override fun initProcess(resolver: Resolver) {
         super.initProcess(resolver)
@@ -90,52 +149,23 @@ class RouterApiProcessor(
 
     @OptIn(KspExperimental::class)
     private fun createFile(
-        routerApiKSClassDeclaration: KSClassDeclaration,
+        routerApiInfo: RouterApiInfo,
     ) {
 
-        // 默认的 SchemeAnno
-        val defaultSchemeAnno: SchemeAnno? = routerApiKSClassDeclaration.getAnnotationsByType(
-            annotationKClass = SchemeAnno::class
-        ).firstOrNull()
-
-        // 默认的 HostAnno
-        val defaultHostAnno: HostAnno? = routerApiKSClassDeclaration.getAnnotationsByType(
-            annotationKClass = HostAnno::class
-        ).firstOrNull()
-
-        // 默认的 CategoryAnno 的值
-        val defaultCategoryValueList = routerApiKSClassDeclaration.getAnnotationsByType(
-            annotationKClass = CategoryAnno::class
-        ).firstOrNull()?.value?.toList() ?: emptyList()
-
-        // 默认的 FlagAnno 的值
-        val defaultFlagValueList = routerApiKSClassDeclaration.getAnnotationsByType(
-            annotationKClass = FlagAnno::class
-        ).firstOrNull()?.value?.toList() ?: emptyList()
-
-        // 生成的类要实现的接口的 String 全类名
-        val fullClassName =
-            routerApiKSClassDeclaration.asStarProjectedType().declaration.qualifiedName!!.asString()
-
-        // 生成的类要实现的接口的 ClassName
-        val targetRouterApiInterfaceClassName = fullClassName.toClassName()
-
         // 生成的目标类的 String className
-        val targetClassSimpleName = fullClassName.simpleClassName() + ComponentUtil.UIROUTERAPI
+        val targetClassSimpleName = routerApiInfo.fullClassName.simpleClassName() + ComponentUtil.UIROUTERAPI
 
         val typeSpec = TypeSpec
             .classBuilder(name = targetClassSimpleName)
             .addAnnotation(annotation = mClassNameAndroidKeepAnno)
             .addAnnotation(annotation = ComponentGeneratedAnno::class)
             .addSuperinterface(
-                superinterface = targetRouterApiInterfaceClassName
+                superinterface = routerApiInfo.targetRouterApiInterfaceClassName,
             )
             .also { typeSpec ->
-                routerApiKSClassDeclaration
-                    .getDeclaredFunctions()
-                    .forEach { ksFunctionDeclaration ->
-
-                        val functionNameStr = ksFunctionDeclaration.simpleName.getShortName()
+                routerApiInfo
+                    .functionInfoList
+                    .forEach { functionInfo ->
 
                         if (logEnable) {
                             /*logger.warn(
@@ -143,129 +173,23 @@ class RouterApiProcessor(
                             )*/
                         }
 
-                        val isTest = "toTestActivityResultView1111" == functionNameStr
-
-                        if (isTest) {
-
-                        }
-
-                        // 导航的注解, 默认可以省略
-                        val navigateAnno: NavigateAnno? =
-                            ksFunctionDeclaration.getAnnotationsByType(
-                                annotationKClass = NavigateAnno::class,
-                            ).firstOrNull()
-
-                        // SchemeAnno 信息
-                        val schemeAnno = ksFunctionDeclaration.getAnnotationsByType(
-                            annotationKClass = SchemeAnno::class,
-                        ).firstOrNull() ?: defaultSchemeAnno
-
-                        // userInfo 信息
-                        val userInfoAnno = ksFunctionDeclaration.getAnnotationsByType(
-                            annotationKClass = UserInfoAnno::class,
-                        ).firstOrNull()
-
-                        // 标记路由的 url
-                        val urlAnno: UrlAnno? = ksFunctionDeclaration.getAnnotationsByType(
-                            annotationKClass = UrlAnno::class,
-                        ).firstOrNull()
-
-                        // 标记路由的 host
-                        val hostAnno: HostAnno? = ksFunctionDeclaration.getAnnotationsByType(
-                            annotationKClass = HostAnno::class,
-                        ).firstOrNull() ?: defaultHostAnno
-
-                        // 标记路由的 path
-                        val pathAnno: PathAnno? = ksFunctionDeclaration.getAnnotationsByType(
-                            annotationKClass = PathAnno::class,
-                        ).firstOrNull()
-
-                        // 标记路由的地址
-                        val hostAndPathAnno: HostAndPathAnno? =
-                            ksFunctionDeclaration.getAnnotationsByType(
-                                annotationKClass = HostAndPathAnno::class,
-                            ).firstOrNull()
-
                         // 路由的类别
                         val categoryValueList =
-                            defaultCategoryValueList + (ksFunctionDeclaration
-                                .getAnnotationsByType(
-                                    annotationKClass = CategoryAnno::class,
-                                ).firstOrNull()?.value?.toList() ?: emptyList())
+                            routerApiInfo.defaultCategoryValueList + functionInfo.categoryValueList
 
                         // 路由的 flag
                         val flagValueList =
-                            defaultFlagValueList + (ksFunctionDeclaration
-                                .getAnnotationsByType(
-                                    annotationKClass = FlagAnno::class,
-                                ).firstOrNull()?.value?.toList() ?: emptyList())
-
-                        // 使用的拦截器
-                        val useInterceptorAnno = ksFunctionDeclaration.getAnnotationsByType(
-                            annotationKClass = UseInterceptorAnno::class,
-                        ).firstOrNull()
-
-                        // RequestCodeAnno 信息
-                        val requestCodeAnno = ksFunctionDeclaration.getAnnotationsByType(
-                            annotationKClass = RequestCodeAnno::class,
-                        ).firstOrNull()
-
-                        val checkRepeatAnno = ksFunctionDeclaration.getAnnotationsByType(
-                            annotationKClass = CheckRepeatAnno::class,
-                        ).firstOrNull()
-
-                        // 方法返回值类型的声明
-                        val returnTypeKsDeclaration =
-                            ksFunctionDeclaration.returnType?.resolve()?.declaration
-
-                        // 是否是 suspend 函数
-                        val isSuspendMethod =
-                            ksFunctionDeclaration.modifiers.contains(element = Modifier.SUSPEND)
-
-                        // 方法名字
-                        val methodName: String = ksFunctionDeclaration.simpleName.getShortName()
-
-                        // 是否返回 Rx 的 Single
-                        val isSingleReturnType =
-                            returnTypeKsDeclaration?.qualifiedName == rxSingleKSClassDeclaration?.qualifiedName
-
-                        // 是否返回 Rx 的 Completable
-                        val isCompletableReturnType =
-                            returnTypeKsDeclaration?.qualifiedName == rxCompletableKSClassDeclaration?.qualifiedName
+                            routerApiInfo.defaultFlagValueList + (functionInfo.flagValueList)
 
                         // 是否是返回 Rx
-                        val isRxReturnType = isSingleReturnType || isCompletableReturnType
+                        val isRxReturnType = functionInfo.isSingleReturnType || functionInfo.isCompletableReturnType
 
-                        // 是否需要返回 ActivityResult
-                        val isAndroidActivityResultReturnType =
-                            returnTypeKsDeclaration?.qualifiedName == componentActivityResultKSClassDeclaration?.qualifiedName
+                        val isNeedReturn = (functionInfo.navigateAnno?.let {
+                            functionInfo.navigateAnno.forResult || functionInfo.navigateAnno.forIntent || functionInfo.navigateAnno.forResultCode
+                        } ?: false) || functionInfo.isComponentNavigationDisposableReturnType
+                                || functionInfo.isCompletableReturnType || functionInfo.isComponentNavigatorReturnType || functionInfo.isComponentCallReturnType
 
-                        // 是否需要返回 Intent
-                        val isAndroidIntentReturnType =
-                            returnTypeKsDeclaration?.qualifiedName == androidIntentKSClassDeclaration?.qualifiedName
-
-                        // 是否返回 NavigationDisposable
-                        val isComponentNavigationDisposableReturnType =
-                            returnTypeKsDeclaration?.qualifiedName == navigationDisposableKSClassDeclaration?.qualifiedName
-
-                        // 是否返回 Navigator
-                        val isComponentNavigatorReturnType =
-                            returnTypeKsDeclaration?.qualifiedName == componentNavigatorKSClassDeclaration?.qualifiedName
-
-                        // 是否返回 Component 的 Call
-                        val isComponentCallReturnType =
-                            returnTypeKsDeclaration?.qualifiedName == componentCallKSClassDeclaration?.qualifiedName
-
-                        // 是否需要返回值
-                        /*val isNeedReturn =
-                            isNavigationDisposableReturnType || isRxReturnType || isActivityResultReturnType || isIntentReturnType*/
-
-                        val isNeedReturn = (navigateAnno?.let {
-                            navigateAnno.forResult || navigateAnno.forIntent || navigateAnno.forResultCode
-                        } ?: false) || isComponentNavigationDisposableReturnType
-                                || isCompletableReturnType || isComponentNavigatorReturnType || isComponentCallReturnType
-
-                        val navigatePrefixStr = if (isComponentNavigationDisposableReturnType) {
+                        val navigatePrefixStr = if (functionInfo.isComponentNavigationDisposableReturnType) {
                             "navigate"
                         } else {
                             "forward"
@@ -304,7 +228,7 @@ class RouterApiProcessor(
 
                         typeSpec.addFunction(
                             funSpec = FunSpec
-                                .builder(name = methodName)
+                                .builder(name = functionInfo.methodName)
                                 .addModifiers(KModifier.OVERRIDE)
                                 // 先添加方法的参数, 同时解析出一些特别的参数
                                 .apply {
@@ -407,7 +331,7 @@ class RouterApiProcessor(
                                 }
                                 .also { funSpecBuilder ->
 
-                                    if (isSuspendMethod) {
+                                    if (functionInfo.isSuspendMethod) {
                                         funSpecBuilder.addModifiers(
                                             KModifier.SUSPEND
                                         )
@@ -448,13 +372,13 @@ class RouterApiProcessor(
                                             "context = %N)",
                                         )
                                         functionArgList.add(
-                                            element = ksValueParameter_context!!.name!!.asString(),
+                                            element = ksValueParameter_context.name!!.asString(),
                                         )
                                     }
 
                                     // scheme userInfo host path 的处理
                                     run {
-                                        schemeAnno?.let {
+                                        functionInfo.schemeAnno?.let {
                                             functionCodeStringBuffer.append(
                                                 "\n.scheme(scheme = %S)",
                                             )
@@ -462,7 +386,7 @@ class RouterApiProcessor(
                                                 element = it.value,
                                             )
                                         }
-                                        userInfoAnno?.let {
+                                        functionInfo.userInfoAnno?.let {
                                             functionCodeStringBuffer.append(
                                                 "\n.userInfo(userInfo = %S)",
                                             )
@@ -470,7 +394,7 @@ class RouterApiProcessor(
                                                 element = it.value,
                                             )
                                         }
-                                        urlAnno?.let {
+                                        functionInfo.urlAnno?.let {
                                             functionCodeStringBuffer.append(
                                                 "\n.url(url = %S)",
                                             )
@@ -478,7 +402,7 @@ class RouterApiProcessor(
                                                 element = it.value,
                                             )
                                         }
-                                        hostAnno?.let {
+                                        functionInfo.hostAnno?.let {
                                             functionCodeStringBuffer.append(
                                                 "\n.host(host = %S)",
                                             )
@@ -486,7 +410,7 @@ class RouterApiProcessor(
                                                 element = it.value,
                                             )
                                         }
-                                        pathAnno?.let {
+                                        functionInfo.pathAnno?.let {
                                             functionCodeStringBuffer.append(
                                                 "\n.path(path = %S)",
                                             )
@@ -494,7 +418,7 @@ class RouterApiProcessor(
                                                 element = it.value,
                                             )
                                         }
-                                        hostAndPathAnno?.let {
+                                        functionInfo.hostAndPathAnno?.let {
                                             functionCodeStringBuffer.append(
                                                 "\n.hostAndPath(hostAndPath = %S)",
                                             )
@@ -549,7 +473,7 @@ class RouterApiProcessor(
                                     // routeRepeatCheck requestCode category flag options 等处理
                                     run {
 
-                                        checkRepeatAnno?.let {
+                                        functionInfo.checkRepeatAnno?.let {
                                             functionCodeStringBuffer.append(
                                                 "\n.useRouteRepeatCheck(useRouteRepeatCheck = %L)",
                                             )
@@ -561,7 +485,7 @@ class RouterApiProcessor(
 
                                         // 如果没有参数, 就看看有没有标记方法上的注解
                                         if (ksValueParameter_requestCode == null) {
-                                            requestCodeAnno?.let {
+                                            functionInfo.requestCodeAnno?.let {
                                                 if (it.value == Int.MIN_VALUE) {
                                                     functionCodeStringBuffer.append(
                                                         "\n // requestCode 框架将会随机生成",
@@ -646,7 +570,7 @@ class RouterApiProcessor(
                                     // 处理拦截器的使用
                                     run {
 
-                                        useInterceptorAnno?.let { useInterceptorAnno ->
+                                        functionInfo.useInterceptorAnno?.let { useInterceptorAnno ->
 
                                             run {
                                                 val classesClassPathList =
@@ -772,10 +696,10 @@ class RouterApiProcessor(
                                     // 结尾方法的处理
                                     when {
 
-                                        navigateAnno?.forIntent == true -> {
+                                        functionInfo.navigateAnno?.forIntent == true -> {
                                             when {
                                                 isRxReturnType -> {
-                                                    if (navigateAnno.resultCodeMatchValid) {
+                                                    if (functionInfo.navigateAnno.resultCodeMatchValid) {
                                                         functionCodeStringBuffer.append(
                                                             "\n.%M(expectedResultCode = %L)",
                                                         )
@@ -783,7 +707,7 @@ class RouterApiProcessor(
                                                             element = intentResultCodeMatchCallExtendMethodMemberName,
                                                         )
                                                         functionArgList.add(
-                                                            element = navigateAnno.resultCodeMatch,
+                                                            element = functionInfo.navigateAnno.resultCodeMatch,
                                                         )
                                                     } else {
                                                         functionCodeStringBuffer.append(
@@ -795,13 +719,13 @@ class RouterApiProcessor(
                                                     }
                                                 }
 
-                                                isSuspendMethod -> {
-                                                    if (navigateAnno.resultCodeMatchValid) {
+                                                functionInfo.isSuspendMethod -> {
+                                                    if (functionInfo.navigateAnno.resultCodeMatchValid) {
                                                         functionCodeStringBuffer.append(
                                                             "\n.resultCodeMatchAndIntentAwait(expectedResultCode = %L)",
                                                         )
                                                         functionArgList.add(
-                                                            element = navigateAnno.resultCodeMatch,
+                                                            element = functionInfo.navigateAnno.resultCodeMatch,
                                                         )
                                                     } else {
                                                         functionCodeStringBuffer.append(
@@ -811,33 +735,33 @@ class RouterApiProcessor(
                                                 }
 
                                                 ksValueParameter_biCallback != null -> {
-                                                    if (navigateAnno.resultCodeMatchValid) {
+                                                    if (functionInfo.navigateAnno.resultCodeMatchValid) {
                                                         functionCodeStringBuffer.append(
                                                             "\n.${navigatePrefixStr}ForIntentAndResultCodeMatch(expectedResultCode = %L, callback = %N)",
                                                         )
                                                         functionArgList.add(
-                                                            element = navigateAnno.resultCodeMatch,
+                                                            element = functionInfo.navigateAnno.resultCodeMatch,
                                                         )
                                                         functionArgList.add(
-                                                            element = ksValueParameter_biCallback!!.name!!.asString(),
+                                                            element = ksValueParameter_biCallback.name!!.asString(),
                                                         )
                                                     } else {
                                                         functionCodeStringBuffer.append(
                                                             "\n.${navigatePrefixStr}ForIntent(callback = %N)",
                                                         )
                                                         functionArgList.add(
-                                                            element = ksValueParameter_biCallback!!.name!!.asString(),
+                                                            element = ksValueParameter_biCallback.name!!.asString(),
                                                         )
                                                     }
                                                 }
 
                                                 ksValueParameter_kt_function1 != null -> {
-                                                    if (navigateAnno.resultCodeMatchValid) {
+                                                    if (functionInfo.navigateAnno.resultCodeMatchValid) {
                                                         functionCodeStringBuffer.append(
                                                             "\n.${navigatePrefixStr}ForIntentAndResultCodeMatch(expectedResultCode = %L, callback = %N)",
                                                         )
                                                         functionArgList.add(
-                                                            element = navigateAnno.resultCodeMatch,
+                                                            element = functionInfo.navigateAnno.resultCodeMatch,
                                                         )
                                                         functionArgList.add(
                                                             element = ksValueParameter_kt_function1!!.name!!.asString(),
@@ -854,7 +778,7 @@ class RouterApiProcessor(
                                             }
                                         }
 
-                                        navigateAnno?.forResult == true -> {
+                                        functionInfo.navigateAnno?.forResult == true -> {
                                             when {
                                                 isRxReturnType -> {
                                                     functionCodeStringBuffer.append(
@@ -865,7 +789,7 @@ class RouterApiProcessor(
                                                     )
                                                 }
 
-                                                isSuspendMethod -> {
+                                                functionInfo.isSuspendMethod -> {
                                                     functionCodeStringBuffer.append(
                                                         "\n.activityResultAwait()",
                                                     )
@@ -891,7 +815,7 @@ class RouterApiProcessor(
                                             }
                                         }
 
-                                        navigateAnno?.forResultCode == true -> {
+                                        functionInfo.navigateAnno?.forResultCode == true -> {
                                             when {
                                                 isRxReturnType -> {
                                                     functionCodeStringBuffer.append(
@@ -902,7 +826,7 @@ class RouterApiProcessor(
                                                     )
                                                 }
 
-                                                isSuspendMethod -> {
+                                                functionInfo.isSuspendMethod -> {
                                                     functionCodeStringBuffer.append(
                                                         "\n.resultCodeAwait()",
                                                     )
@@ -928,7 +852,7 @@ class RouterApiProcessor(
                                             }
                                         }
 
-                                        navigateAnno?.resultCodeMatchValid == true -> {
+                                        functionInfo.navigateAnno?.resultCodeMatchValid == true -> {
 
                                             when {
                                                 isRxReturnType -> {
@@ -939,16 +863,16 @@ class RouterApiProcessor(
                                                         element = resultCodeMatchCallExtendMethodMemberName,
                                                     )
                                                     functionArgList.add(
-                                                        element = navigateAnno.resultCodeMatch,
+                                                        element = functionInfo.navigateAnno.resultCodeMatch,
                                                     )
                                                 }
 
-                                                isSuspendMethod -> {
+                                                functionInfo.isSuspendMethod -> {
                                                     functionCodeStringBuffer.append(
                                                         "\n.resultCodeMatchAwait(expectedResultCode = %L)",
                                                     )
                                                     functionArgList.add(
-                                                        element = navigateAnno.resultCodeMatch,
+                                                        element = functionInfo.navigateAnno.resultCodeMatch,
                                                     )
                                                 }
 
@@ -957,10 +881,10 @@ class RouterApiProcessor(
                                                         "\n.${navigatePrefixStr}ForResultCodeMatch(expectedResultCode = %L, callback = %N)",
                                                     )
                                                     functionArgList.add(
-                                                        element = navigateAnno.resultCodeMatch,
+                                                        element = functionInfo.navigateAnno.resultCodeMatch,
                                                     )
                                                     functionArgList.add(
-                                                        element = ksValueParameter_callback!!.name!!.asString(),
+                                                        element = ksValueParameter_callback.name!!.asString(),
                                                     )
                                                 }
 
@@ -969,10 +893,10 @@ class RouterApiProcessor(
                                                         "\n.${navigatePrefixStr}ForResultCodeMatch(expectedResultCode = %L, callback = %N)",
                                                     )
                                                     functionArgList.add(
-                                                        element = navigateAnno.resultCodeMatch,
+                                                        element = functionInfo.navigateAnno.resultCodeMatch,
                                                     )
                                                     functionArgList.add(
-                                                        element = ksValueParameter_kt_function0!!.name!!.asString(),
+                                                        element = ksValueParameter_kt_function0.name!!.asString(),
                                                     )
                                                 }
                                             }
@@ -981,15 +905,15 @@ class RouterApiProcessor(
 
                                         else -> {
 
-                                            if (isComponentNavigatorReturnType || isComponentCallReturnType) {
+                                            if (functionInfo.isComponentNavigatorReturnType || functionInfo.isComponentCallReturnType) {
                                                 // 就是空的
-                                            } else if (isSuspendMethod) {
+                                            } else if (functionInfo.isSuspendMethod) {
 
                                                 functionCodeStringBuffer.append(
                                                     "\n.await()",
                                                 )
 
-                                            } else if (isCompletableReturnType) {
+                                            } else if (functionInfo.isCompletableReturnType) {
 
                                                 functionCodeStringBuffer.append(
                                                     "\n.%M()",
@@ -1038,7 +962,7 @@ class RouterApiProcessor(
 
         val fileSpec = FileSpec
             .builder(
-                packageName = fullClassName.packageName(),
+                packageName = routerApiInfo.fullClassName.packageName(),
                 fileName = targetClassSimpleName,
             )
             .addType(typeSpec = typeSpec)
@@ -1072,6 +996,7 @@ class RouterApiProcessor(
 
     }
 
+    @OptIn(KspExperimental::class)
     override fun roundProcess(
         resolver: Resolver,
         round: Int,
@@ -1084,7 +1009,101 @@ class RouterApiProcessor(
             .partition { !validateEnable || it.validate() }
 
         collectList.addAll(
-            elements = validList.filterIsInstance<KSClassDeclaration>()
+            elements = validList
+                .filterIsInstance<KSClassDeclaration>()
+                .map { classItem ->
+                    val defaultSchemeAnno = classItem
+                        .getAnnotationsByType(
+                            annotationKClass = SchemeAnno::class
+                        ).firstOrNull()
+                    val defaultHostAnno = classItem
+                        .getAnnotationsByType(
+                            annotationKClass = HostAnno::class
+                        ).firstOrNull()
+                    RouterApiInfo(
+                        fullClassName = classItem.asStarProjectedType().declaration.qualifiedName!!.asString(),
+                        defaultSchemeAnno = defaultSchemeAnno,
+                        defaultHostAnno = defaultHostAnno,
+                        defaultCategoryValueList = classItem
+                            .getAnnotationsByType(
+                                annotationKClass = CategoryAnno::class
+                            ).firstOrNull()?.value?.toList() ?: emptyList(),
+                        defaultFlagValueList = classItem
+                            .getAnnotationsByType(
+                                annotationKClass = FlagAnno::class
+                            ).firstOrNull()?.value?.toList() ?: emptyList(),
+                        functionInfoList = classItem
+                            .getDeclaredFunctions()
+                            .map { ksFunctionDeclaration ->
+                                val navigateAnno = ksFunctionDeclaration
+                                    .getAnnotationsByType(
+                                        annotationKClass = NavigateAnno::class
+                                    ).firstOrNull()
+                                val returnTypeKsDeclaration = ksFunctionDeclaration
+                                    .returnType
+                                    ?.resolve()
+                                    ?.declaration
+                                RouterApiInfo.FunctionInfo(
+                                    navigateAnno = navigateAnno,
+                                    schemeAnno = ksFunctionDeclaration.getAnnotationsByType(
+                                        annotationKClass = SchemeAnno::class,
+                                    ).firstOrNull() ?: defaultSchemeAnno,
+                                    userInfoAnno = ksFunctionDeclaration.getAnnotationsByType(
+                                        annotationKClass = UserInfoAnno::class,
+                                    ).firstOrNull(),
+                                    urlAnno = ksFunctionDeclaration.getAnnotationsByType(
+                                        annotationKClass = UrlAnno::class,
+                                    ).firstOrNull(),
+                                    hostAnno = ksFunctionDeclaration.getAnnotationsByType(
+                                        annotationKClass = HostAnno::class,
+                                    ).firstOrNull() ?: defaultHostAnno,
+                                    pathAnno = ksFunctionDeclaration.getAnnotationsByType(
+                                        annotationKClass = PathAnno::class,
+                                    ).firstOrNull(),
+                                    hostAndPathAnno = ksFunctionDeclaration.getAnnotationsByType(
+                                        annotationKClass = HostAndPathAnno::class,
+                                    ).firstOrNull(),
+                                    categoryValueList = ksFunctionDeclaration
+                                        .getAnnotationsByType(
+                                            annotationKClass = CategoryAnno::class,
+                                        ).firstOrNull()?.value?.toList() ?: emptyList(),
+                                    flagValueList = ksFunctionDeclaration
+                                        .getAnnotationsByType(
+                                            annotationKClass = FlagAnno::class,
+                                        ).firstOrNull()?.value?.toList() ?: emptyList(),
+                                    useInterceptorAnno = ksFunctionDeclaration
+                                        .getAnnotationsByType(
+                                            annotationKClass = UseInterceptorAnno::class,
+                                        ).firstOrNull(),
+                                    requestCodeAnno = ksFunctionDeclaration
+                                        .getAnnotationsByType(
+                                            annotationKClass = RequestCodeAnno::class,
+                                        ).firstOrNull(),
+                                    checkRepeatAnno = ksFunctionDeclaration
+                                        .getAnnotationsByType(
+                                            annotationKClass = CheckRepeatAnno::class,
+                                        ).firstOrNull(),
+                                    returnTypeKsDeclaration = returnTypeKsDeclaration,
+                                    isSuspendMethod = ksFunctionDeclaration
+                                        .modifiers
+                                        .contains(element = Modifier.SUSPEND),
+                                    methodName = ksFunctionDeclaration
+                                        .simpleName
+                                        .getShortName(),
+                                    isSingleReturnType = returnTypeKsDeclaration
+                                        ?.qualifiedName == rxSingleKSClassDeclaration?.qualifiedName,
+                                    isCompletableReturnType = returnTypeKsDeclaration
+                                        ?.qualifiedName == rxCompletableKSClassDeclaration?.qualifiedName,
+                                    isComponentNavigationDisposableReturnType = returnTypeKsDeclaration
+                                        ?.qualifiedName == navigationDisposableKSClassDeclaration?.qualifiedName,
+                                    isComponentNavigatorReturnType = returnTypeKsDeclaration
+                                        ?.qualifiedName == componentNavigatorKSClassDeclaration?.qualifiedName,
+                                    isComponentCallReturnType = returnTypeKsDeclaration
+                                        ?.qualifiedName == componentCallKSClassDeclaration?.qualifiedName,
+                                )
+                            }.toList(),
+                    )
+                }
         )
 
         return inValidList
@@ -1093,9 +1112,9 @@ class RouterApiProcessor(
 
     override fun finish() {
         super.finish()
-        collectList.forEach { item ->
+        collectList.forEach { routerApiInfo ->
             createFile(
-                routerApiKSClassDeclaration = item,
+                routerApiInfo = routerApiInfo,
             )
         }
         if (logEnable) {

@@ -51,6 +51,10 @@ import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.reflect.KClass
 
+private data class ConditionalAnnoInfo(
+    val conditionClassPathList: List<String>,
+)
+
 private data class ApplicationInfo(
     val containingFile: KSFile?,
     val qualifiedNameOfClass: String,
@@ -62,7 +66,8 @@ private sealed class ServiceInfo(
     open val serviceAnnoInfo: ServiceAnnoInfo,
     // 被 ServiceAnno 标记的类的 class 类型 或者 方法返回值的 class 类型
     open val classTypeName: TypeName,
-) {
+) //
+{
 
     data class ServiceAnnoInfo(
         val serviceClassPathList: List<String>,
@@ -107,7 +112,7 @@ private data class ServiceDecoratorInfo(
     val descName: String,
     val classClassName: ClassName,
     val serviceDecoratorAnnoInfo: ServiceDecoratorAnnoInfo,
-    val conditionalAnno: ConditionalAnno?,
+    val conditionalAnnoInfo: ConditionalAnnoInfo?,
     // 装饰的目标接口
     val decorateTargetClassName: ClassName,
     // 被 @ServiceDecoratorAnno 标记的类的 class 类型的构造函数的参数名.
@@ -276,11 +281,11 @@ private class ModuleProcessor(
 
     private fun addConditionIfCodeToFunction(
         funSpecBuilder: FunSpec.Builder,
-        condition: ConditionalAnno?,
+        conditionalAnnoInfo: ConditionalAnnoInfo?,
         block: (funSpecBuilder: FunSpec.Builder) -> Unit,
     ) {
 
-        val targetCondition = condition ?: return block(funSpecBuilder)
+        val targetCondition = conditionalAnnoInfo ?: return block(funSpecBuilder)
         val conditionClassPathList = targetCondition.conditionClassPathList
 
         if (conditionClassPathList.isNotEmpty()) {
@@ -530,7 +535,7 @@ private class ModuleProcessor(
 
                             addConditionIfCodeToFunction(
                                 funSpecBuilder = funSpec,
-                                condition = serviceDecoratorInfo.conditionalAnno,
+                                conditionalAnnoInfo = serviceDecoratorInfo.conditionalAnnoInfo,
                             ) {
 
                                 val implName = "implName${counter.incrementAndGet()}"
@@ -1310,9 +1315,13 @@ private class ModuleProcessor(
                             priority = serviceDecoratorAnno.priority,
                             valueClassPath = serviceDecoratorAnno.valueClassPath,
                         ),
-                        conditionalAnno = item
+                        conditionalAnnoInfo = item
                             .getAnnotationsByType(annotationKClass = ConditionalAnno::class)
-                            .firstOrNull(),
+                            .firstOrNull()?.let { anno ->
+                                ConditionalAnnoInfo(
+                                    conditionClassPathList = anno.conditionClassPathList,
+                                )
+                            },
                         decorateTargetClassName = serviceDecoratorAnno.valueClassPath.toClassName(),
                         constructorParameterName = checkNotNull(
                             value = item.getConstructors()

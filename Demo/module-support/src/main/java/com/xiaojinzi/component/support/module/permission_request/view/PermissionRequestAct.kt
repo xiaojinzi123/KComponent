@@ -5,10 +5,8 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.core.app.ActivityCompat
 import androidx.core.view.WindowCompat
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.permissions.shouldShowRationale
 import com.xiaojinzi.component.anno.AttrValueAutowiredAnno
 import com.xiaojinzi.component.anno.RouterAnno
 import com.xiaojinzi.component.base.RouterConfig

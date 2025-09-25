@@ -191,14 +191,20 @@ private data class InterceptorInfo(
     val containingFile: KSFile?,
     val descName: String,
     val qualifiedNameStr: String,
-    val interceptorAnno: InterceptorAnno,
-)
+    val interceptorAnnoInfo: InterceptorAnnoInfo,
+) //
+{
+
+    data class InterceptorAnnoInfo(
+        val value: String,
+    )
+
+}
 
 private sealed class RouterInfo(
     open val containingFile: KSFile?,
     open val descName: String,
     open val qualifiedNameStr: String,
-    open val routerAnno: RouterAnno,
     open val routerAnnoBean: RouterAnnoBean,
 ) {
 
@@ -206,13 +212,11 @@ private sealed class RouterInfo(
         override val containingFile: KSFile?,
         override val descName: String,
         override val qualifiedNameStr: String,
-        override val routerAnno: RouterAnno,
         override val routerAnnoBean: RouterAnnoBean,
     ) : RouterInfo(
         containingFile = containingFile,
         descName = descName,
         qualifiedNameStr = qualifiedNameStr,
-        routerAnno = routerAnno,
         routerAnnoBean = routerAnnoBean,
     )
 
@@ -220,14 +224,12 @@ private sealed class RouterInfo(
         override val containingFile: KSFile?,
         override val descName: String,
         override val qualifiedNameStr: String,
-        override val routerAnno: RouterAnno,
         override val routerAnnoBean: RouterAnnoBean,
         val firstParameterName: String,
     ) : RouterInfo(
         containingFile = containingFile,
         descName = descName,
         qualifiedNameStr = qualifiedNameStr,
-        routerAnno = routerAnno,
         routerAnnoBean = routerAnnoBean,
     )
 
@@ -827,7 +829,7 @@ private class ModuleProcessor(
 
         val interceptorListStr = interceptorInfoList
             .joinToString { item ->
-                "\"${item.interceptorAnno.value}\" to %L::class"
+                "\"${item.interceptorAnnoInfo.value}\" to %L::class"
             }
 
         val interceptorArgList = interceptorInfoList.map { item ->
@@ -1455,9 +1457,13 @@ private class ModuleProcessor(
                         containingFile = containingFile,
                         descName = descName,
                         qualifiedNameStr = item.qualifiedName!!.asString(),
-                        interceptorAnno = item
+                        interceptorAnnoInfo = item
                             .getAnnotationsByType(annotationKClass = InterceptorAnno::class)
-                            .first(),
+                            .first().let {
+                                InterceptorInfo.InterceptorAnnoInfo(
+                                    value = it.value
+                                )
+                            },
                     )
                 },
         )
@@ -1484,12 +1490,10 @@ private class ModuleProcessor(
                         .first()
                     when (item) {
                         is KSFunctionDeclaration -> {
-
                             RouterInfo.ServiceMethod(
                                 containingFile = containingFile,
                                 descName = descName,
                                 qualifiedNameStr = item.qualifiedName!!.asString(),
-                                routerAnno = routerAnno,
                                 routerAnnoBean = toRouterAnnoBean(
                                     element = item,
                                     routerAnno = routerAnno,
@@ -1503,7 +1507,6 @@ private class ModuleProcessor(
                                 containingFile = containingFile,
                                 descName = descName,
                                 qualifiedNameStr = item.qualifiedName!!.asString(),
-                                routerAnno = routerAnno,
                                 routerAnnoBean = toRouterAnnoBean(
                                     element = item,
                                     routerAnno = routerAnno,

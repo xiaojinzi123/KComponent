@@ -99,12 +99,25 @@ private data class ServiceDecoratorInfo(
     val containingFile: KSFile?,
     val descName: String,
     val classClassName: ClassName,
-    val serviceDecoratorAnno: ServiceDecoratorAnno,
+    val serviceDecoratorAnnoInfo: ServiceDecoratorAnnoInfo,
     val conditionalAnno: ConditionalAnno?,
+    // 装饰的目标接口
+    val decorateTargetClassName: ClassName,
     // 被 @ServiceDecoratorAnno 标记的类的 class 类型的构造函数的参数名.
     // 被标记的只有一个构造函数, 并且参数只有一个
     val constructorParameterName: String,
-)
+) {
+
+    data class ServiceDecoratorAnnoInfo(
+        val priority: Int,
+        val valueClassPath: String,
+    )
+
+    override fun toString(): String {
+        return "ServiceDecoratorInfo(uuid='$uuid', descName='$descName', classClassName=$classClassName, constructorParameterName='$constructorParameterName')"
+    }
+
+}
 
 private sealed class FragmentInfo(
     open val containingFile: KSFile?,
@@ -325,6 +338,10 @@ private class ModuleProcessor(
         serviceDecoratorInfoList: List<ServiceDecoratorInfo>,
     ) {
 
+        if (logEnable) {
+            logger.warn("aboutService serviceDecoratorInfoList = ${serviceDecoratorInfoList.joinToString()}")
+        }
+
         val classNameServiceManager: ClassName = ClassName(
             packageName = ComponentConstants.SERVICE_MANAGER_CLASS_NAME.packageName(),
             ComponentConstants.SERVICE_MANAGER_CLASS_NAME.simpleClassName(),
@@ -411,7 +428,10 @@ private class ModuleProcessor(
                                         )
                                         .addProperty(
                                             propertySpec = PropertySpec
-                                                .builder(name = "raw", type = serviceInfo.classTypeName)
+                                                .builder(
+                                                    name = "raw",
+                                                    type = serviceInfo.classTypeName
+                                                )
                                                 .addModifiers(
                                                     KModifier.OVERRIDE,
                                                 )
@@ -500,10 +520,6 @@ private class ModuleProcessor(
                     .also { funSpec ->
                         serviceDecoratorInfoList.forEach { serviceDecoratorInfo ->
 
-                            // 装饰的目标接口
-                            val decorateTargetClassName =
-                                serviceDecoratorInfo.serviceDecoratorAnno.valueClassPath.toClassName()
-
                             addConditionIfCodeToFunction(
                                 funSpecBuilder = funSpec,
                                 condition = serviceDecoratorInfo.conditionalAnno,
@@ -518,7 +534,7 @@ private class ModuleProcessor(
                                         .anonymousClassBuilder()
                                         .addSuperinterface(
                                             superinterface = classNameServiceDecoratorCallable.parameterizedBy(
-                                                decorateTargetClassName,
+                                                serviceDecoratorInfo.decorateTargetClassName,
                                             )
                                         )
                                         .addFunction(
@@ -527,10 +543,10 @@ private class ModuleProcessor(
                                                 .addModifiers(KModifier.OVERRIDE)
                                                 .addParameter(
                                                     name = "target",
-                                                    type = decorateTargetClassName,
+                                                    type = serviceDecoratorInfo.decorateTargetClassName,
                                                 )
                                                 .returns(
-                                                    returnType = decorateTargetClassName,
+                                                    returnType = serviceDecoratorInfo.decorateTargetClassName,
                                                 )
                                                 .addStatement(
                                                     format = "return %T(${serviceDecoratorInfo.constructorParameterName} = target)",
@@ -546,7 +562,7 @@ private class ModuleProcessor(
                                                     returnType = Int::class,
                                                 )
                                                 .addStatement(
-                                                    format = "return ${serviceDecoratorInfo.serviceDecoratorAnno.priority}"
+                                                    format = "return ${serviceDecoratorInfo.serviceDecoratorAnnoInfo.priority}"
                                                 )
                                                 .build()
                                         )
@@ -556,7 +572,7 @@ private class ModuleProcessor(
                                 funSpec.addStatement(
                                     format = "%T.registerDecorator(tClass = %T::class, uid = %S, %N)",
                                     classNameServiceManager,
-                                    decorateTargetClassName,
+                                    serviceDecoratorInfo.decorateTargetClassName,
                                     serviceDecoratorInfo.uuid,
                                     implName,
                                 )
@@ -619,7 +635,7 @@ private class ModuleProcessor(
                             .forEach { serviceDecoratorInfo ->
                                 // 装饰的目标接口
                                 val decorateTargetClassName =
-                                    serviceDecoratorInfo.serviceDecoratorAnno.valueClassPath.toClassName()
+                                    serviceDecoratorInfo.serviceDecoratorAnnoInfo.valueClassPath.toClassName()
                                 funSpec.addStatement(
                                     format = "%T.unregisterDecorator(tClass = %T::class, uid = %S)",
                                     classNameServiceManager,
@@ -1266,17 +1282,23 @@ private class ModuleProcessor(
                     val uuid = UUID.randomUUID().toString()
                     val containingFile = item.containingFile
                     val descName = item.getDescName()
+                    val serviceDecoratorAnno = item
+                        .getAnnotationsByType(annotationKClass = ServiceDecoratorAnno::class)
+                        .first()
+                    serviceDecoratorAnno.valueClassPath
                     ServiceDecoratorInfo(
                         uuid = uuid,
                         containingFile = containingFile,
                         descName = descName,
                         classClassName = item.toClassName(),
-                        serviceDecoratorAnno = item
-                            .getAnnotationsByType(annotationKClass = ServiceDecoratorAnno::class)
-                            .first(),
+                        serviceDecoratorAnnoInfo = ServiceDecoratorInfo.ServiceDecoratorAnnoInfo(
+                            priority = serviceDecoratorAnno.priority,
+                            valueClassPath = serviceDecoratorAnno.valueClassPath,
+                        ),
                         conditionalAnno = item
                             .getAnnotationsByType(annotationKClass = ConditionalAnno::class)
                             .firstOrNull(),
+                        decorateTargetClassName = serviceDecoratorAnno.valueClassPath.toClassName(),
                         constructorParameterName = checkNotNull(
                             value = item.getConstructors()
                                 .firstOrNull()?.parameters?.firstOrNull()?.name?.asString(),

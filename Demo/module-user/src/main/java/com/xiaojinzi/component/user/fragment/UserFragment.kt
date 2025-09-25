@@ -11,11 +11,12 @@ import com.xiaojinzi.component.base.RouterConfig
 import com.xiaojinzi.component.user.R
 import com.xiaojinzi.component.user.databinding.UserTest1Binding
 
+@FragmentAnno(RouterConfig.FRAGMENT_USER2)
 class UserFragment : Fragment(R.layout.user_test1) {
 
     companion object {
 
-        @FragmentAnno(RouterConfig.FRAGMENT_USER2)
+        @FragmentAnno(RouterConfig.FRAGMENT_USER3)
         fun newInstance(
             args: Bundle = Bundle(),
         ): UserFragment {

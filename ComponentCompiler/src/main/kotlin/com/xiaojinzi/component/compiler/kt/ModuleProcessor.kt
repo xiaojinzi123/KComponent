@@ -106,6 +106,45 @@ data class ServiceDecoratorInfo(
     val constructorParameterName: String,
 )
 
+sealed class FragmentInfo(
+    open val containingFile: KSFile?,
+    open val descName: String,
+    // 目标 Fragment 的全路径
+    open val targetClassNameStr: String,
+    open val fragmentAnno: FragmentAnno,
+) {
+
+
+    data class ServiceClass(
+        override val containingFile: KSFile?,
+        override val descName: String,
+        override val targetClassNameStr: String,
+        override val fragmentAnno: FragmentAnno,
+    ) : FragmentInfo(
+        containingFile = containingFile,
+        descName = descName,
+        targetClassNameStr = targetClassNameStr,
+        fragmentAnno = fragmentAnno,
+    )
+
+    data class ServiceMethod(
+        override val containingFile: KSFile?,
+        override val descName: String,
+        override val targetClassNameStr: String,
+        override val fragmentAnno: FragmentAnno,
+        // com.xxx.xxx.testName
+        val methodQualifiedName: String,
+        // 只能有一个参数类型, xxx: Bundle
+        val parameterName: String?,
+    ) : FragmentInfo(
+        containingFile = containingFile,
+        descName = descName,
+        targetClassNameStr = targetClassNameStr,
+        fragmentAnno = fragmentAnno,
+    )
+
+}
+
 /**
  * - ModuleApplication
  * - Fragment
@@ -535,7 +574,7 @@ class ModuleProcessor(
     @OptIn(KspExperimental::class)
     private fun aboutFragment(
         typeSpecBuilder: TypeSpec.Builder,
-        fragmentAnnotatedList: List<KSAnnotated>,
+        fragmentInfoList: List<FragmentInfo>,
     ) {
         typeSpecBuilder
             .addFunction(
@@ -546,40 +585,14 @@ class ModuleProcessor(
                     )
                     .also { funSpec ->
                         val counter = AtomicInteger()
-                        TypeName
-                        fragmentAnnotatedList.forEach { item ->
-                            // 目标 Fragment 的全路径
-                            val targetClassNameStr: String = when (item) {
-                                is KSFunctionDeclaration -> {
-                                    item.returnType
-                                        ?.resolve()
-                                        ?.declaration
-                                        ?.qualifiedName
-                                        ?.asString()
-                                        ?: ""
-                                }
+                        fragmentInfoList.forEach { fragmentInfo ->
 
-                                is KSClassDeclaration -> {
-                                    item.qualifiedName?.asString() ?: ""
-                                }
-
-                                else -> throw RuntimeException("Unsupported type")
-                            }
-                            val fragmentAnno: FragmentAnno = when (item) {
-                                is KSFunctionDeclaration, is KSClassDeclaration -> {
-                                    item.getAnnotationsByType(
-                                        annotationKClass = FragmentAnno::class,
-                                    ).first()
-                                }
-
-                                else -> throw RuntimeException("Unsupported type")
-                            }
-                            if (fragmentAnno.value.isEmpty()) {
-                                throw ProcessException(message = "FragmentAnno.value can't be empty: ${item.getDescName()} ")
+                            if (fragmentInfo.fragmentAnno.value.isEmpty()) {
+                                throw ProcessException(message = "FragmentAnno.value can't be empty: ${fragmentInfo.descName} ")
                             }
                             val targetClassName = ClassName(
-                                packageName = targetClassNameStr.packageName(),
-                                targetClassNameStr.simpleClassName(),
+                                packageName = fragmentInfo.targetClassNameStr.packageName(),
+                                fragmentInfo.targetClassNameStr.simpleClassName(),
                             )
                             val implName = "implName${counter.getAndIncrement()}"
                             funSpec.addStatement(
@@ -618,25 +631,20 @@ class ModuleProcessor(
                                                 format = "val targetBundle = t?: Bundle()",
                                             )
                                             .also {
-                                                when (item) {
-                                                    is KSFunctionDeclaration -> {
+                                                when (fragmentInfo) {
+                                                    is FragmentInfo.ServiceMethod -> {
                                                         if (logEnable) {
                                                             logger.warn(
-                                                                message = "fragment KSFunctionDeclaration = ${item.qualifiedName?.asString()}"
-                                                            )
-                                                        }
-                                                        if (item.parameters.size != 1) {
-                                                            throw RuntimeException(
-                                                                "FragmentAnno 注解的方法必须只有一个参数, ${item.qualifiedName}"
+                                                                message = "fragment KSFunctionDeclaration = ${fragmentInfo.descName}"
                                                             )
                                                         }
                                                         it.addStatement(
-                                                            format = "val fragment = ${item.qualifiedName?.asString()}(${item.parameters.first().name?.asString()} = targetBundle)",
+                                                            format = "val fragment = ${fragmentInfo.methodQualifiedName}(${fragmentInfo.parameterName} = targetBundle)",
                                                             targetClassName,
                                                         )
                                                     }
 
-                                                    is KSClassDeclaration -> {
+                                                    is FragmentInfo.ServiceClass -> {
                                                         it.addStatement(
                                                             format = "val fragment = %T()",
                                                             targetClassName,
@@ -645,8 +653,6 @@ class ModuleProcessor(
                                                             format = "fragment.arguments = targetBundle"
                                                         )
                                                     }
-
-                                                    else -> throw RuntimeException("Unsupported type")
                                                 }
                                             }
                                             .addStatement(
@@ -657,7 +663,7 @@ class ModuleProcessor(
                                     .build()
                             )
 
-                            fragmentAnno.value.forEach { fragmentName ->
+                            fragmentInfo.fragmentAnno.value.forEach { fragmentName ->
                                 funSpec.addStatement(
                                     format = "%T.register(flag = %S, function = %N)",
                                     mClassNameFragmentManager,
@@ -677,17 +683,8 @@ class ModuleProcessor(
                         KModifier.OVERRIDE,
                     )
                     .also { funSpec ->
-                        fragmentAnnotatedList.forEach { item ->
-                            val fragmentAnno: FragmentAnno = when (item) {
-                                is KSFunctionDeclaration, is KSClassDeclaration -> {
-                                    item.getAnnotationsByType(
-                                        annotationKClass = FragmentAnno::class,
-                                    ).first()
-                                }
-
-                                else -> throw RuntimeException("Unsupported type")
-                            }
-                            fragmentAnno.value.forEach { fragmentName ->
+                        fragmentInfoList.forEach { fragmentInfo ->
+                            fragmentInfo.fragmentAnno.value.forEach { fragmentName ->
                                 funSpec.addStatement(
                                     format = "%T.unregister(flag = %S)",
                                     mClassNameFragmentManager,
@@ -1096,7 +1093,7 @@ class ModuleProcessor(
     private val moduleAppInfoList: MutableList<ApplicationInfo> = mutableListOf()
     private val serviceInfoList: MutableList<ServiceInfo> = mutableListOf()
     private val serviceDecoratorInfoList: MutableList<ServiceDecoratorInfo> = mutableListOf()
-    private val fragmentAnnotatedList: MutableList<KSAnnotated> = mutableListOf()
+    private val fragmentInfoList: MutableList<FragmentInfo> = mutableListOf()
     private val globalInterceptorAnnotatedList: MutableList<KSClassDeclaration> = mutableListOf()
     private val interceptorAnnotatedList: MutableList<KSClassDeclaration> = mutableListOf()
     private val routerAnnotatedList: MutableList<KSAnnotated> = mutableListOf()
@@ -1107,7 +1104,7 @@ class ModuleProcessor(
         moduleAppInfoList.clear()
         serviceInfoList.clear()
         serviceDecoratorInfoList.clear()
-        fragmentAnnotatedList.clear()
+        fragmentInfoList.clear()
         globalInterceptorAnnotatedList.clear()
         interceptorAnnotatedList.clear()
         routerAnnotatedList.clear()
@@ -1273,12 +1270,53 @@ class ModuleProcessor(
             .partition { !validateEnable || it.validate() }
 
         // Fragment 的
-        fragmentAnnotatedList.addAll(
-            elements = fragmentValidList,
+        fragmentInfoList.addAll(
+            elements = fragmentValidList
+                .filter { it is KSClassDeclaration || it is KSFunctionDeclaration }
+                .map { item ->
+                    val containingFile = item.containingFile
+                    val descName = item.getDescName()
+                    val fragmentAnno = item.getAnnotationsByType(
+                        annotationKClass = FragmentAnno::class,
+                    ).first()
+                    when (item) {
+                        is KSFunctionDeclaration -> {
+                            if (item.parameters.size != 1) {
+                                throw RuntimeException(
+                                    "FragmentAnno 注解的方法必须只有一个参数, $descName"
+                                )
+                            }
+                            FragmentInfo.ServiceMethod(
+                                containingFile = containingFile,
+                                descName = descName,
+                                targetClassNameStr = item.returnType
+                                    ?.resolve()
+                                    ?.declaration
+                                    ?.qualifiedName
+                                    ?.asString()
+                                    ?: "",
+                                fragmentAnno = fragmentAnno,
+                                methodQualifiedName = item.qualifiedName!!.asString(),
+                                parameterName = item.parameters.first().name?.asString(),
+                            )
+                        }
+
+                        is KSClassDeclaration -> {
+                            FragmentInfo.ServiceClass(
+                                containingFile = containingFile,
+                                descName = descName,
+                                targetClassNameStr = item.qualifiedName?.asString() ?: "",
+                                fragmentAnno = fragmentAnno,
+                            )
+                        }
+
+                        else -> throw RuntimeException("Unsupported type: $descName")
+                    }
+                },
         )
         if (logEnable) {
             logger.warn(
-                "$TAG $componentModuleName fragmentAnnotatedList.size = ${fragmentAnnotatedList.size}"
+                "$TAG $componentModuleName fragmentInfoList.size = ${fragmentInfoList.size}"
             )
         }
 
@@ -1373,13 +1411,13 @@ class ModuleProcessor(
             }
         }
 
-        val allMarkedList = (fragmentAnnotatedList +
-                globalInterceptorAnnotatedList + interceptorAnnotatedList +
+        val allMarkedList = (globalInterceptorAnnotatedList + interceptorAnnotatedList +
                 routerAnnotatedList + routerDegradeAnnotatedList)
 
         val sources = (moduleAppInfoList
             .mapNotNull { it.containingFile } + serviceInfoList
             .mapNotNull { it.containingFile } + serviceDecoratorInfoList
+            .mapNotNull { it.containingFile } + fragmentInfoList
             .mapNotNull { it.containingFile } + allMarkedList
             .mapNotNull { it.containingFile })
             .toTypedArray()
@@ -1436,7 +1474,7 @@ class ModuleProcessor(
                 )
                 aboutFragment(
                     typeSpecBuilder = this,
-                    fragmentAnnotatedList = fragmentAnnotatedList,
+                    fragmentInfoList = fragmentInfoList,
                 )
                 aboutInterceptor(
                     typeSpecBuilder = this,

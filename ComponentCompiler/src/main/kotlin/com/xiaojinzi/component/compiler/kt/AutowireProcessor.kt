@@ -20,8 +20,10 @@ import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.ksp.toClassName
+import com.squareup.kotlinpoet.ksp.toTypeName
 import com.xiaojinzi.component.ComponentConstants
 import com.xiaojinzi.component.anno.AttrValueAutowiredAnno
 import com.xiaojinzi.component.anno.ServiceAutowiredAnno
@@ -61,7 +63,7 @@ private data class InjectFileInfo(
         val isPropertyLateInit: Boolean,
         val isPropertyNullable: Boolean,
         val propertyName: String,
-        val propertyClassName: ClassName,
+        val propertyTypeName: TypeName,
         val propertyGetMethodName: String?,
         val uriAutowiredAnnoInfo: UriAutowiredAnnoInfo?,
         val attrValueAutowiredAnnoInfo: AttrValueAutowiredAnnoInfo?,
@@ -332,7 +334,6 @@ private class AutowireProcessor(
                             }
 
                             propertyInfo.serviceAutowiredAnnoInfo?.let {
-
                                 funSpec.addStatement(
                                     format = "target.%N = %T.%N(tClass = %T::class)",
                                     propertyInfo.propertyName,
@@ -342,7 +343,7 @@ private class AutowireProcessor(
                                     } else {
                                         "requiredGet"
                                     },
-                                    propertyInfo.propertyClassName,
+                                    propertyInfo.propertyTypeName,
                                 )
 
                             }
@@ -410,7 +411,7 @@ private class AutowireProcessor(
             isPropertyNullable =
                 ksPropertyDeclaration.type.resolve().isMarkedNullable,
             propertyName = ksPropertyDeclaration.simpleName.asString(),
-            propertyClassName = propertyType.toClassName(),
+            propertyTypeName = propertyType.toTypeName(),
             propertyGetMethodName = runCatching {
                 getMethodNameFromKsType(
                     ksType = propertyType,

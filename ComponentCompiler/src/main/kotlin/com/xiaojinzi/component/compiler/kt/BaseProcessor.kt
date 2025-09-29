@@ -279,19 +279,19 @@ abstract class BaseProcessor(
                     }
 
                     ksTypeForGeneric?.let {
-                        serializableKsType.isAssignableFrom(
-                            that = it
-                        )
-                    } == true -> {
-                        "Serializable"
-                    }
-
-                    ksTypeForGeneric?.let {
                         parcelableKsType.isAssignableFrom(
                             that = it
                         )
                     } == true -> {
                         "ParcelableArrayList"
+                    }
+
+                    ksTypeForGeneric?.let {
+                        serializableKsType.isAssignableFrom(
+                            that = it
+                        )
+                    } == true -> {
+                        "Serializable"
                     }
 
                     else -> {

@@ -2,6 +2,7 @@ apply from: project.getRootProjectPath() + "/common_android.gradle"
 apply from: project.getRootProjectPath() + "/common_ksp_for_component.gradle"
 
 dependencies {
+    api libs.compose.material.icons.core
     api project(':Demo:module-base')
     ksp project(':ComponentCompiler')
     ksp libs.room.compiler

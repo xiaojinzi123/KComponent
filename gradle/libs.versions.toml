@@ -19,8 +19,8 @@ kotlin-ksp = "2.3.13"
 kotlin-coroutines = "1.11.0"
 rxjava = "2.2.21"
 rxandroid = "2.1.1"
-android-support-version = "v1.0-beta225"
-android-module-version = "v1.0-beta51"
+android-support-version = "v1.1.0"
+android-module-version = "v1.1.0"
 compose-version = "1.12.1"
 accompanist-version = "0.37.3"
 page3 = "3.5.3"
@@ -117,6 +117,8 @@ compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compos
 compose-material = { group = "androidx.compose.material", name = "material", version.ref = "compose-version" }
 compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "compose-version" }
 compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "compose-version" }
+# compose 1.8+ 起 material-icons 不再随 material 发布，需要显式依赖（最后版本 1.7.8）
+compose-material-icons-core = { group = "androidx.compose.material", name = "material-icons-core", version = "1.7.8" }
 compose-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version = "1.1.1" }
 
 [plugins]

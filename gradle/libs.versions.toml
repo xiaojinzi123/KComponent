@@ -11,7 +11,7 @@ mockkVersion = "1.14.5"
 version-code = "1000"
 version-name = "1.0"
 # 作为开源库, 不能升级过高
-agp = "9.3.3"
+agp = "9.5.1"
 # 仅给 ComponentPlugin 编译期使用，避免把 AGP 9 强加给消费方
 agp-api = "8.13.2"
 kotlin = "2.4.21"
@@ -125,7 +125,6 @@ compose-constraintlayout = { group = "androidx.constraintlayout", name = "constr
 android-application = {id = "com.android.application", version.ref = "agp" }
 android-library = {id = "com.android.library", version.ref = "agp" }
 kotlin-jvm = {id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin"}
-kotlin-android = {id = "org.jetbrains.kotlin.android", version.ref = "kotlin"}
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
 kotlin-kapt = {id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin"}
 kotlin-ksp = {id = "com.google.devtools.ksp", version.ref = "kotlin-ksp"}

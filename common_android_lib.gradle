@@ -11,18 +11,11 @@ android {
 
     buildTypes {
         debug {
-            minifyEnabled false
+            minifyEnabled = false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            if (Boolean.parseBoolean(project.findProperty("support.isIncludeKspFolder"))) {
-                kotlin {
-                    sourceSets {
-                        debug.kotlin.srcDirs += 'build/generated/ksp/debug/kotlin'
-                    }
-                }
-            }
         }
         release {
-            minifyEnabled false
+            minifyEnabled = false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -38,12 +31,6 @@ android {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
-}
-
-kotlin {
-    // 共享脚本不在 buildscript classpath 中，无法 import KGP 的 JvmTarget；
-    // jvmToolchain 等价地把 jvmTarget 固定为 17
-    jvmToolchain(17)
 }
 
 dependencies {

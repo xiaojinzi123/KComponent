@@ -1,6 +1,5 @@
 plugins {
     id 'com.android.library'
-    id 'kotlin-android'
     id 'maven-publish'
 }
 
@@ -22,7 +21,7 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled = false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -41,9 +40,6 @@ android {
 
 }
 
-kotlin {
-    jvmToolchain(17)
-}
 
 dependencies {
 

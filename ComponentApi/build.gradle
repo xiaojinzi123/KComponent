@@ -13,7 +13,9 @@ java {
 }
 
 group = 'com.github.xiaojinzi123'
-archivesBaseName = "kcomponent-annotation"
+base {
+    archivesName = "kcomponent-annotation"
+}
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -28,7 +30,7 @@ publishing {
     publications {
         maven(MavenPublication) {
             groupId project.group
-            artifactId archivesBaseName
+            artifactId base.archivesName.get()
             version project.version
             from components.java
         }

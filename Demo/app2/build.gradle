@@ -42,6 +42,7 @@ android {
             if (Boolean.parseBoolean(project.findProperty("support.isIncludeKspFolder"))) {
                 kotlin {
                     sourceSets {
+                        // TODO(AGP10): 迁移到 androidComponents.onVariants
                         android.applicationVariants.all { variant ->
                             def variantName = variant.getName()
                             if (variantName.toLowerCase(Locale.getDefault()).endsWith("debug")) {
@@ -59,6 +60,11 @@ android {
         }
     }
 
+}
+
+// TODO(D4): AndroidSupport v1.1.0 发布后删除此排除（届时不再传递 kotlin-android-extensions-runtime）
+configurations.configureEach {
+    exclude group: 'org.jetbrains.kotlin', module: 'kotlin-android-extensions-runtime'
 }
 
 dependencies {

@@ -12,7 +12,6 @@ dependencyResolutionManagement {
         mavenCentral()
         maven { url 'https://jitpack.io' }
         google()
-        jcenter()
     }
 }
 rootProject.name = "KComponent"

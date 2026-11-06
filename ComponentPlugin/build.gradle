@@ -2,7 +2,6 @@ plugins {
     id 'java-library'
     id 'org.jetbrains.kotlin.jvm'
     id 'maven-publish'
-    id 'org.gradle.kotlin.kotlin-dsl' version '4.5.0'
 }
 
 java {
@@ -14,7 +13,9 @@ java {
 }
 
 group = 'com.xiaojinzi.kcomponent'
-archivesBaseName = 'kcomponent-plugin'
+base {
+    archivesName = 'kcomponent-plugin'
+}
 version = libs.versions.component.plugin.upload.get()
 
 // 配置模块的 freeCompilerArgs 参数
@@ -35,7 +36,8 @@ dependencies {
     implementation localGroovy()
     implementation libs.asm.commons
     implementation libs.asm.util
-    implementation libs.gradle
+    // 只编译期依赖 AGP API，插件运行时使用消费方自己的 AGP（D3）
+    compileOnly libs.gradle.api
     implementation libs.gson
     implementation libs.grip
     implementation libs.javassist
@@ -50,7 +52,7 @@ publishing {
     publications {
         maven(MavenPublication) {
             groupId = group
-            artifactId = archivesBaseName
+            artifactId = base.archivesName.get()
             version = version
             from components.java
         }

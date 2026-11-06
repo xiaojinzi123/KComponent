@@ -19,7 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,7 +45,6 @@ import com.xiaojinzi.support.ktx.getActivity
 import com.xiaojinzi.support.ktx.nothing
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalPermissionsApi::class)
 @InternalCoroutinesApi
@@ -54,7 +53,6 @@ import kotlinx.coroutines.launch
 @ExperimentalFoundationApi
 @Composable
 private fun PermissionRequestView() {
-    val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val vm: PermissionRequestViewModel = viewModel()
     val permission by vm.permissionInitData.valueStateFlow.collectAsState(initial = null)
@@ -63,18 +61,15 @@ private fun PermissionRequestView() {
     }
     if (permission.isNullOrEmpty().not()) {
         val permissionState = rememberPermissionState(permission = permission!!)
-        when (permissionState.status) {
-            PermissionStatus.Granted -> {
+        // lint: CoroutineCreationDuringComposition — 协程必须在 LaunchedEffect 中启动
+        LaunchedEffect(permissionState.status) {
+            if (permissionState.status == PermissionStatus.Granted) {
+                delay(2000)
                 context.getActivity()?.let { act ->
-                    scope.launch {
-                        delay(2000)
-                        act.setResult(Activity.RESULT_OK)
-                        act.finish()
-                    }
+                    act.setResult(Activity.RESULT_OK)
+                    act.finish()
                 }
             }
-
-            else -> {}
         }
         Box(
             modifier = Modifier

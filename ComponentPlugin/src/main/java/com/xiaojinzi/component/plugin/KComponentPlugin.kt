@@ -21,7 +21,6 @@ import org.gradle.api.tasks.CompileClasspath
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
-import org.gradle.kotlin.dsl.register
 import org.objectweb.asm.Opcodes
 import java.io.BufferedOutputStream
 import java.io.File
@@ -206,11 +205,11 @@ class KComponentPlugin : Plugin<Project> {
 
                 androidComponents?.onVariants { variant ->
                     val name = "${variant.name}ModifyASMUtil"
-                    val taskProvider = tasks.register<ModifyClassesTask>(name) {
-                        group = "kcomponent"
-                        description = name
-                        bootClasspath.set(androidComponents.sdkComponents.bootClasspath)
-                        classpath = variant.compileClasspath
+                    val taskProvider = tasks.register(name, ModifyClassesTask::class.java) {
+                        it.group = "kcomponent"
+                        it.description = name
+                        it.bootClasspath.set(androidComponents.sdkComponents.bootClasspath)
+                        it.classpath = variant.compileClasspath
                     }
 
                     variant.artifacts.forScope(ScopedArtifacts.Scope.ALL)

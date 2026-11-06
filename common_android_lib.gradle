@@ -1,9 +1,9 @@
 android {
-    compileSdkVersion libs.versions.android.compile.sdk.get().toInteger()
+    compileSdk = libs.versions.android.compile.sdk.get().toInteger()
 
     defaultConfig {
-        minSdkVersion libs.versions.android.min.sdk.get().toInteger()
-        targetSdkVersion libs.versions.android.target.sdk.get().toInteger()
+        minSdk = libs.versions.android.min.sdk.get().toInteger()
+        targetSdk = libs.versions.android.target.sdk.get().toInteger()
         versionCode 1
         versionName "1.0.0"
         consumerProguardFiles "consumer-rules.pro"
@@ -30,20 +30,20 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
-        freeCompilerArgs += [
-                "-Xjvm-default=all",
-        ]
+    buildFeatures {
+        viewBinding = true
     }
-    viewBinding {
-        enabled true
-    }
-    packagingOptions {
+    packaging {
         resources {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
+}
+
+kotlin {
+    // 共享脚本不在 buildscript classpath 中，无法 import KGP 的 JvmTarget；
+    // jvmToolchain 等价地把 jvmTarget 固定为 17
+    jvmToolchain(17)
 }
 
 dependencies {

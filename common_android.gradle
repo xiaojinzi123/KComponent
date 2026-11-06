@@ -5,7 +5,4 @@ android {
         // Enables Jetpack Compose for this module
         compose true
     }
-    composeOptions {
-        // kotlinCompilerExtensionVersion compose_version
-    }
 }

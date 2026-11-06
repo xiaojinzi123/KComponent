@@ -16,7 +16,9 @@ java {
 }
 
 group = 'com.github.xiaojinzi123'
-archivesBaseName = "kcomponent-compiler"
+base {
+    archivesName = "kcomponent-compiler"
+}
 
 // 配置模块的 freeCompilerArgs 参数
 /*tasks.withType(KotlinCompile).configureEach {
@@ -46,7 +48,7 @@ publishing {
     publications {
         maven(MavenPublication) {
             groupId project.group
-            artifactId archivesBaseName
+            artifactId base.archivesName.get()
             version project.version
             from components.java
         }

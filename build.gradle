@@ -24,7 +24,6 @@ buildscript {
             url './RepoKComponent'
         }
         maven { url 'https://jitpack.io' }
-        jcenter()
     }
     dependencies {
         classpath libs.gradle
@@ -44,5 +43,5 @@ plugins {
 }
 
 tasks.register('clean', Delete) {
-    delete rootProject.buildDir
+    delete rootProject.layout.buildDirectory
 }

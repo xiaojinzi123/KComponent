@@ -5,16 +5,18 @@ plugins {
 }
 
 group = 'com.github.xiaojinzi123'
-archivesBaseName = "kcomponent"
+base {
+    archivesName = "kcomponent"
+}
 
 android {
 
     namespace 'com.xiaojinzi.component.impl'
 
-    compileSdkVersion libs.versions.android.compile.sdk.get().toInteger()
+    compileSdk libs.versions.android.compile.sdk.get().toInteger()
     defaultConfig {
-        minSdkVersion libs.versions.android.min.sdk.get().toInteger()
-        targetSdkVersion libs.versions.android.target.sdk.get().toInteger()
+        minSdk libs.versions.android.min.sdk.get().toInteger()
+        targetSdk libs.versions.android.target.sdk.get().toInteger()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -30,10 +32,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
-    }
-
     publishing {
         singleVariant("release") {
             // if you don't want sources/javadoc, remove these lines
@@ -41,6 +39,10 @@ android {
         }
     }
 
+}
+
+kotlin {
+    jvmToolchain(17)
 }
 
 dependencies {
@@ -62,7 +64,7 @@ dependencies {
 
 tasks.register('androidSourcesJar', Jar) {
     archiveClassifier.set('sources')
-    from android.sourceSets.main.java.srcDirs
+    from fileTree("src/main/java"), fileTree("src/main/kotlin")
 }
 
 artifacts {
@@ -79,7 +81,7 @@ afterEvaluate {
 
                 // You can then customize attributes of the publication as shown below.
                 groupId = group
-                artifactId = archivesBaseName
+                artifactId = base.archivesName.get()
                 version = version
             }
         }

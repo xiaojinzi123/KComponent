@@ -44,3 +44,21 @@ plugins {
 tasks.register('clean', Delete) {
     delete rootProject.layout.buildDirectory
 }
+
+// JitPack 会为每个子项目追加一个以项目名命名的 publication，与各模块自定义的 artifactId 冲突
+// （Gradle 报 "multiple publications that have different coordinates"）。这里只保留显式声明的发布配置。
+gradle.projectsEvaluated {
+    rootProject.allprojects { p ->
+        if (p.plugins.hasPlugin('maven-publish')) {
+            def pubs = p.publishing.publications
+            def injected = pubs.findByName(p.name)
+            def ours = pubs.findByName('release') ?: pubs.findByName('maven')
+            if (injected != null && ours != null) {
+                // 把 JitPack 注入的 publication 对齐到显式声明的坐标，避免 "different coordinates" 报错
+                injected.groupId = ours.groupId
+                injected.artifactId = ours.artifactId
+                injected.version = ours.version
+            }
+        }
+    }
+}
